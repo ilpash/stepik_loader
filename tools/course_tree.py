@@ -47,7 +47,7 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
         module_units = [unit_id_to_unit[uid] for uid in section.get("units", []) if uid in unit_id_to_unit]
         module_units.sort(key=lambda u: u.get("position", 0))
 
-        module = {
+        module_node = {
             "id": section["id"],
             "title": section.get("title", ""),
             "dir_name": _dir_name(m_idx, section.get("title"), prefix="module_"),
@@ -78,8 +78,8 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
                     "raw": step,
                 })
 
-            module["lessons"].append(lesson_node)
+            module_node["lessons"].append(lesson_node)
 
-        tree["modules"].append(module)
+        tree["modules"].append(module_node)
 
     return tree
