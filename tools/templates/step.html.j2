@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ step_title }} — {{ course_title }}</title>
+<link rel="stylesheet" href="{{ css_path }}">
+</head>
+<body>
+<p class="breadcrumb">
+  <a href="{{ toc_path }}">{{ course_title }}</a> ›
+  {{ module_title }} › {{ lesson_title }}
+</p>
+<span class="block-type">{{ block_type }}</span>
+<h1>{{ step_title }}</h1>
+{{ body_html | safe }}
+</body>
+</html>

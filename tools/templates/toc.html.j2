@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ course_title }}</title>
+<link rel="stylesheet" href="{{ css_path }}">
+</head>
+<body>
+<h1>{{ course_title }}</h1>
+<p class="breadcrumb">Exported from Stepik course {{ course_id }} on {{ export_date }}</p>
+
+{% for module in modules %}
+<section class="toc-module">
+  <h2>{{ loop.index }}. {{ module.title }}</h2>
+  {% for lesson in module.lessons %}
+  <div class="toc-lesson">
+    <h3>{{ loop.index }}. {{ lesson.title }}</h3>
+    <ul class="toc-steps">
+      {% for step in lesson.steps %}
+      <li><a href="{{ step.href }}">{{ loop.index }}. {{ step.title }}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+</section>
+{% endfor %}
+</body>
+</html>

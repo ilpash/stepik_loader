@@ -1,8 +1,11 @@
 .env
 credentials.json
 token.json
+stepik_token.json
 .tmp/
+.DS_Store
 __pycache__/
 *.pyc
 .venv/
 .claude/settings.local.json
+exports/

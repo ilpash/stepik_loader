@@ -1,0 +1,170 @@
+"""Renders a single step's `block` JSON into a self-contained index.html,
+downloading any resources it references (video / images / audio / attachments)
+into the step's own directory via resource_downloader.
+
+Dedicated renderers exist for text, video, choice, string, and number blocks
+(the most common step types). Every other block type falls back to a generic
+"raw content" dump, with a warning logged
+"""
+import json
+import logging
+from html import escape
+from pathlib import Path
+
+from bs4 import BeautifulSoup
+from jinja2 import Environment, FileSystemLoader
+
+import resource_downloader
+from resource_downloader import _safe_filename
+
+logger = logging.getLogger("stepik_export")
+
+TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
+_env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=False)
+
+# tags/attributes that may reference a downloadable resource inside step HTML
+_RESOURCE_ATTRS = [("img", "src"), ("audio", "src"), ("source", "src"), ("a", "href")]
+
+
+def _pick_video_url(urls, requested, context):
+    if not urls:
+        return None
+
+    def qnum(u):
+        try:
+            return int(u.get("quality"))
+        except (TypeError, ValueError):
+            return -1
+
+    if requested == "best":
+        return max(urls, key=qnum)
+
+    for u in urls:
+        if str(u.get("quality")) == str(requested):
+            return u
+
+    try:
+        target = int(requested)
+    except ValueError:
+        target = 0
+    closest = min(urls, key=lambda u: abs(qnum(u) - target) if qnum(u) >= 0 else 10 ** 9)
+    logger.warning(
+        "[%s] requested video quality %s not available, using %s instead",
+        context, requested, closest.get("quality"),
+    )
+    return closest
+
+
+def _render_text(block, resolve, context, skip_attachments):
+    html = block.get("text") or ""
+    soup = BeautifulSoup(html, "html.parser")
+    resource_index = 0
+    for tag_name, attr in _RESOURCE_ATTRS:
+        if tag_name == "a" and skip_attachments:
+            continue
+        for tag in soup.find_all(tag_name):
+            url = tag.get(attr)
+            if not url or not url.startswith("http"):
+                continue
+            resource_index += 1
+            local = resolve(url, filename_hint=None, index=resource_index)
+            if local:
+                tag[attr] = local
+    return str(soup)
+
+
+def _render_video(block, resolve, context, quality, skip_videos):
+    if skip_videos:
+        return '<p class="warning">Video download skipped (--skip-videos).</p>'
+
+    video = block.get("video") or {}
+    urls = video.get("urls") or []
+    selected = _pick_video_url(urls, quality, context)
+    if not selected:
+        logger.warning("[%s] video step has no downloadable urls", context)
+        return '<p class="warning">Video unavailable: no downloadable URL was returned by the API.</p>'
+
+    local = resolve(selected["url"], filename_hint="video.mp4", index=0)
+    if not local:
+        return '<p class="warning">Video download failed. See the export log for details.</p>'
+    return f'<video controls src="{escape(local)}"></video>'
+
+
+def _render_choice(block, resolve, context):
+    prompt = block.get("text") or ""
+    options = block.get("options") or []
+    parts = [f'<div class="prompt">{prompt}</div>'] if prompt else []
+    if options:
+        items = "".join(f"<li>{escape(str(o.get('text', o)))}</li>" if isinstance(o, dict) else f"<li>{escape(str(o))}</li>" for o in options)
+        parts.append(f'<ul class="options">{items}</ul>')
+    if not parts:
+        parts.append('<p class="warning">No visible question content was returned by the API for this step.</p>')
+    return "".join(parts)
+
+
+def _render_string_or_number(block, resolve, context):
+    prompt = block.get("text") or ""
+    parts = [f'<div class="prompt">{prompt}</div>'] if prompt else []
+    parts.append('<p class="warning">This step expects a typed answer; grading is not available offline.</p>')
+    return "".join(parts)
+
+
+def _render_generic(block, resolve, context):
+    logger.warning("[%s] no dedicated renderer for block type '%s', using generic fallback", context, block.get("name"))
+    dump = json.dumps(block, ensure_ascii=False, indent=2)
+    return (
+        '<p class="warning">This step type does not have a dedicated offline renderer yet. '
+        "Showing the raw step data below.</p>"
+        f"<pre><code>{escape(dump)}</code></pre>"
+    )
+
+
+_RENDERERS = {
+    "choice": _render_choice,
+    "string": _render_string_or_number,
+    "number": _render_string_or_number,
+}
+
+
+def render_step(step_node, step_dir, course_title, module_title, lesson_title,
+                 access_token, video_quality, course_id, lesson_id,
+                 skip_videos=False, skip_attachments=False):
+    step_dir = Path(step_dir)
+    step_dir.mkdir(parents=True, exist_ok=True)
+    block = step_node.get("block") or {}
+    block_type = block.get("name", "unknown")
+    context = f"course={course_id} lesson={lesson_id} step={step_node['id']}"
+
+    def resolve(url, filename_hint, index):
+        hint = filename_hint
+        if hint is None:
+            hint = f"resource_{index}_{_safe_filename(url)}" if index else _safe_filename(url)
+        return resource_downloader.download_resource(
+            url, step_dir, context, access_token=access_token, filename_hint=hint
+        )
+
+    if block_type == "video":
+        body_html = _render_video(block, resolve, context, video_quality, skip_videos)
+    elif block_type == "text":
+        body_html = _render_text(block, resolve, context, skip_attachments)
+    else:
+        renderer = _RENDERERS.get(block_type, _render_generic)
+        body_html = renderer(block, resolve, context)
+
+    step_title = block.get("title") or f"Step {step_node['id']} ({block_type})"
+
+    html = _env.get_template("step.html.j2").render(
+        course_title=course_title,
+        module_title=module_title,
+        lesson_title=lesson_title,
+        step_title=step_title,
+        block_type=block_type,
+        body_html=body_html,
+        css_path="../../../assets/style.css",
+        toc_path="../../../index.html",
+    )
+    (step_dir / "index.html").write_text(html, encoding="utf-8")
+    (step_dir / "source.json").write_text(
+        json.dumps(step_node["raw"], ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    return step_title
