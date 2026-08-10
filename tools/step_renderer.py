@@ -47,14 +47,14 @@ def _pick_video_url(urls, requested, context):
     if not urls:
         return None
 
-    def qnum(u):
+    def quality_to_int(u):
         try:
             return int(u.get("quality"))
         except (TypeError, ValueError):
             return -1
 
     if requested == "best":
-        return max(urls, key=qnum)
+        return max(urls, key=quality_to_int)
 
     for u in urls:
         if str(u.get("quality")) == str(requested):
@@ -64,7 +64,7 @@ def _pick_video_url(urls, requested, context):
         target = int(requested)
     except ValueError:
         target = 0
-    closest = min(urls, key=lambda u: abs(qnum(u) - target) if qnum(u) >= 0 else 10 ** 9)
+    closest = min(urls, key=lambda u: abs(quality_to_int(u) - target) if quality_to_int(u) >= 0 else 10 ** 9)
     logger.warning(
         "[%s] requested video quality %s not available, using %s instead",
         context, requested, closest.get("quality"),
