@@ -25,6 +25,24 @@ _env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=False
 _RESOURCE_ATTRS = [("img", "src"), ("audio", "src"), ("source", "src"), ("a", "href")]
 
 
+def _render_text(block, resolve, context, skip_attachments):
+    html = block.get("text") or ""
+    soup = BeautifulSoup(html, "html.parser")
+    resource_index = 0
+    for tag_name, attr in _RESOURCE_ATTRS:
+        if tag_name == "a" and skip_attachments:
+            continue
+        for tag in soup.find_all(tag_name):
+            url = tag.get(attr)
+            if not url or not url.startswith("http"):
+                continue
+            resource_index += 1
+            local = resolve(url, filename_hint=None, index=resource_index)
+            if local:
+                tag[attr] = local
+    return str(soup)
+
+
 def _pick_video_url(urls, requested, context):
     if not urls:
         return None
@@ -52,24 +70,6 @@ def _pick_video_url(urls, requested, context):
         context, requested, closest.get("quality"),
     )
     return closest
-
-
-def _render_text(block, resolve, context, skip_attachments):
-    html = block.get("text") or ""
-    soup = BeautifulSoup(html, "html.parser")
-    resource_index = 0
-    for tag_name, attr in _RESOURCE_ATTRS:
-        if tag_name == "a" and skip_attachments:
-            continue
-        for tag in soup.find_all(tag_name):
-            url = tag.get(attr)
-            if not url or not url.startswith("http"):
-                continue
-            resource_index += 1
-            local = resolve(url, filename_hint=None, index=resource_index)
-            if local:
-                tag[attr] = local
-    return str(soup)
 
 
 def _render_video(block, resolve, context, quality, skip_videos):
