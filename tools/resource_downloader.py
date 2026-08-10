@@ -27,7 +27,7 @@ RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 _download_session = requests.Session()
 
 
-def _safe_filename(url, fallback="resource"):
+def safe_filename(url, fallback="resource"):
     name = unquote(Path(urlparse(url).path).name) or fallback
     name = re.sub(r"[^A-Za-z0-9._-]", "_", name)
     return name[:150] or fallback
@@ -56,7 +56,7 @@ def download_resource(url, dest_dir, context, access_token=None, filename_hint=N
     if access_token and host in STEPIK_AUTH_HOSTS:
         headers["Authorization"] = f"Bearer {access_token}"
 
-    dest_path = _unique_dest(dest_dir, filename_hint or _safe_filename(url))
+    dest_path = _unique_dest(dest_dir, filename_hint or safe_filename(url))
 
     last_error = None
     for attempt in range(MAX_RETRIES):

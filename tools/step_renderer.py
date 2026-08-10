@@ -15,7 +15,6 @@ from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader
 
 import resource_downloader
-from resource_downloader import _safe_filename
 
 logger = logging.getLogger("stepik_export")
 
@@ -138,7 +137,8 @@ def render_step(step_node, step_dir, course_title, module_title, lesson_title,
     def resolve(url, filename_hint, index):
         hint = filename_hint
         if hint is None:
-            hint = f"resource_{index}_{_safe_filename(url)}" if index else _safe_filename(url)
+            base_name = resource_downloader.safe_filename(url)
+            hint = f"resource_{index}_{base_name}" if index else base_name
         return resource_downloader.download_resource(
             url, step_dir, context, access_token=access_token, filename_hint=hint
         )
