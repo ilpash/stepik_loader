@@ -25,15 +25,15 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
 
     all_unit_ids = [uid for s in sections for uid in s.get("units", [])]
     units = client.get_by_ids("units", all_unit_ids)
-    units_by_id = {u["id"]: u for u in units}
+    unit_id_to_unit = {u["id"]: u for u in units}
 
-    lesson_ids = [units_by_id[uid]["lesson"] for uid in all_unit_ids if uid in units_by_id]
+    lesson_ids = [unit_id_to_unit[uid]["lesson"] for uid in all_unit_ids if uid in unit_id_to_unit]
     lessons = client.get_by_ids("lessons", lesson_ids)
-    lessons_by_id = {l["id"]: l for l in lessons}
+    lesson_id_to_lesson = {l["id"]: l for l in lessons}
 
     all_step_ids = [sid for l in lessons for sid in l.get("steps", [])]
     steps = client.get_by_ids("steps", all_step_ids)
-    steps_by_id = {st["id"]: st for st in steps}
+    step_id_to_step = {st["id"]: st for st in steps}
 
     course_slug = slugify(course.get("title", "course"), max_length=MAX_SLUG_LEN)
     tree = {
@@ -44,7 +44,7 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
     }
 
     for m_idx, section in enumerate(sections, start=1):
-        module_units = [units_by_id[uid] for uid in section.get("units", []) if uid in units_by_id]
+        module_units = [unit_id_to_unit[uid] for uid in section.get("units", []) if uid in unit_id_to_unit]
         module_units.sort(key=lambda u: u.get("position", 0))
 
         module = {
@@ -55,12 +55,12 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
         }
 
         for l_idx, unit in enumerate(module_units, start=1):
-            lesson = lessons_by_id.get(unit.get("lesson"))
+            lesson = lesson_id_to_lesson.get(unit.get("lesson"))
             if lesson is None:
                 continue
 
             lesson_step_ids = lesson.get("steps", [])
-            lesson_steps = [steps_by_id[sid] for sid in lesson_step_ids if sid in steps_by_id]
+            lesson_steps = [step_id_to_step[sid] for sid in lesson_step_ids if sid in step_id_to_step]
             lesson_steps.sort(key=lambda st: st.get("position", 0))
 
             lesson_node = {
