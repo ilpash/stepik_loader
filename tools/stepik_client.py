@@ -92,6 +92,11 @@ class StepikClient:
             return
         self._fetch_new_token()
 
+    @property
+    def access_token(self):
+        self._ensure_token()
+        return self._access_token
+
     # -- requests ---------------------------------------------------------
 
     def _request(self, method, url, **kwargs):
@@ -126,11 +131,6 @@ class StepikClient:
         url = path if path.startswith("http") else API_BASE + path.lstrip("/")
         response = self._request("GET", url, params=params)
         return response.json()
-
-    @property
-    def access_token(self):
-        self._ensure_token()
-        return self._access_token
 
     def get_by_ids(self, resource, ids, batch_size=30):
         """Fetch a list of objects for `resource` (e.g. 'courses', 'lessons', 'steps')
