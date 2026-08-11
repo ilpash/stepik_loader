@@ -68,4 +68,5 @@ def test_build_toc_step_title_falls_back_to_dir_name_when_title_missing(tmp_path
 
     html = (tmp_path / "index.html").read_text()
     step = sample_course_tree["modules"][0]["lessons"][0]["steps"][0]
-    assert step["dir_name"] in html
+    # Anchored to the link text, since dir_name also appears in the href.
+    assert f">1. {step['dir_name']}</a>" in html

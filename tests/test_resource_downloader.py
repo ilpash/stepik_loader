@@ -155,6 +155,23 @@ def test_download_resource_returns_none_after_exhausting_retries(tmp_path, monke
     result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
     assert result is None
     assert mock_get.call_count == resource_downloader.MAX_RETRIES
+    assert no_sleep.call_count == resource_downloader.MAX_RETRIES - 1
+
+
+def test_download_resource_removes_partial_file_when_stream_breaks(tmp_path, monkeypatch, no_sleep):
+    class BrokenStreamResponse(MockStreamResponse):
+        def iter_content(self, chunk_size):
+            yield b"first half"
+            raise requests.ConnectionError("stream dropped")
+
+    monkeypatch.setattr(
+        resource_downloader._download_session,
+        "get",
+        lambda url, headers=None, stream=None, timeout=None: BrokenStreamResponse(200),
+    )
+    result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
+    assert result is None
+    assert list(tmp_path.iterdir()) == []
 
 
 def test_download_resource_returns_none_on_connection_error(tmp_path, monkeypatch, no_sleep):

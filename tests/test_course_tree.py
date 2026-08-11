@@ -192,14 +192,22 @@ def test_build_course_tree_happy_path(mock_client_data):
 
 
 def test_build_course_tree_sorts_by_position(mock_client_data):
-    # Feed sections out of position order; tree should still come out ascending.
+    # Feed every level out of position order. Each expected order below is descending
+    # by id, so neither insertion order nor sorting by id would produce it.
     mock_client_data["sections"][0]["position"] = 2
     mock_client_data["sections"][1]["position"] = 1
+    mock_client_data["units"][1]["position"] = 2
+    mock_client_data["units"][2]["position"] = 1
+    mock_client_data["steps"][2]["position"] = 2
+    mock_client_data["steps"][3]["position"] = 1
 
     client = MockStepikClient(mock_client_data)
     tree = build_course_tree(client, 1)
 
-    assert [m["title"] for m in tree["modules"]] == ["Module Two", "Module One"]
+    assert [module["id"] for module in tree["modules"]] == [11, 10]
+    module_two = tree["modules"][0]
+    assert [lesson["id"] for lesson in module_two["lessons"]] == [1002, 1001]
+    assert [step["id"] for step in module_two["lessons"][0]["steps"]] == [10003, 10002]
 
 
 def test_build_course_tree_skips_lesson_not_found(mock_client_data):
