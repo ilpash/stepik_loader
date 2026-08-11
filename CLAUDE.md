@@ -13,7 +13,7 @@ You're working inside the **WAT framework** (Workflows, Agents, Tools). This arc
 - This is your role. You're responsible for intelligent coordination.
 - Read the relevant workflow, run tools in the correct sequence, handle failures gracefully, and ask clarifying questions when needed
 - You connect intent to execution without trying to do everything yourself
-- Example: If you need to pull data from a website, don't attempt it directly. Read `workflows/scrape_website.md`, figure out the required inputs, then execute `tools/scrape_single_site.py`
+- Example: If you need to export a Stepik course, don't attempt it directly. Read `workflows/export_stepik_course.md`, figure out the required inputs, then execute `tools/export_course.py`
 
 **Layer 3: Tools (The Execution)**
 - Python scripts in `tools/` that do the actual work
@@ -52,16 +52,16 @@ This loop is how the framework improves over time.
 ## File Structure
 
 **What goes where:**
-- - **Deliverables**: Final outputs must follow the requirements of the current project. They may be local files, generated directories, cloud documents or other explicitly requested artifacts.
+- **Deliverables**: Final outputs must follow the requirements of the current project. They may be local files, generated directories, cloud documents or other explicitly requested artifacts.
 - **Intermediates**: Temporary processing files that can be regenerated
 
 **Directory layout:**
 ```
-.tmp/           # Temporary files (scraped data, intermediate exports). Regenerated as needed.
-tools/          # Python scripts for deterministic execution
-workflows/      # Markdown SOPs defining what to do and how
-.env            # API keys and environment variables (NEVER store secrets anywhere else)
-credentials.json, token.json  # Google OAuth (gitignored)
+.tmp/               # Temporary files. Regenerated as needed.
+tools/              # Python scripts for deterministic execution
+workflows/          # Markdown SOPs defining what to do and how
+.env                # API keys and environment variables (NEVER store secrets anywhere else)
+stepik_token.json   # Cached Stepik OAuth2 access token (gitignored)
 ```
 
 **Core principle:** Local files may be either temporary processing artifacts or final deliverables depending on the project requirements. Everything in `.tmp/` is disposable.
