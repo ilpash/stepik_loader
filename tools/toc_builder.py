@@ -10,7 +10,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
-_env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=False)
+_env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
 
 
 def build_toc(course_tree, course_dir):

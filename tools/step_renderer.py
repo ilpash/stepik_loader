@@ -20,7 +20,7 @@ import resource_downloader
 logger = logging.getLogger("stepik_export")
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
-_env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=False)
+_env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
 
 # tags/attributes that may reference a downloadable resource inside step HTML
 _RESOURCE_ATTRS = [("img", "src"), ("audio", "src"), ("source", "src"), ("a", "href")]
@@ -65,7 +65,12 @@ def _pick_video_url(urls, requested, context):
         target = int(requested)
     except ValueError:
         target = 0
-    closest = min(urls, key=lambda u: abs(quality_to_int(u) - target) if quality_to_int(u) >= 0 else 10 ** 9)
+
+    def distance_from_target(u):
+        q = quality_to_int(u)
+        return abs(q - target) if q >= 0 else 10 ** 9
+
+    closest = min(urls, key=distance_from_target)
     logger.warning(
         "[%s] requested video quality %s not available, using %s instead",
         context, requested, closest.get("quality"),
@@ -80,7 +85,7 @@ def _render_video(block, resolve, context, quality, skip_videos):
     video = block.get("video") or {}
     urls = video.get("urls") or []
     selected = _pick_video_url(urls, quality, context)
-    if not selected:
+    if not selected or not selected.get("url"):
         logger.warning("[%s] video step has no downloadable urls", context)
         return '<p class="warning">Video unavailable: no downloadable URL was returned by the API.</p>'
 

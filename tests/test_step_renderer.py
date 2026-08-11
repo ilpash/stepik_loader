@@ -41,6 +41,13 @@ def test_pick_video_url_single_item_list_returns_it_regardless():
     assert _pick_video_url(urls, "best", "test-context") == urls[0]
 
 
+def test_pick_video_url_falls_back_to_lowest_when_requested_is_not_numeric(caplog):
+    urls = [{"quality": "360", "url": "a"}, {"quality": "1080", "url": "b"}, {"quality": "720", "url": "c"}]
+    result = _pick_video_url(urls, "hd", "test-context")
+    assert result == {"quality": "360", "url": "a"}
+    assert "not available" in caplog.text
+
+
 # -- pure block renderers -----------------------------------------------------
 
 def test_render_choice_includes_prompt_and_options():
@@ -56,6 +63,13 @@ def test_render_choice_handles_missing_content():
     assert "No visible question content" in html
 
 
+def test_render_choice_handles_non_dict_options():
+    block = {"text": "Pick one", "options": ["A", "B"]}
+    html = _render_choice(block, None, "test-context")
+    assert "<li>A</li>" in html
+    assert "<li>B</li>" in html
+
+
 def test_render_string_or_number_includes_warning_about_grading():
     html = _render_string_or_number({"text": "What is 2+2?"}, None, "test-context")
     assert "grading is not available offline" in html
@@ -65,7 +79,7 @@ def test_render_generic_dumps_raw_block_as_json(caplog):
     block = {"name": "unknown-type", "custom_field": "custom_value"}
     html = _render_generic(block, None, "test-context")
     assert "<pre><code>" in html
-    assert "&quot;custom_field&quot;" in html or "custom_value" in html
+    assert "&quot;custom_field&quot;" in html
     assert "no dedicated renderer" in caplog.text
 
 
