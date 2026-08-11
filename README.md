@@ -58,8 +58,7 @@ real Stepik API or network, and runs in a few seconds.
   `number` step types. Everything else gets a generic fallback (raw step data
   shown as-is) with a warning logged — see `tools/step_renderer.py`.
 - **No resume/dry-run/verification tooling in v1** — kept out deliberately to
-  keep the first version simple; see the plan history for what was considered
-  and cut.
+  keep the first version simple.
 - Interactive grading, hidden tests, and other users' submissions are never
   exported — Stepik's API doesn't expose them to non-privileged clients, and
   they wouldn't work offline anyway.

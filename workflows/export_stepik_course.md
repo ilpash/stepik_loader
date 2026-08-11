@@ -30,6 +30,7 @@ that course under `exports/<course_id>_<slug>/`, following the
    ```
    - Default output directory is `exports/`; override with `--output-dir` if the user wants it elsewhere.
    - Default video quality is `best`.
+   - See README's Usage section for the full flag list, including `--log-level`.
 3. Watch the console output. It prints one line per step as it's processed, and
    `WARNING` lines for anything that failed or fell back to a generic
    renderer — each warning is tagged with `course=... lesson=... step=...`.
@@ -37,8 +38,8 @@ that course under `exports/<course_id>_<slug>/`, following the
    file to sanity-check the export.
 5. Report to the user: how many steps were exported, and a summary of any
    warnings (failed downloads, unsupported block types, quality fallbacks).
-   Do not silently swallow warnings — they're the completeness signal for
-   this tool (see CLAUDE.md's "no unit tests, log-based verification" approach).
+   Do not silently drop warnings — alongside the test suite, they're the
+   completeness signal for this tool.
 
 ## Known limitations (by design)
 - Only public/free courses are accessible (`client_credentials` auth only).
