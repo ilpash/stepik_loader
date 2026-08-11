@@ -39,7 +39,10 @@ def course_data():
                 "block": {
                     "name": "text",
                     "title": "Intro",
-                    "text": '<img src="http://cdn.example.com/pic.png">',
+                    "text": (
+                        '<img src="http://cdn.example.com/pic.png">'
+                        '<a href="http://cdn.example.com/notes.pdf">notes</a>'
+                    ),
                 },
             },
             {
@@ -79,6 +82,7 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
         f"{step1_dir}/index.html",
         f"{step1_dir}/source.json",
         f"{step1_dir}/resource_1_pic.png",
+        f"{step1_dir}/resource_2_notes.pdf",
         f"{step2_dir}/index.html",
         f"{step2_dir}/source.json",
         f"{step2_dir}/video.mp4",
@@ -90,3 +94,38 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     assert "Sample Course" in toc_html
     assert f"{step1_dir}/index.html" in toc_html
     assert f"{step2_dir}/index.html" in toc_html
+
+
+def test_main_respects_skip_videos_and_skip_attachments_flags(tmp_path, monkeypatch, course_data):
+    monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
+    monkeypatch.setattr(resource_downloader, "download_resource", mock_download_resource)
+
+    exit_code = export_course.main([
+        "--course-id", "1", "--output-dir", str(tmp_path),
+        "--skip-videos", "--skip-attachments",
+    ])
+    assert exit_code == 0
+
+    course_dir = tmp_path / "1_sample-course"
+    step1_dir = "module_01_module-one/lesson_01_lesson-one/step_01_text"
+    step2_dir = "module_02_module-two/lesson_01_lesson-two/step_01_video"
+
+    # The <a> (attachment) is skipped entirely, so no local file for it, but
+    # the <img> is untouched by --skip-attachments and still resolves.
+    expected_files = {
+        "index.html",
+        "assets/style.css",
+        f"{step1_dir}/index.html",
+        f"{step1_dir}/source.json",
+        f"{step1_dir}/resource_1_pic.png",
+        f"{step2_dir}/index.html",
+        f"{step2_dir}/source.json",
+    }
+    actual_files = {p.relative_to(course_dir).as_posix() for p in course_dir.rglob("*") if p.is_file()}
+    assert actual_files == expected_files
+
+    step1_html = (course_dir / step1_dir / "index.html").read_text()
+    assert 'href="http://cdn.example.com/notes.pdf"' in step1_html
+
+    step2_html = (course_dir / step2_dir / "index.html").read_text()
+    assert "Video download skipped" in step2_html
