@@ -51,24 +51,31 @@ def test_pick_video_url_falls_back_to_lowest_when_requested_is_not_numeric(caplo
 # -- pure block renderers -----------------------------------------------------
 
 
-def test_render_choice_includes_prompt_and_options():
-    block = {"text": "Pick one", "options": [{"text": "A"}, {"text": "B"}]}
+def test_render_choice_basic_case():
+    # Real API shape: block["options"] is a settings dict, not a list of answers.
+    block = {"text": "Mark every true statement.", "options": {"is_multiple_choice": True}}
     html = _render_choice(block, None, "test-context")
-    assert "Pick one" in html
-    assert "<li>A</li>" in html
-    assert "<li>B</li>" in html
+    assert "Mark every true statement." in html
+    assert "not available offline" in html
+    assert "is_multiple_choice" not in html
+    assert "<li>" not in html
+
+
+def test_render_choice_notes_when_more_than_one_answer_may_be_correct():
+    block = {"text": "Pick all that apply", "options": {"is_multiple_choice": True}}
+    html = _render_choice(block, None, "test-context")
+    assert "More than one answer may be correct" in html
+
+
+def test_render_choice_omits_multiple_answer_note_for_single_choice():
+    block = {"text": "Pick one", "options": {"is_multiple_choice": False}}
+    html = _render_choice(block, None, "test-context")
+    assert "More than one answer" not in html
 
 
 def test_render_choice_handles_missing_content():
     html = _render_choice({}, None, "test-context")
-    assert "No visible question content" in html
-
-
-def test_render_choice_handles_non_dict_options():
-    block = {"text": "Pick one", "options": ["A", "B"]}
-    html = _render_choice(block, None, "test-context")
-    assert "<li>A</li>" in html
-    assert "<li>B</li>" in html
+    assert "not available offline" in html
 
 
 def test_render_string_or_number_includes_warning_about_grading():

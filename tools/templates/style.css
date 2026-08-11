@@ -72,14 +72,6 @@ pre {
 code { padding: 0.1rem 0.3rem; }
 pre code { padding: 0; }
 
-.options { list-style: none; padding-left: 0; }
-.options li {
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 0.5rem 0.75rem;
-  margin-bottom: 0.4rem;
-}
-
 .warning {
   border: 1px solid #c05621;
   background: rgba(192, 86, 33, 0.08);

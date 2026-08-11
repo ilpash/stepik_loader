@@ -100,16 +100,16 @@ def _render_video(block, resolve, context, quality, skip_videos):
 
 def _render_choice(block, resolve, context):
     prompt = block.get("text") or ""
-    options = block.get("options") or []
     parts = [f'<div class="prompt">{prompt}</div>'] if prompt else []
-    if options:
-        items = "".join(
-            f"<li>{escape(str(o.get('text', o)))}</li>" if isinstance(o, dict) else f"<li>{escape(str(o))}</li>"
-            for o in options
-        )
-        parts.append(f'<ul class="options">{items}</ul>')
-    if not parts:
-        parts.append('<p class="warning">No visible question content was returned by the API for this step.</p>')
+    # block["options"] holds quiz settings, not the answers -- those come from a quiz
+    # dataset that needs user-level auth, which this read-only exporter always avoids.
+    options = block.get("options")
+    multiple = isinstance(options, dict) and options.get("is_multiple_choice")
+    note = " More than one answer may be correct." if multiple else ""
+    parts.append(
+        '<p class="warning">This step asks you to choose an answer; the options are not returned '
+        f"by the API, so they are not available offline.{note}</p>"
+    )
     return "".join(parts)
 
 
