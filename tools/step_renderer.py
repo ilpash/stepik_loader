@@ -1,4 +1,5 @@
-"""Renders a single step's `block` JSON into a self-contained index.html,
+"""
+Renders a single step's `block` JSON into a self-contained index.html,
 downloading any resources it references (video / images / audio / attachments)
 into the step's own directory via resource_downloader.
 

@@ -1,4 +1,5 @@
-"""Authenticated access to the Stepik REST API.
+"""
+Authenticated access to the Stepik REST API.
 
 Handles OAuth2 client_credentials auth (public content only), on-disk token
 caching, pagination, batched ids[] lookups, and a small hand-rolled
@@ -127,13 +128,16 @@ class StepikClient:
         raise last_error or StepikAuthError(f"Request to {url} failed after {MAX_RETRIES} attempts")
 
     def get(self, path, params=None):
-        """GET a single API path (relative to API_BASE) and return the parsed JSON body."""
+        """
+        GET a single API path (relative to API_BASE) and return the parsed JSON body.
+        """
         url = path if path.startswith("http") else API_BASE + path.lstrip("/")
         response = self._request("GET", url, params=params)
         return response.json()
 
     def get_by_ids(self, resource, ids, batch_size=30):
-        """Fetch a list of objects for `resource` (e.g. 'courses', 'lessons', 'steps')
+        """
+        Fetch a list of objects for `resource` (e.g. 'courses', 'lessons', 'steps')
         by id, batching requests to avoid oversized query strings. Returns a flat
         list of the objects, in no guaranteed order (callers should re-order by id).
         """

@@ -1,4 +1,5 @@
-"""Downloads a step's resources (video/image/audio/pdf/attachment) into that
+"""
+Downloads a step's resources (video/image/audio/pdf/attachment) into that
 step's own directory. Uses a session completely separate from the Stepik API
 client, and only ever attaches the Stepik Authorization header when the
 resource host is actually stepik.org -- third-party CDNs never see it.
@@ -22,6 +23,7 @@ logger = logging.getLogger("stepik_export")
 
 MAX_RETRIES = 5
 RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
+CHUNK_SIZE = 64 * 1024
 
 # This session never has a default Authorization header, unlike StepikClient's.
 _download_session = requests.Session()
@@ -45,7 +47,8 @@ def _unique_dest(dest_dir, filename):
 
 
 def download_resource(url, dest_dir, context, access_token=None, filename_hint=None):
-    """Download `url` into `dest_dir`. Returns the local filename on success,
+    """
+    Download `url` into `dest_dir`. Returns the local filename on success,
     or None on failure (a warning is logged in that case).
     """
     dest_dir = Path(dest_dir)
@@ -76,7 +79,7 @@ def download_resource(url, dest_dir, context, access_token=None, filename_hint=N
                         if ext:
                             dest_path = dest_path.with_suffix(ext)
                     with open(dest_path, "wb") as f:
-                        for chunk in response.iter_content(chunk_size=1 << 16):
+                        for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
                             if chunk:
                                 f.write(chunk)
                     print(f"  downloaded {dest_path.name}")

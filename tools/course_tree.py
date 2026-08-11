@@ -1,4 +1,5 @@
-"""Walks a Stepik course's hierarchy (course -> section (module) -> unit -> lesson -> step) 
+"""
+Walks a Stepik course's hierarchy (course -> section (module) -> unit -> lesson -> step)
 via the API and returns one ordered tree, with filesystem-safe
 directory names already assigned at every level.
 """

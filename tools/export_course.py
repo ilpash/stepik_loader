@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""CLI entrypoint: exports a Stepik course to a self-contained offline copy.
+"""
+CLI entrypoint: exports a Stepik course to a self-contained offline copy.
 
 Usage:
     python tools/export_course.py --course-id 12345 [--output-dir exports/]
