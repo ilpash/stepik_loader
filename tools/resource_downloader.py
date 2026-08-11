@@ -60,7 +60,7 @@ def download_resource(url, dest_dir, context, access_token=None, filename_hint=N
 
     # safe_filename() also sanitizes a caller-supplied hint (basename-only,
     # whitelisted characters), so a hint can never escape dest_dir.
-    dest_path = _unique_dest(dest_dir, safe_filename(filename_hint or url))
+    filename = safe_filename(filename_hint or url)
 
     last_error = None
     for attempt in range(MAX_RETRIES):
@@ -72,11 +72,13 @@ def download_resource(url, dest_dir, context, access_token=None, filename_hint=N
                     logger.warning("[%s] failed to download %s: HTTP %s", context, url, response.status_code)
                     return None
                 else:
-                    if not dest_path.suffix:
+                    name = filename
+                    if not Path(name).suffix:
                         ctype = response.headers.get("Content-Type", "").split(";")[0].strip()
                         ext = mimetypes.guess_extension(ctype) if ctype else None
                         if ext:
-                            dest_path = dest_path.with_suffix(ext)
+                            name += ext
+                    dest_path = _unique_dest(dest_dir, name)
                     try:
                         with open(dest_path, "wb") as f:
                             for chunk in response.iter_content(chunk_size=CHUNK_SIZE):

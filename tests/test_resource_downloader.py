@@ -111,6 +111,22 @@ def test_download_resource_guesses_extension_from_content_type_when_hint_has_no_
     assert result.endswith(".mp4")
 
 
+def test_download_resource_keeps_guessed_extension_unique(tmp_path, monkeypatch):
+    # The hint has no extension, so it becomes "video.mp4", which this directory already has.
+    (tmp_path / "video.mp4").write_bytes(b"existing file")
+    monkeypatch.setattr(
+        resource_downloader._download_session,
+        "get",
+        lambda url, headers=None, stream=None, timeout=None: MockStreamResponse(
+            200, chunks=[b"new"], headers={"Content-Type": "video/mp4"}
+        ),
+    )
+    result = download_resource("http://example.com/video", tmp_path, "test-context", filename_hint="video")
+    assert result == "video_2.mp4"
+    assert (tmp_path / "video_2.mp4").read_bytes() == b"new"
+    assert (tmp_path / "video.mp4").read_bytes() == b"existing file"
+
+
 def test_download_resource_returns_none_on_non_retryable_http_error(tmp_path, monkeypatch):
     monkeypatch.setattr(
         resource_downloader._download_session,
