@@ -22,11 +22,10 @@ The code follows the WAT pattern described in [CLAUDE.md](CLAUDE.md):
 - Match the existing style: no comments explaining *what* code does (names
   should do that), only comments for non-obvious *why*. No speculative
   abstractions or config flags for hypothetical future needs.
-- If you add a new step block type renderer, add it to `_RENDERERS` in
-  `tools/step_renderer.py` and update the README's "Scope" section. `_RENDERERS`
-  only covers renderers with the simple `(block, resolve, context)` signature —
-  a type needing extra params (like `text`/`video` do) must be special-cased
-  in `render_step` instead.
+- If you add a new step block type renderer, dispatch it in `render_step` in
+  `tools/step_renderer.py` and update the README's "Scope" section. A quiz-like
+  type that only needs its question plus a note about what can't be shown
+  offline just needs an entry in `_TYPE_TO_QUIZ_NOTE`.
 - If you touch retry/backoff or auth logic in `tools/stepik_client.py`, note
   any new rate-limit or API quirks you discover — future contributors will
   hit the same thing.

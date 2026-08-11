@@ -1,11 +1,13 @@
 import json
 
+import pytest
+
 import resource_downloader
 from step_renderer import (
+    _TYPE_TO_QUIZ_NOTE,
     _pick_video_url,
-    _render_choice,
     _render_generic,
-    _render_string_or_number,
+    _render_quiz,
     _render_text,
     _render_video,
     render_step,
@@ -51,41 +53,39 @@ def test_pick_video_url_falls_back_to_lowest_when_requested_is_not_numeric(caplo
 # -- pure block renderers -----------------------------------------------------
 
 
-def test_render_choice_basic_case():
+def test_render_quiz_basic_case():
     # Real API shape: block["options"] is a settings dict, not a list of answers.
-    block = {"text": "Mark every true statement.", "options": {"is_multiple_choice": True}}
-    html = _render_choice(block, None, "test-context")
+    block = {"name": "choice", "text": "Mark every true statement.", "options": {"is_multiple_choice": True}}
+    html = _render_quiz(block)
     assert "Mark every true statement." in html
     assert "not available offline" in html
     assert "is_multiple_choice" not in html
     assert "<li>" not in html
 
 
-def test_render_choice_notes_when_more_than_one_answer_may_be_correct():
-    block = {"text": "Pick all that apply", "options": {"is_multiple_choice": True}}
-    html = _render_choice(block, None, "test-context")
+@pytest.mark.parametrize("block_type", sorted(_TYPE_TO_QUIZ_NOTE))
+def test_render_quiz_keeps_the_question_for_every_quiz_type(block_type):
+    block = {"name": block_type, "text": "The question", "options": {}}
+    html = _render_quiz(block)
+    assert "The question" in html
+    assert 'class="warning"' in html
+
+
+def test_render_quiz_notes_when_more_than_one_answer_may_be_correct():
+    block = {"name": "choice", "text": "Pick all that apply", "options": {"is_multiple_choice": True}}
+    html = _render_quiz(block)
     assert "More than one answer may be correct" in html
 
 
-def test_render_choice_omits_multiple_answer_note_for_single_choice():
-    block = {"text": "Pick one", "options": {"is_multiple_choice": False}}
-    html = _render_choice(block, None, "test-context")
+def test_render_quiz_omits_multiple_answer_note_for_single_choice():
+    block = {"name": "choice", "text": "Pick one", "options": {"is_multiple_choice": False}}
+    html = _render_quiz(block)
     assert "More than one answer" not in html
-
-
-def test_render_choice_handles_missing_content():
-    html = _render_choice({}, None, "test-context")
-    assert "not available offline" in html
-
-
-def test_render_string_or_number_includes_warning_about_grading():
-    html = _render_string_or_number({"text": "What is 2+2?"}, None, "test-context")
-    assert "grading is not available offline" in html
 
 
 def test_render_generic_dumps_raw_block_as_json(caplog):
     block = {"name": "unknown-type", "custom_field": "custom_value"}
-    html = _render_generic(block, None, "test-context")
+    html = _render_generic(block, "test-context")
     assert "<pre><code>" in html
     assert "&quot;custom_field&quot;" in html
     assert "no dedicated renderer" in caplog.text

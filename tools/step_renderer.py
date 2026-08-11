@@ -3,9 +3,9 @@ Renders a single step's `block` JSON into a self-contained index.html,
 downloading any resources it references (video / images / audio / attachments)
 into the step's own directory via resource_downloader.
 
-Dedicated renderers exist for text, video, choice, string, and number blocks
-(the most common step types). Every other block type falls back to a generic
-"raw content" dump, with a warning logged
+Dedicated renderers exist for text and video blocks, and quiz blocks keep their
+question text plus a note about what can't be shown offline. Every other block
+type falls back to a generic "raw content" dump, with a warning logged
 """
 
 import json
@@ -98,29 +98,37 @@ def _render_video(block, resolve, context, quality, skip_videos):
     return f'<video controls src="{escape(local)}"></video>'
 
 
-def _render_choice(block, resolve, context):
+# Quiz steps keep their question text. Some also lose the items you would work with,
+# others only lose grading, so there are two notes rather than one per type.
+_MISSING_ITEMS_NOTE = (
+    "This step asks you to {task}; the items are not returned by the API, so they are not available offline."
+)
+_TYPED_ANSWER_NOTE = "This step expects a typed answer; grading is not available offline."
+
+_TYPE_TO_QUIZ_NOTE = {
+    "choice": _MISSING_ITEMS_NOTE.format(task="choose an answer"),
+    "sorting": _MISSING_ITEMS_NOTE.format(task="sort a list"),
+    "matching": _MISSING_ITEMS_NOTE.format(task="match pairs"),
+    "string": _TYPED_ANSWER_NOTE,
+    "number": _TYPED_ANSWER_NOTE,
+    "free-answer": _TYPED_ANSWER_NOTE,
+}
+
+
+def _render_quiz(block):
     prompt = block.get("text") or ""
     parts = [f'<div class="prompt">{prompt}</div>'] if prompt else []
     # block["options"] holds quiz settings, not the answers -- those come from a quiz
     # dataset that needs user-level auth, which this read-only exporter always avoids.
+    note = _TYPE_TO_QUIZ_NOTE[block["name"]]
     options = block.get("options")
-    multiple = isinstance(options, dict) and options.get("is_multiple_choice")
-    note = " More than one answer may be correct." if multiple else ""
-    parts.append(
-        '<p class="warning">This step asks you to choose an answer; the options are not returned '
-        f"by the API, so they are not available offline.{note}</p>"
-    )
+    if isinstance(options, dict) and options.get("is_multiple_choice"):
+        note += " More than one answer may be correct."
+    parts.append(f'<p class="warning">{note}</p>')
     return "".join(parts)
 
 
-def _render_string_or_number(block, resolve, context):
-    prompt = block.get("text") or ""
-    parts = [f'<div class="prompt">{prompt}</div>'] if prompt else []
-    parts.append('<p class="warning">This step expects a typed answer; grading is not available offline.</p>')
-    return "".join(parts)
-
-
-def _render_generic(block, resolve, context):
+def _render_generic(block, context):
     logger.warning("[%s] no dedicated renderer for block type '%s', using generic fallback", context, block.get("name"))
     dump = json.dumps(block, ensure_ascii=False, indent=2)
     return (
@@ -128,13 +136,6 @@ def _render_generic(block, resolve, context):
         "Showing the raw step data below.</p>"
         f"<pre><code>{escape(dump)}</code></pre>"
     )
-
-
-_RENDERERS = {
-    "choice": _render_choice,
-    "string": _render_string_or_number,
-    "number": _render_string_or_number,
-}
 
 
 def render_step(
@@ -169,9 +170,10 @@ def render_step(
         body_html = _render_video(block, resolve, context, video_quality, skip_videos)
     elif block_type == "text":
         body_html = _render_text(block, resolve, context, skip_attachments)
+    elif block_type in _TYPE_TO_QUIZ_NOTE:
+        body_html = _render_quiz(block)
     else:
-        renderer = _RENDERERS.get(block_type, _render_generic)
-        body_html = renderer(block, resolve, context)
+        body_html = _render_generic(block, context)
 
     step_title = block.get("title") or f"Step {step_node['id']} ({block_type})"
 

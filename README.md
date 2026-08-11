@@ -58,9 +58,11 @@ real Stepik API or network, and runs in a few seconds.
   grant, which does not carry any user identity — it can't see paid or
   enrolled-only content. Supporting that would require the `authorization_code`
   flow (real browser login) and is intentionally not built yet.
-- **Dedicated renderers** exist for `text`, `video`, `choice`, `string`, and
-  `number` step types. Everything else gets a generic fallback (raw step data
-  shown as-is) with a warning logged — see `tools/step_renderer.py`.
+- **Dedicated renderers** exist for `text` and `video` step types. Quiz types
+  (`choice`, `string`, `number`, `sorting`, `matching`, `free-answer`) keep
+  their question text plus a note about what can't be shown offline. Everything
+  else gets a generic fallback (raw step data shown as-is) with a warning
+  logged — see `tools/step_renderer.py`.
 - **No resume/dry-run/verification tooling in v1** — kept out deliberately to
   keep the first version simple.
 - Interactive grading, hidden tests, and other users' submissions are never
