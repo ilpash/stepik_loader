@@ -74,8 +74,8 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     assert exit_code == 0
 
     course_dir = tmp_path / "1_sample-course"
-    step1_dir = "module_01_module-one/lesson_01_lesson-one/step_01_text"
-    step2_dir = "module_02_module-two/lesson_01_lesson-two/step_01_video"
+    step1_dir = "module_001_module-one/lesson_001_lesson-one/step_001_text"
+    step2_dir = "module_002_module-two/lesson_001_lesson-two/step_001_video"
     expected_files = {
         "index.html",
         "assets/style.css",
@@ -107,8 +107,8 @@ def test_main_respects_skip_videos_and_skip_attachments_flags(tmp_path, monkeypa
     assert exit_code == 0
 
     course_dir = tmp_path / "1_sample-course"
-    step1_dir = "module_01_module-one/lesson_01_lesson-one/step_01_text"
-    step2_dir = "module_02_module-two/lesson_01_lesson-two/step_01_video"
+    step1_dir = "module_001_module-one/lesson_001_lesson-one/step_001_text"
+    step2_dir = "module_002_module-two/lesson_001_lesson-two/step_001_video"
 
     # The <a> (attachment) is skipped entirely, so no local file for it, but
     # the <img> is untouched by --skip-attachments and still resolves.

@@ -16,21 +16,21 @@ def sample_course_tree():
             {
                 "id": 10,
                 "title": "Module One",
-                "dir_name": "module_01_module-one",
+                "dir_name": "module_001_module-one",
                 "lessons": [
                     {
                         "id": 1000,
                         "title": "Lesson One",
-                        "dir_name": "lesson_01_lesson-one",
+                        "dir_name": "lesson_001_lesson-one",
                         "steps": [
                             {
                                 "id": 10000,
-                                "dir_name": "step_01_text",
+                                "dir_name": "step_001_text",
                                 "block": {"name": "text"},
                             },
                             {
                                 "id": 10001,
-                                "dir_name": "step_02_text",
+                                "dir_name": "step_002_text",
                                 "block": {"name": "text"},
                             },
                         ],

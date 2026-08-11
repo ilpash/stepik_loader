@@ -17,11 +17,12 @@ from stepik_client import StepikClient
 logger = logging.getLogger("stepik_export")
 
 MAX_SLUG_LEN = 50
+DIR_INDEX_WIDTH = 3
 
 
-def _dir_name(index, title, prefix="", width=2):
+def _dir_name(index, title, prefix=""):
     slug = slugify(title or "untitled", max_length=MAX_SLUG_LEN)
-    return f"{prefix}{index:0{width}d}_{slug}"
+    return f"{prefix}{index:0{DIR_INDEX_WIDTH}d}_{slug}"
 
 
 def build_course_tree(client: StepikClient, course_id: int) -> dict:
@@ -53,8 +54,6 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
         "modules": [],
     }
 
-    module_width = max(2, len(str(len(sections))))
-
     for m_idx, section in enumerate(sections, start=1):
         module_units = [unit_id_to_unit[uid] for uid in section.get("units", []) if uid in unit_id_to_unit]
         module_units.sort(key=lambda u: u.get("position", 0))
@@ -62,11 +61,9 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
         module_node = {
             "id": section["id"],
             "title": section.get("title", ""),
-            "dir_name": _dir_name(m_idx, section.get("title"), prefix="module_", width=module_width),
+            "dir_name": _dir_name(m_idx, section.get("title"), prefix="module_"),
             "lessons": [],
         }
-
-        lesson_width = max(2, len(str(len(module_units))))
 
         for l_idx, unit in enumerate(module_units, start=1):
             lesson = lesson_id_to_lesson.get(unit.get("lesson"))
@@ -93,18 +90,14 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
             lesson_node = {
                 "id": lesson["id"],
                 "title": lesson.get("title", ""),
-                "dir_name": _dir_name(l_idx, lesson.get("title"), prefix="lesson_", width=lesson_width),
+                "dir_name": _dir_name(l_idx, lesson.get("title"), prefix="lesson_"),
                 "steps": [],
             }
-
-            step_width = max(2, len(str(len(lesson_steps))))
 
             for s_idx, step in enumerate(lesson_steps, start=1):
                 lesson_node["steps"].append({
                     "id": step["id"],
-                    "dir_name": _dir_name(
-                        s_idx, step.get("block", {}).get("name", "step"), prefix="step_", width=step_width,
-                    ),
+                    "dir_name": _dir_name(s_idx, step.get("block", {}).get("name", "step"), prefix="step_"),
                     "block": step.get("block", {}),
                     "raw": step,
                 })
