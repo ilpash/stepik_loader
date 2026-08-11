@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import requests
 
 import resource_downloader
@@ -116,31 +118,21 @@ def test_download_resource_returns_none_on_non_retryable_http_error(tmp_path, mo
 
 def test_download_resource_retries_on_retryable_status_then_succeeds(tmp_path, monkeypatch, no_sleep):
     responses = [MockStreamResponse(503), MockStreamResponse(200, chunks=[b"ok"])]
-    calls = []
-
-    def mock_get(url, headers=None, stream=None, timeout=None):
-        calls.append(1)
-        return responses.pop(0)
-
+    mock_get = MagicMock(side_effect=responses)
     monkeypatch.setattr(resource_downloader._download_session, "get", mock_get)
     result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
-    assert len(calls) == 2
+    assert mock_get.call_count == 2
     assert result == "a.txt"
     assert (tmp_path / "a.txt").read_bytes() == b"ok"
     assert no_sleep.call_count == 1
 
 
 def test_download_resource_returns_none_after_exhausting_retries(tmp_path, monkeypatch, no_sleep):
-    calls = []
-
-    def mock_get(url, headers=None, stream=None, timeout=None):
-        calls.append(1)
-        return MockStreamResponse(503)
-
+    mock_get = MagicMock(side_effect=lambda *a, **k: MockStreamResponse(503))
     monkeypatch.setattr(resource_downloader._download_session, "get", mock_get)
     result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
     assert result is None
-    assert len(calls) == resource_downloader.MAX_RETRIES
+    assert mock_get.call_count == resource_downloader.MAX_RETRIES
 
 
 def test_download_resource_returns_none_on_connection_error(tmp_path, monkeypatch, no_sleep):

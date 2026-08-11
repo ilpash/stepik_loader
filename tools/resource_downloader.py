@@ -11,18 +11,16 @@ it never aborts the export.
 import logging
 import mimetypes
 import re
-import time
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 import requests
 
+from retry import MAX_RETRIES, RETRYABLE_STATUS_CODES, backoff_sleep
 from stepik_client import STEPIK_AUTH_HOSTS
 
 logger = logging.getLogger("stepik_export")
 
-MAX_RETRIES = 5
-RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 CHUNK_SIZE = 64 * 1024
 
 # This session never has a default Authorization header, unlike StepikClient's.
@@ -59,7 +57,9 @@ def download_resource(url, dest_dir, context, access_token=None, filename_hint=N
     if access_token and host in STEPIK_AUTH_HOSTS:
         headers["Authorization"] = f"Bearer {access_token}"
 
-    dest_path = _unique_dest(dest_dir, filename_hint or safe_filename(url))
+    # safe_filename() also sanitizes a caller-supplied hint (basename-only,
+    # whitelisted characters), so a hint can never escape dest_dir.
+    dest_path = _unique_dest(dest_dir, safe_filename(filename_hint or url))
 
     last_error = None
     for attempt in range(MAX_RETRIES):
@@ -78,17 +78,21 @@ def download_resource(url, dest_dir, context, access_token=None, filename_hint=N
                         ext = mimetypes.guess_extension(ctype) if ctype else None
                         if ext:
                             dest_path = dest_path.with_suffix(ext)
-                    with open(dest_path, "wb") as f:
-                        for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
-                            if chunk:
-                                f.write(chunk)
-                    print(f"  downloaded {dest_path.name}")
+                    try:
+                        with open(dest_path, "wb") as f:
+                            for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
+                                if chunk:
+                                    f.write(chunk)
+                    except requests.RequestException:
+                        # Don't leave a truncated file behind for this attempt.
+                        dest_path.unlink(missing_ok=True)
+                        raise
+                    logger.info("  downloaded %s", dest_path.name)
                     return dest_path.name
         except requests.RequestException as exc:
             last_error = exc
 
-        if attempt < MAX_RETRIES - 1:
-            time.sleep(2 ** attempt)
+        backoff_sleep(attempt)
 
     logger.warning(
         "[%s] failed to download %s after %d attempts: %s", context, url, MAX_RETRIES, last_error
