@@ -1,7 +1,7 @@
 import pytest
 
 from conftest import MockStepikClient
-from course_tree import _dir_name, build_course_tree
+from course_tree import MAX_SLUG_LEN, _dir_name, build_course_tree
 
 
 @pytest.fixture
@@ -67,6 +67,16 @@ def test_dir_name_transliterates_cyrillic_title():
     # Many Stepik course/lesson titles use Cyrillic script, and dir_name
     # must still come out as a plain ASCII, filesystem-safe slug.
     assert _dir_name(2, "Алгоритмы и Структуры Данных") == "02_algoritmy-i-struktury-dannykh"
+
+
+def test_dir_name_truncates_slug_to_max_length():
+    long_title = "word " * 30
+    slug = _dir_name(1, long_title).split("_", 1)[1]
+    assert len(slug) <= MAX_SLUG_LEN
+
+
+def test_dir_name_pads_index_to_given_width():
+    assert _dir_name(7, "Intro", width=3) == "007_intro"
 
 
 def test_build_course_tree_handles_single_module_lesson_and_step(minimal_mock_client_data):
@@ -196,6 +206,55 @@ def test_build_course_tree_skips_lesson_not_found(mock_client_data):
 
     module_one = tree["modules"][0]
     assert module_one["lessons"] == []
+
+
+def test_build_course_tree_logs_warning_when_lesson_not_found(mock_client_data, caplog):
+    mock_client_data["units"][0]["lesson"] = 99999
+
+    client = MockStepikClient(mock_client_data)
+    build_course_tree(client, 1)
+
+    assert "could not be resolved" in caplog.text
+
+
+def test_build_course_tree_logs_warning_when_step_not_found(mock_client_data, caplog):
+    mock_client_data["lessons"][0]["steps"] = [99999]
+
+    client = MockStepikClient(mock_client_data)
+    build_course_tree(client, 1)
+
+    assert "could not be resolved" in caplog.text
+
+
+def test_build_course_tree_truncates_course_slug(minimal_mock_client_data):
+    minimal_mock_client_data["courses"][0]["title"] = "word " * 30
+
+    client = MockStepikClient(minimal_mock_client_data)
+    tree = build_course_tree(client, 1)
+
+    slug = tree["dir_name"].split("_", 1)[1]
+    assert len(slug) <= MAX_SLUG_LEN
+
+
+def test_build_course_tree_widens_index_padding_past_99_items(minimal_mock_client_data):
+    # Regression test for filesystem sort order: with 2-digit padding,
+    # "100_x" would sort before "99_x" in a plain directory listing.
+    step_ids = list(range(20000, 20000 + 105))
+    minimal_mock_client_data["lessons"][0]["steps"] = step_ids
+    minimal_mock_client_data["steps"] = [
+        {"id": sid, "position": i, "block": {"name": "text", "text": "x"}}
+        for i, sid in enumerate(step_ids, start=1)
+    ]
+
+    client = MockStepikClient(minimal_mock_client_data)
+    tree = build_course_tree(client, 1)
+    steps = tree["modules"][0]["lessons"][0]["steps"]
+
+    assert steps[0]["dir_name"] == "step_001_text"
+    assert steps[98]["dir_name"] == "step_099_text"
+    assert steps[99]["dir_name"] == "step_100_text"
+    dir_names = [s["dir_name"] for s in steps]
+    assert dir_names == sorted(dir_names)
 
 
 def test_build_course_tree_raises_when_course_not_found():

@@ -2,17 +2,26 @@
 Walks a Stepik course's hierarchy (course -> section (module) -> unit -> lesson -> step)
 via the API and returns one ordered tree, with filesystem-safe
 directory names already assigned at every level.
+
+Step nodes don't carry a "title" key from here -- export_course.main() sets
+step["title"] on each node after render_step() renders it, and toc_builder's
+build_toc() relies on that having run first (it falls back to dir_name
+otherwise).
 """
+import logging
+
 from slugify import slugify
 
 from stepik_client import StepikClient
 
+logger = logging.getLogger("stepik_export")
+
 MAX_SLUG_LEN = 50
 
 
-def _dir_name(index, title, prefix=""):
+def _dir_name(index, title, prefix="", width=2):
     slug = slugify(title or "untitled", max_length=MAX_SLUG_LEN)
-    return f"{prefix}{index:02d}_{slug}" if prefix else f"{index:02d}_{slug}"
+    return f"{prefix}{index:0{width}d}_{slug}"
 
 
 def build_course_tree(client: StepikClient, course_id: int) -> dict:
@@ -44,6 +53,8 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
         "modules": [],
     }
 
+    module_width = max(2, len(str(len(sections))))
+
     for m_idx, section in enumerate(sections, start=1):
         module_units = [unit_id_to_unit[uid] for uid in section.get("units", []) if uid in unit_id_to_unit]
         module_units.sort(key=lambda u: u.get("position", 0))
@@ -51,30 +62,49 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
         module_node = {
             "id": section["id"],
             "title": section.get("title", ""),
-            "dir_name": _dir_name(m_idx, section.get("title"), prefix="module_"),
+            "dir_name": _dir_name(m_idx, section.get("title"), prefix="module_", width=module_width),
             "lessons": [],
         }
+
+        lesson_width = max(2, len(str(len(module_units))))
 
         for l_idx, unit in enumerate(module_units, start=1):
             lesson = lesson_id_to_lesson.get(unit.get("lesson"))
             if lesson is None:
+                logger.warning(
+                    "unit %s (module %s) references lesson %s which could not be resolved, skipping",
+                    unit.get("id"), section.get("id"), unit.get("lesson"),
+                )
                 continue
 
             lesson_step_ids = lesson.get("steps", [])
-            lesson_steps = [step_id_to_step[sid] for sid in lesson_step_ids if sid in step_id_to_step]
+            lesson_steps = []
+            for sid in lesson_step_ids:
+                step = step_id_to_step.get(sid)
+                if step is None:
+                    logger.warning(
+                        "lesson %s references step %s which could not be resolved, skipping",
+                        lesson["id"], sid,
+                    )
+                    continue
+                lesson_steps.append(step)
             lesson_steps.sort(key=lambda st: st.get("position", 0))
 
             lesson_node = {
                 "id": lesson["id"],
                 "title": lesson.get("title", ""),
-                "dir_name": _dir_name(l_idx, lesson.get("title"), prefix="lesson_"),
+                "dir_name": _dir_name(l_idx, lesson.get("title"), prefix="lesson_", width=lesson_width),
                 "steps": [],
             }
+
+            step_width = max(2, len(str(len(lesson_steps))))
 
             for s_idx, step in enumerate(lesson_steps, start=1):
                 lesson_node["steps"].append({
                     "id": step["id"],
-                    "dir_name": _dir_name(s_idx, step.get("block", {}).get("name", "step"), prefix="step_"),
+                    "dir_name": _dir_name(
+                        s_idx, step.get("block", {}).get("name", "step"), prefix="step_", width=step_width,
+                    ),
                     "block": step.get("block", {}),
                     "raw": step,
                 })
