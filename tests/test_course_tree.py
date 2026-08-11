@@ -181,6 +181,15 @@ def test_build_course_tree_happy_path(mock_client_data):
     }
     assert tree == expected
 
+    expected_calls = [
+        ("courses", [1]),
+        ("sections", [10, 11]),
+        ("units", [100, 101, 102]),
+        ("lessons", [1000, 1001, 1002]),
+        ("steps", [10000, 10001, 10002, 10003]),
+    ]
+    assert client.get_by_ids_calls == expected_calls
+
 
 def test_build_course_tree_sorts_by_position(mock_client_data):
     # Feed sections out of position order; tree should still come out ascending.
