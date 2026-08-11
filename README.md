@@ -1,4 +1,7 @@
 [![tests](https://github.com/ilpash/stepik_loader/actions/workflows/tests.yml/badge.svg)](https://github.com/ilpash/stepik_loader/actions/workflows/tests.yml)
+[![release](https://img.shields.io/github/v/release/ilpash/stepik_loader)](https://github.com/ilpash/stepik_loader/releases)
+[![license](https://img.shields.io/github/license/ilpash/stepik_loader)](LICENSE)
+[![python](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
 
 # Stepik Course Offline Exporter
 
