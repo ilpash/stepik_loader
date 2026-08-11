@@ -2,6 +2,7 @@
 [![release](https://img.shields.io/github/v/release/ilpash/stepik_loader)](https://github.com/ilpash/stepik_loader/releases)
 [![license](https://img.shields.io/github/license/ilpash/stepik_loader)](LICENSE)
 [![python](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 # Stepik Course Offline Exporter
 
