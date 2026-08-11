@@ -38,7 +38,7 @@ that course under `exports/<course_id>_<slug>/`, following the
    file to sanity-check the export.
 5. Report to the user: how many steps were exported, and a summary of any
    warnings (failed downloads, unsupported block types, quality fallbacks).
-   Do not silently drop warnings — alongside the test suite, they're the
+   Do not silently skip warnings — alongside the test suite, they're the
    completeness signal for this tool.
 
 ## Known limitations (by design)
