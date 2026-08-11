@@ -1,3 +1,20 @@
 [tool.pytest.ini_options]
 pythonpath = ["tools"]
 testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "B", "I", "UP", "S", "C4", "SIM", "T20"]
+
+[tool.ruff.lint.per-file-ignores]
+# Test fixtures legitimately use bare `assert` and fake credential strings.
+"tests/*" = ["S101", "S105", "S106"]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "conftest", "course_tree", "export_course", "resource_downloader",
+    "retry", "step_renderer", "stepik_client", "toc_builder",
+]

@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import requests
 
 import resource_downloader
-from resource_downloader import safe_filename, _unique_dest, download_resource
+from resource_downloader import _unique_dest, download_resource, safe_filename
 
 
 class MockStreamResponse:
@@ -28,6 +28,7 @@ class MockStreamResponse:
 
 # -- safe_filename ---------------------------------------------------------------
 
+
 def test_safe_filename_sanitizes_and_uses_basename():
     assert safe_filename("https://x.com/path/My File!.png") == "My_File_.png"
 
@@ -43,6 +44,7 @@ def test_safe_filename_truncates_to_150_chars():
 
 
 # -- _unique_dest ------------------------------------------------------------------
+
 
 def test_unique_dest_returns_plain_path_when_no_collision(tmp_path):
     assert _unique_dest(tmp_path, "a.txt") == tmp_path / "a.txt"
@@ -61,9 +63,11 @@ def test_unique_dest_increments_past_multiple_collisions(tmp_path):
 
 # -- download_resource ---------------------------------------------------------------
 
+
 def test_download_resource_success_writes_file_and_returns_filename(tmp_path, monkeypatch):
     monkeypatch.setattr(
-        resource_downloader._download_session, "get",
+        resource_downloader._download_session,
+        "get",
         lambda url, headers=None, stream=None, timeout=None: MockStreamResponse(200, chunks=[b"hello"]),
     )
     result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
@@ -97,7 +101,8 @@ def test_download_resource_omits_auth_header_for_non_stepik_host(tmp_path, monke
 
 def test_download_resource_guesses_extension_from_content_type_when_hint_has_no_suffix(tmp_path, monkeypatch):
     monkeypatch.setattr(
-        resource_downloader._download_session, "get",
+        resource_downloader._download_session,
+        "get",
         lambda url, headers=None, stream=None, timeout=None: MockStreamResponse(
             200, chunks=[b"x"], headers={"Content-Type": "video/mp4"}
         ),
@@ -108,7 +113,8 @@ def test_download_resource_guesses_extension_from_content_type_when_hint_has_no_
 
 def test_download_resource_returns_none_on_non_retryable_http_error(tmp_path, monkeypatch):
     monkeypatch.setattr(
-        resource_downloader._download_session, "get",
+        resource_downloader._download_session,
+        "get",
         lambda url, headers=None, stream=None, timeout=None: MockStreamResponse(404),
     )
     result = download_resource("http://example.com/missing.txt", tmp_path, "test-context")

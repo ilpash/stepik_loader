@@ -20,6 +20,7 @@ class MockStepikClient:
     of hitting the network. Only implements what callers actually use:
     get_by_ids and access_token.
     """
+
     access_token = "mock-token"
 
     def __init__(self, data):

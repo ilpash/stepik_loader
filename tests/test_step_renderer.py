@@ -4,15 +4,15 @@ import resource_downloader
 from step_renderer import (
     _pick_video_url,
     _render_choice,
-    _render_string_or_number,
     _render_generic,
+    _render_string_or_number,
     _render_text,
     _render_video,
     render_step,
 )
 
-
 # -- _pick_video_url ---------------------------------------------------------
+
 
 def test_pick_video_url_returns_none_for_empty_list():
     assert _pick_video_url([], "best", "test-context") is None
@@ -50,6 +50,7 @@ def test_pick_video_url_falls_back_to_lowest_when_requested_is_not_numeric(caplo
 
 # -- pure block renderers -----------------------------------------------------
 
+
 def test_render_choice_includes_prompt_and_options():
     block = {"text": "Pick one", "options": [{"text": "A"}, {"text": "B"}]}
     html = _render_choice(block, None, "test-context")
@@ -85,6 +86,7 @@ def test_render_generic_dumps_raw_block_as_json(caplog):
 
 # -- _render_text --------------------------------------------------------------
 
+
 def test_render_text_rewrites_img_src_via_resolve():
     block = {"text": '<img src="http://x.com/a.png">'}
     calls = []
@@ -115,6 +117,7 @@ def test_render_text_skips_anchor_tags_when_skip_attachments_true():
 
 # -- _render_video --------------------------------------------------------------
 
+
 def test_render_video_returns_warning_html_when_skip_videos_true():
     html = _render_video(
         block={"video": {"urls": [{"quality": "720", "url": "x"}]}},
@@ -130,7 +133,11 @@ def test_render_video_returns_warning_when_no_urls():
     # urls=[] makes _pick_video_url return None, so _render_video returns
     # its "unavailable" warning before ever calling resolve.
     html = _render_video(
-        block={"video": {"urls": []}}, resolve=None, context="test-context", quality="best", skip_videos=False,
+        block={"video": {"urls": []}},
+        resolve=None,
+        context="test-context",
+        quality="best",
+        skip_videos=False,
     )
     assert "unavailable" in html.lower()
 
@@ -144,7 +151,11 @@ def test_render_video_calls_resolve_with_selected_url_and_returns_video_tag():
         return "video.mp4"
 
     html = _render_video(
-        block=block, resolve=mock_resolve, context="test-context", quality="best", skip_videos=False,
+        block=block,
+        resolve=mock_resolve,
+        context="test-context",
+        quality="best",
+        skip_videos=False,
     )
     assert html == '<video controls src="video.mp4"></video>'
 
@@ -156,12 +167,17 @@ def test_render_video_returns_warning_when_resolve_fails():
         return None
 
     html = _render_video(
-        block=block, resolve=mock_resolve, context="test-context", quality="best", skip_videos=False,
+        block=block,
+        resolve=mock_resolve,
+        context="test-context",
+        quality="best",
+        skip_videos=False,
     )
     assert "download failed" in html.lower()
 
 
 # -- render_step (integration of the above via the real resolve() closure) -----
+
 
 def _make_step_node(block, step_id=1):
     return {"id": step_id, "block": block, "raw": {"id": step_id, "block": block}}
@@ -174,9 +190,15 @@ def test_render_step_creates_step_dir_and_writes_index_and_source_json(tmp_path,
     step_node = _make_step_node(block)
 
     title = render_step(
-        step_node=step_node, step_dir=step_dir,
-        course_title="Course", module_title="Module", lesson_title="Lesson",
-        access_token="test-token", video_quality="best", course_id=1, lesson_id=2,
+        step_node=step_node,
+        step_dir=step_dir,
+        course_title="Course",
+        module_title="Module",
+        lesson_title="Lesson",
+        access_token="test-token",
+        video_quality="best",
+        course_id=1,
+        lesson_id=2,
     )
 
     assert title == "My Step"
@@ -193,9 +215,15 @@ def test_render_step_falls_back_to_generated_title_when_block_has_no_title(tmp_p
     step_node = _make_step_node(block, step_id=42)
 
     title = render_step(
-        step_node=step_node, step_dir=tmp_path / "step",
-        course_title="Course", module_title="Module", lesson_title="Lesson",
-        access_token="test-token", video_quality="best", course_id=1, lesson_id=2,
+        step_node=step_node,
+        step_dir=tmp_path / "step",
+        course_title="Course",
+        module_title="Module",
+        lesson_title="Lesson",
+        access_token="test-token",
+        video_quality="best",
+        course_id=1,
+        lesson_id=2,
     )
 
     assert title == "Step 42 (text)"
@@ -208,9 +236,15 @@ def test_render_step_dispatches_unknown_block_type_to_generic_renderer(tmp_path,
     step_dir = tmp_path / "step"
 
     render_step(
-        step_node=step_node, step_dir=step_dir,
-        course_title="Course", module_title="Module", lesson_title="Lesson",
-        access_token="test-token", video_quality="best", course_id=1, lesson_id=2,
+        step_node=step_node,
+        step_dir=step_dir,
+        course_title="Course",
+        module_title="Module",
+        lesson_title="Lesson",
+        access_token="test-token",
+        video_quality="best",
+        course_id=1,
+        lesson_id=2,
     )
 
     html = (step_dir / "index.html").read_text()

@@ -7,6 +7,7 @@ Usage:
         [--video-quality best|360|720|1080] [--skip-videos] [--skip-attachments]
         [--log-level INFO]
 """
+
 import argparse
 import logging
 import sys
@@ -15,8 +16,8 @@ from pathlib import Path
 import requests
 
 from course_tree import build_course_tree
-from stepik_client import StepikAuthError, StepikClient
 from step_renderer import render_step
+from stepik_client import StepikAuthError, StepikClient
 from toc_builder import build_toc
 
 logger = logging.getLogger("stepik_export")
@@ -50,14 +51,15 @@ def main(argv=None):
         logger.error(
             "Failed to fetch course %s. If this course is paid/private/enrolled-only, "
             "it isn't accessible with the client_credentials auth used by this tool. (%s)",
-            args.course_id, exc,
+            args.course_id,
+            exc,
         )
         return 1
 
     course_dir = Path(args.output_dir) / tree["dir_name"]
     logger.info("Exporting '%s' to %s/", tree["title"], course_dir)
 
-    total_steps = sum(len(l["steps"]) for m in tree["modules"] for l in m["lessons"])
+    total_steps = sum(len(lesson["steps"]) for m in tree["modules"] for lesson in m["lessons"])
     done = 0
 
     for module in tree["modules"]:
@@ -68,10 +70,16 @@ def main(argv=None):
                 done += 1
                 step_dir = lesson_dir / step["dir_name"]
                 logger.info(
-                    "[%d/%d] %s > %s > step %s", done, total_steps, module["title"], lesson["title"], step["id"],
+                    "[%d/%d] %s > %s > step %s",
+                    done,
+                    total_steps,
+                    module["title"],
+                    lesson["title"],
+                    step["id"],
                 )
                 step_title = render_step(
-                    step, step_dir,
+                    step,
+                    step_dir,
                     course_title=tree["title"],
                     module_title=module["title"],
                     lesson_title=lesson["title"],

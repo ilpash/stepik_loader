@@ -38,7 +38,9 @@ def fresh_client(tmp_path):
     A client with valid credentials but no token fetched yet.
     """
     return StepikClient(
-        client_id="test-client-id", client_secret="test-client-secret", token_cache_path=tmp_path / "cache.json",
+        client_id="test-client-id",
+        client_secret="test-client-secret",
+        token_cache_path=tmp_path / "cache.json",
     )
 
 
@@ -48,7 +50,9 @@ def client(tmp_path):
     A client that's already "authenticated", for _request/get/get_by_ids tests.
     """
     client = StepikClient(
-        client_id="test-client-id", client_secret="test-client-secret", token_cache_path=tmp_path / "cache.json",
+        client_id="test-client-id",
+        client_secret="test-client-secret",
+        token_cache_path=tmp_path / "cache.json",
     )
     client._access_token = "test-token"
     client._token_expires_at = time.time() + 3600
@@ -56,6 +60,7 @@ def client(tmp_path):
 
 
 # -- __init__ ------------------------------------------------------------------
+
 
 def test_init_raises_stepik_auth_error_when_credentials_missing(monkeypatch):
     monkeypatch.delenv("STEPIK_CLIENT_ID", raising=False)
@@ -66,13 +71,16 @@ def test_init_raises_stepik_auth_error_when_credentials_missing(monkeypatch):
 
 def test_init_reads_credentials_from_constructor_args(tmp_path):
     client = StepikClient(
-        client_id="test-client-id", client_secret="test-client-secret", token_cache_path=tmp_path / "t.json",
+        client_id="test-client-id",
+        client_secret="test-client-secret",
+        token_cache_path=tmp_path / "t.json",
     )
     assert client.client_id == "test-client-id"
     assert client.client_secret == "test-client-secret"
 
 
 # -- _load_cached_token / _save_cached_token ------------------------------------
+
 
 def test_load_cached_token_accepts_fresh_matching_cache(fresh_client):
     cache = {"client_id": "test-client-id", "access_token": "cached-token", "expires_at": time.time() + 3600}
@@ -116,6 +124,7 @@ def test_save_cached_token_writes_expected_json(fresh_client):
 
 # -- _fetch_new_token ------------------------------------------------------------
 
+
 def test_fetch_new_token_success(fresh_client, monkeypatch):
     def mock_post(url, **kwargs):
         return MockResponse(200, json_data={"access_token": "fetched-token", "expires_in": 3600})
@@ -157,6 +166,7 @@ def test_fetch_new_token_raises_after_exhausting_retries(fresh_client, no_sleep,
 
 
 # -- _request ---------------------------------------------------------------------
+
 
 def test_request_returns_response_on_first_success(client, no_sleep, monkeypatch):
     mock_request = MagicMock(side_effect=lambda *a, **k: MockResponse(200))
@@ -214,6 +224,7 @@ def test_request_raises_on_non_retryable_status(client, no_sleep, monkeypatch):
 
 
 # -- get / get_by_ids ---------------------------------------------------------------
+
 
 def test_get_returns_parsed_json(client, monkeypatch):
     def mock_request(method, url, **kwargs):

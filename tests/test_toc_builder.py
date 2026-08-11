@@ -1,6 +1,6 @@
 import pytest
 
-from toc_builder import build_toc, TEMPLATES_DIR
+from toc_builder import TEMPLATES_DIR, build_toc
 
 
 @pytest.fixture

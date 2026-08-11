@@ -5,9 +5,10 @@ Handles OAuth2 client_credentials auth (public content only), on-disk token
 caching, pagination, batched ids[] lookups, and a small hand-rolled
 retry/backoff loop for transient failures (429 / 5xx / connection errors).
 """
+
+import json
 import os
 import time
-import json
 from pathlib import Path
 
 import requests
@@ -16,7 +17,7 @@ from dotenv import load_dotenv
 from retry import MAX_RETRIES, RETRYABLE_STATUS_CODES, backoff_sleep
 
 API_BASE = "https://stepik.org/api/"
-TOKEN_URL = "https://stepik.org/oauth2/token/"
+AUTH_URL = "https://stepik.org/oauth2/token/"
 
 # Hosts that are allowed to receive the Stepik Authorization header.
 # Resource downloads (video/image/attachment CDNs) must never send it
@@ -62,18 +63,22 @@ class StepikClient:
             self._token_expires_at = data["expires_at"]
 
     def _save_cached_token(self):
-        self.token_cache_path.write_text(json.dumps({
-            "client_id": self.client_id,
-            "access_token": self._access_token,
-            "expires_at": self._token_expires_at,
-        }))
+        self.token_cache_path.write_text(
+            json.dumps(
+                {
+                    "client_id": self.client_id,
+                    "access_token": self._access_token,
+                    "expires_at": self._token_expires_at,
+                }
+            )
+        )
 
     def _fetch_new_token(self):
         last_error = None
         for attempt in range(MAX_RETRIES):
             try:
                 response = self.session.post(
-                    TOKEN_URL,
+                    AUTH_URL,
                     data={"grant_type": "client_credentials"},
                     auth=(self.client_id, self.client_secret),
                     timeout=30,
@@ -84,7 +89,7 @@ class StepikClient:
                 continue
 
             if response.status_code in RETRYABLE_STATUS_CODES:
-                last_error = StepikAuthError(f"HTTP {response.status_code} from {TOKEN_URL}")
+                last_error = StepikAuthError(f"HTTP {response.status_code} from {AUTH_URL}")
                 backoff_sleep(attempt)
                 continue
             if response.status_code != 200:
@@ -158,7 +163,7 @@ class StepikClient:
         ids = list(ids)
         results = []
         for i in range(0, len(ids), batch_size):
-            batch = ids[i:i + batch_size]
+            batch = ids[i : i + batch_size]
             params = [("ids[]", str(id_)) for id_ in batch]
             data = self.get(resource, params=params)
             results.extend(data.get(resource, []))

@@ -3,6 +3,7 @@ Builds the single root index.html table of contents for an exported course,
 and copies the project's one style.css template into the export so the whole
 course folder is self-contained (no path back into the project).
 """
+
 import shutil
 from datetime import datetime
 from pathlib import Path

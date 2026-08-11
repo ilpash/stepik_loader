@@ -7,6 +7,7 @@ Dedicated renderers exist for text, video, choice, string, and number blocks
 (the most common step types). Every other block type falls back to a generic
 "raw content" dump, with a warning logged
 """
+
 import json
 import logging
 from html import escape
@@ -68,12 +69,14 @@ def _pick_video_url(urls, requested, context):
 
     def distance_from_target(u):
         q = quality_to_int(u)
-        return abs(q - target) if q >= 0 else 10 ** 9
+        return abs(q - target) if q >= 0 else 10**9
 
     closest = min(urls, key=distance_from_target)
     logger.warning(
         "[%s] requested video quality %s not available, using %s instead",
-        context, requested, closest.get("quality"),
+        context,
+        requested,
+        closest.get("quality"),
     )
     return closest
 
@@ -100,7 +103,10 @@ def _render_choice(block, resolve, context):
     options = block.get("options") or []
     parts = [f'<div class="prompt">{prompt}</div>'] if prompt else []
     if options:
-        items = "".join(f"<li>{escape(str(o.get('text', o)))}</li>" if isinstance(o, dict) else f"<li>{escape(str(o))}</li>" for o in options)
+        items = "".join(
+            f"<li>{escape(str(o.get('text', o)))}</li>" if isinstance(o, dict) else f"<li>{escape(str(o))}</li>"
+            for o in options
+        )
         parts.append(f'<ul class="options">{items}</ul>')
     if not parts:
         parts.append('<p class="warning">No visible question content was returned by the API for this step.</p>')
@@ -131,9 +137,19 @@ _RENDERERS = {
 }
 
 
-def render_step(step_node, step_dir, course_title, module_title, lesson_title,
-                 access_token, video_quality, course_id, lesson_id,
-                 skip_videos=False, skip_attachments=False):
+def render_step(
+    step_node,
+    step_dir,
+    course_title,
+    module_title,
+    lesson_title,
+    access_token,
+    video_quality,
+    course_id,
+    lesson_id,
+    skip_videos=False,
+    skip_attachments=False,
+):
     step_dir = Path(step_dir)
     step_dir.mkdir(parents=True, exist_ok=True)
     block = step_node.get("block") or {}
@@ -170,7 +186,5 @@ def render_step(step_node, step_dir, course_title, module_title, lesson_title,
         toc_path="../../../index.html",
     )
     (step_dir / "index.html").write_text(html, encoding="utf-8")
-    (step_dir / "source.json").write_text(
-        json.dumps(step_node["raw"], ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    (step_dir / "source.json").write_text(json.dumps(step_node["raw"], ensure_ascii=False, indent=2), encoding="utf-8")
     return step_title

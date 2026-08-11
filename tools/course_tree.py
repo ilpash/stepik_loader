@@ -8,6 +8,7 @@ step["title"] on each node after render_step() renders it, and toc_builder's
 build_toc() relies on that having run first (it falls back to dir_name
 otherwise).
 """
+
 import logging
 
 from slugify import slugify
@@ -40,9 +41,9 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
 
     lesson_ids = [unit_id_to_unit[uid]["lesson"] for uid in all_unit_ids if uid in unit_id_to_unit]
     lessons = client.get_by_ids("lessons", lesson_ids)
-    lesson_id_to_lesson = {l["id"]: l for l in lessons}
+    lesson_id_to_lesson = {lesson["id"]: lesson for lesson in lessons}
 
-    all_step_ids = [sid for l in lessons for sid in l.get("steps", [])]
+    all_step_ids = [sid for lesson in lessons for sid in lesson.get("steps", [])]
     steps = client.get_by_ids("steps", all_step_ids)
     step_id_to_step = {st["id"]: st for st in steps}
 
@@ -70,7 +71,9 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
             if lesson is None:
                 logger.warning(
                     "unit %s (module %s) references lesson %s which could not be resolved, skipping",
-                    unit.get("id"), section.get("id"), unit.get("lesson"),
+                    unit.get("id"),
+                    section.get("id"),
+                    unit.get("lesson"),
                 )
                 continue
 
@@ -81,7 +84,8 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
                 if step is None:
                     logger.warning(
                         "lesson %s references step %s which could not be resolved, skipping",
-                        lesson["id"], sid,
+                        lesson["id"],
+                        sid,
                     )
                     continue
                 lesson_steps.append(step)
@@ -95,12 +99,14 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
             }
 
             for s_idx, step in enumerate(lesson_steps, start=1):
-                lesson_node["steps"].append({
-                    "id": step["id"],
-                    "dir_name": _dir_name(s_idx, step.get("block", {}).get("name", "step"), prefix="step_"),
-                    "block": step.get("block", {}),
-                    "raw": step,
-                })
+                lesson_node["steps"].append(
+                    {
+                        "id": step["id"],
+                        "dir_name": _dir_name(s_idx, step.get("block", {}).get("name", "step"), prefix="step_"),
+                        "block": step.get("block", {}),
+                        "raw": step,
+                    }
+                )
 
             module_node["lessons"].append(lesson_node)
 

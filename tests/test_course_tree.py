@@ -238,8 +238,7 @@ def test_build_course_tree_keeps_sort_order_for_a_large_lesson(minimal_mock_clie
     step_ids = list(range(20000, 20000 + 210))
     minimal_mock_client_data["lessons"][0]["steps"] = step_ids
     minimal_mock_client_data["steps"] = [
-        {"id": sid, "position": i, "block": {"name": "text", "text": "x"}}
-        for i, sid in enumerate(step_ids, start=1)
+        {"id": sid, "position": i, "block": {"name": "text", "text": "x"}} for i, sid in enumerate(step_ids, start=1)
     ]
 
     client = MockStepikClient(minimal_mock_client_data)

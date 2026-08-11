@@ -8,6 +8,7 @@ A single resource failure is caught, logged as a warning tagged with the
 calling context (course/lesson/step id), and reported as a miss (None) --
 it never aborts the export.
 """
+
 import logging
 import mimetypes
 import re
@@ -68,9 +69,7 @@ def download_resource(url, dest_dir, context, access_token=None, filename_hint=N
                 if response.status_code in RETRYABLE_STATUS_CODES:
                     last_error = RuntimeError(f"HTTP {response.status_code}")
                 elif response.status_code >= 400:
-                    logger.warning(
-                        "[%s] failed to download %s: HTTP %s", context, url, response.status_code
-                    )
+                    logger.warning("[%s] failed to download %s: HTTP %s", context, url, response.status_code)
                     return None
                 else:
                     if not dest_path.suffix:
@@ -94,7 +93,5 @@ def download_resource(url, dest_dir, context, access_token=None, filename_hint=N
 
         backoff_sleep(attempt)
 
-    logger.warning(
-        "[%s] failed to download %s after %d attempts: %s", context, url, MAX_RETRIES, last_error
-    )
+    logger.warning("[%s] failed to download %s after %d attempts: %s", context, url, MAX_RETRIES, last_error)
     return None

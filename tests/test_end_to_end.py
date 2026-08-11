@@ -3,6 +3,7 @@ One full-pipeline smoke test: export_course.main() end to end, with the
 Stepik API and all network downloads mocked, proving the whole tree-build ->
 render -> TOC pipeline actually produces a correct offline folder on disk.
 """
+
 from pathlib import Path
 
 import pytest
@@ -40,8 +41,7 @@ def course_data():
                     "name": "text",
                     "title": "Intro",
                     "text": (
-                        '<img src="http://cdn.example.com/pic.png">'
-                        '<a href="http://cdn.example.com/notes.pdf">notes</a>'
+                        '<img src="http://cdn.example.com/pic.png"><a href="http://cdn.example.com/notes.pdf">notes</a>'
                     ),
                 },
             },
@@ -100,10 +100,16 @@ def test_main_respects_skip_videos_and_skip_attachments_flags(tmp_path, monkeypa
     monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
     monkeypatch.setattr(resource_downloader, "download_resource", mock_download_resource)
 
-    exit_code = export_course.main([
-        "--course-id", "1", "--output-dir", str(tmp_path),
-        "--skip-videos", "--skip-attachments",
-    ])
+    exit_code = export_course.main(
+        [
+            "--course-id",
+            "1",
+            "--output-dir",
+            str(tmp_path),
+            "--skip-videos",
+            "--skip-attachments",
+        ]
+    )
     assert exit_code == 0
 
     course_dir = tmp_path / "1_sample-course"
