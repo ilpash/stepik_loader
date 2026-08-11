@@ -12,6 +12,8 @@ import logging
 import sys
 from pathlib import Path
 
+import requests
+
 from course_tree import build_course_tree
 from stepik_client import StepikAuthError, StepikClient
 from step_renderer import render_step
@@ -41,10 +43,10 @@ def main(argv=None):
         logger.error(str(exc))
         return 1
 
-    print(f"Fetching course {args.course_id} structure...")
+    logger.info("Fetching course %s structure...", args.course_id)
     try:
         tree = build_course_tree(client, args.course_id)
-    except Exception as exc:
+    except (ValueError, requests.HTTPError) as exc:
         logger.error(
             "Failed to fetch course %s. If this course is paid/private/enrolled-only, "
             "it isn't accessible with the client_credentials auth used by this tool. (%s)",
@@ -53,9 +55,8 @@ def main(argv=None):
         return 1
 
     course_dir = Path(args.output_dir) / tree["dir_name"]
-    print(f"Exporting '{tree['title']}' to {course_dir}/")
+    logger.info("Exporting '%s' to %s/", tree["title"], course_dir)
 
-    access_token = client.access_token
     total_steps = sum(len(l["steps"]) for m in tree["modules"] for l in m["lessons"])
     done = 0
 
@@ -66,13 +67,16 @@ def main(argv=None):
             for step in lesson["steps"]:
                 done += 1
                 step_dir = lesson_dir / step["dir_name"]
-                print(f"[{done}/{total_steps}] {module['title']} > {lesson['title']} > step {step['id']}")
+                logger.info(
+                    "[%d/%d] %s > %s > step %s", done, total_steps, module["title"], lesson["title"], step["id"],
+                )
                 step_title = render_step(
                     step, step_dir,
                     course_title=tree["title"],
                     module_title=module["title"],
                     lesson_title=lesson["title"],
-                    access_token=access_token,
+                    # per-step property call, so token refresh could happen if it expires mid-export
+                    access_token=client.access_token,
                     video_quality=args.video_quality,
                     course_id=tree["id"],
                     lesson_id=lesson["id"],
@@ -82,7 +86,7 @@ def main(argv=None):
                 step["title"] = step_title
 
     build_toc(tree, course_dir)
-    print(f"Done. Open {course_dir / 'index.html'} in a browser.")
+    logger.info("Done. Open %s in a browser.", course_dir / "index.html")
     return 0
 
 
