@@ -30,9 +30,10 @@ The code follows the WAT pattern described in [CLAUDE.md](CLAUDE.md):
 
 ## Testing
 
-There's no automated test suite yet. Until there is, please run the exporter
-end-to-end against a real public course id and confirm the output opens
-correctly in a browser before submitting a PR.
+Run `pytest` (see README's Testing section for setup). Add tests alongside
+any behavioral change — see `tests/` for the existing patterns (mock
+`StepikClient`/`resolve` doubles, `tmp_path` for filesystem assertions, no
+real network calls).
 
 ## Reporting issues
 

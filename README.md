@@ -1,3 +1,5 @@
+[![tests](https://github.com/ilpash/stepik_loader/actions/workflows/tests.yml/badge.svg)](https://github.com/ilpash/stepik_loader/actions/workflows/tests.yml)
+
 # Stepik Course Offline Exporter
 
 Downloads a public Stepik course via the official REST API and converts it
@@ -35,6 +37,16 @@ Options:
 The result is `exports/<course_id>_<slug>/` — a fully self-contained folder.
 Copy it anywhere (another machine, a USB drive) and open its `index.html`
 directly in a browser; it has no dependency on this project's code.
+
+## Testing
+
+```
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/pytest
+```
+
+The suite uses mocked HTTP responses throughout — it never touches the
+real Stepik API or network, and runs in a few seconds.
 
 ## Scope (v1)
 
