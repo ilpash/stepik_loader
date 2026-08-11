@@ -1,6 +1,4 @@
 .env
-credentials.json
-token.json
 stepik_token.json
 .tmp/
 .DS_Store
