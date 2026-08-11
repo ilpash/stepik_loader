@@ -47,10 +47,11 @@ def main(argv=None):
     logger.info("Fetching course %s structure...", args.course_id)
     try:
         tree = build_course_tree(client, args.course_id)
-    except (ValueError, requests.HTTPError) as exc:
+    except (StepikAuthError, requests.RequestException, ValueError) as exc:
         logger.error(
-            "Failed to fetch course %s. If this course is paid/private/enrolled-only, "
-            "it isn't accessible with the client_credentials auth used by this tool. (%s)",
+            "Failed to fetch course %s (%s). Check the credentials in .env and your network "
+            "connection; paid, private and enrolled-only courses are not reachable with the "
+            "client_credentials auth this tool uses.",
             args.course_id,
             exc,
         )

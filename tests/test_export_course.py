@@ -1,4 +1,5 @@
 import pytest
+import requests
 
 import export_course
 from stepik_client import StepikAuthError
@@ -67,6 +68,28 @@ def test_main_returns_1_when_course_fetch_fails(monkeypatch):
         raise ValueError("course not found or not accessible")
 
     monkeypatch.setattr(export_course, "build_course_tree", raise_fetch_error)
+    assert export_course.main(["--course-id", "1"]) == 1
+
+
+def test_main_returns_1_when_credentials_are_rejected_while_fetching(monkeypatch):
+    # StepikClient() only checks that the env vars exist; the token is fetched
+    # lazily, so a rejected secret surfaces here rather than at construction.
+    monkeypatch.setattr(export_course, "StepikClient", object)
+
+    def raise_auth_error(client, course_id):
+        raise StepikAuthError("HTTP 401 from https://stepik.org/oauth2/token/")
+
+    monkeypatch.setattr(export_course, "build_course_tree", raise_auth_error)
+    assert export_course.main(["--course-id", "1"]) == 1
+
+
+def test_main_returns_1_when_stepik_cannot_be_reached(monkeypatch):
+    monkeypatch.setattr(export_course, "StepikClient", object)
+
+    def raise_connection_error(client, course_id):
+        raise requests.ConnectionError("connection refused")
+
+    monkeypatch.setattr(export_course, "build_course_tree", raise_connection_error)
     assert export_course.main(["--course-id", "1"]) == 1
 
 
