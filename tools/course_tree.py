@@ -56,7 +56,17 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
     }
 
     for m_idx, section in enumerate(sections, start=1):
-        module_units = [unit_id_to_unit[uid] for uid in section.get("units", []) if uid in unit_id_to_unit]
+        module_units = []
+        for uid in section.get("units", []):
+            unit = unit_id_to_unit.get(uid)
+            if unit is None:
+                logger.warning(
+                    "module %s references unit %s which could not be resolved, skipping",
+                    section.get("id"),
+                    uid,
+                )
+                continue
+            module_units.append(unit)
         module_units.sort(key=lambda u: u.get("position", 0))
 
         module_node = {

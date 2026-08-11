@@ -213,6 +213,17 @@ def test_build_course_tree_logs_warning_when_lesson_not_found(mock_client_data, 
     assert "could not be resolved" in caplog.text
 
 
+def test_build_course_tree_handles_unit_not_found(mock_client_data, caplog):
+    # Module One's only unit id is absent from the units the API returned.
+    mock_client_data["sections"][0]["units"] = [99999]
+
+    client = MockStepikClient(mock_client_data)
+    tree = build_course_tree(client, 1)
+
+    assert tree["modules"][0]["lessons"] == []
+    assert "module 10 references unit 99999 which could not be resolved, skipping" in caplog.text
+
+
 def test_build_course_tree_logs_warning_when_step_not_found(mock_client_data, caplog):
     mock_client_data["lessons"][0]["steps"] = [99999]
 
