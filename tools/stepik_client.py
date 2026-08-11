@@ -13,6 +13,8 @@ from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
+from retry import MAX_RETRIES, RETRYABLE_STATUS_CODES, backoff_sleep
+
 API_BASE = "https://stepik.org/api/"
 TOKEN_URL = "https://stepik.org/oauth2/token/"
 
@@ -22,9 +24,6 @@ TOKEN_URL = "https://stepik.org/oauth2/token/"
 STEPIK_AUTH_HOSTS = {"stepik.org", "www.stepik.org"}
 
 DEFAULT_TOKEN_CACHE = Path(__file__).resolve().parent.parent / "stepik_token.json"
-
-MAX_RETRIES = 5
-RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 
 
 class StepikAuthError(RuntimeError):
@@ -70,20 +69,36 @@ class StepikClient:
         }))
 
     def _fetch_new_token(self):
-        response = requests.post(
-            TOKEN_URL,
-            data={"grant_type": "client_credentials"},
-            auth=(self.client_id, self.client_secret),
-            timeout=30,
-        )
-        if response.status_code != 200:
-            raise StepikAuthError(
-                f"Failed to obtain Stepik access token (HTTP {response.status_code}): {response.text[:300]}"
-            )
-        payload = response.json()
-        self._access_token = payload["access_token"]
-        self._token_expires_at = time.time() + payload.get("expires_in", 3600)
-        self._save_cached_token()
+        last_error = None
+        for attempt in range(MAX_RETRIES):
+            try:
+                response = self.session.post(
+                    TOKEN_URL,
+                    data={"grant_type": "client_credentials"},
+                    auth=(self.client_id, self.client_secret),
+                    timeout=30,
+                )
+            except requests.RequestException as exc:
+                last_error = exc
+                backoff_sleep(attempt)
+                continue
+
+            if response.status_code in RETRYABLE_STATUS_CODES:
+                last_error = StepikAuthError(f"HTTP {response.status_code} from {TOKEN_URL}")
+                backoff_sleep(attempt)
+                continue
+            if response.status_code != 200:
+                raise StepikAuthError(
+                    f"Failed to obtain Stepik access token (HTTP {response.status_code}): {response.text[:300]}"
+                )
+
+            payload = response.json()
+            self._access_token = payload["access_token"]
+            self._token_expires_at = time.time() + payload.get("expires_in", 3600)
+            self._save_cached_token()
+            return
+
+        raise StepikAuthError(f"Failed to obtain Stepik access token after {MAX_RETRIES} attempts: {last_error}")
 
     def _ensure_token(self):
         if self._access_token and self._token_expires_at > time.time() + 30:
@@ -122,8 +137,7 @@ class StepikClient:
                     return response
                 last_error = requests.HTTPError(f"HTTP {response.status_code} from {url}")
 
-            if attempt < MAX_RETRIES - 1:
-                time.sleep(2 ** attempt)
+            backoff_sleep(attempt)
 
         raise last_error or StepikAuthError(f"Request to {url} failed after {MAX_RETRIES} attempts")
 

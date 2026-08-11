@@ -120,7 +120,7 @@ def test_fetch_new_token_success(fresh_client, monkeypatch):
     def mock_post(url, **kwargs):
         return MockResponse(200, json_data={"access_token": "fetched-token", "expires_in": 3600})
 
-    monkeypatch.setattr(stepik_client.requests, "post", mock_post)
+    monkeypatch.setattr(fresh_client.session, "post", mock_post)
     fresh_client._fetch_new_token()
     assert fresh_client._access_token == "fetched-token"
     assert fresh_client.token_cache_path.exists()
@@ -130,7 +130,28 @@ def test_fetch_new_token_raises_on_non_200(fresh_client, monkeypatch):
     def mock_post(url, **kwargs):
         return MockResponse(403, text="denied")
 
-    monkeypatch.setattr(stepik_client.requests, "post", mock_post)
+    monkeypatch.setattr(fresh_client.session, "post", mock_post)
+    with pytest.raises(StepikAuthError):
+        fresh_client._fetch_new_token()
+
+
+def test_fetch_new_token_retries_on_retryable_status_then_succeeds(fresh_client, no_sleep, monkeypatch):
+    responses = [MockResponse(503), MockResponse(200, json_data={"access_token": "fetched-token", "expires_in": 3600})]
+
+    def mock_post(url, **kwargs):
+        return responses.pop(0)
+
+    monkeypatch.setattr(fresh_client.session, "post", mock_post)
+    fresh_client._fetch_new_token()
+    assert fresh_client._access_token == "fetched-token"
+    assert no_sleep.call_count == 1
+
+
+def test_fetch_new_token_raises_after_exhausting_retries(fresh_client, no_sleep, monkeypatch):
+    def mock_post(url, **kwargs):
+        return MockResponse(503)
+
+    monkeypatch.setattr(fresh_client.session, "post", mock_post)
     with pytest.raises(StepikAuthError):
         fresh_client._fetch_new_token()
 
@@ -138,16 +159,11 @@ def test_fetch_new_token_raises_on_non_200(fresh_client, monkeypatch):
 # -- _request ---------------------------------------------------------------------
 
 def test_request_returns_response_on_first_success(client, no_sleep, monkeypatch):
-    calls = []
-
-    def mock_request(method, url, **kwargs):
-        calls.append(1)
-        return MockResponse(200)
-
+    mock_request = MagicMock(side_effect=lambda *a, **k: MockResponse(200))
     monkeypatch.setattr(client.session, "request", mock_request)
     result = client._request("GET", "http://example.com")
     assert result.status_code == 200
-    assert len(calls) == 1
+    assert mock_request.call_count == 1
     assert no_sleep.call_count == 0
 
 
@@ -164,49 +180,37 @@ def test_request_retries_on_retryable_status_then_succeeds(client, no_sleep, mon
 
 
 def test_request_raises_after_exhausting_retries(client, no_sleep, monkeypatch):
-    calls = []
-
-    def mock_request(method, url, **kwargs):
-        calls.append(1)
-        return MockResponse(503)
-
+    mock_request = MagicMock(side_effect=lambda *a, **k: MockResponse(503))
     monkeypatch.setattr(client.session, "request", mock_request)
     with pytest.raises(requests.HTTPError):
         client._request("GET", "http://example.com")
-    assert len(calls) == stepik_client.MAX_RETRIES
+    assert mock_request.call_count == stepik_client.MAX_RETRIES
 
 
 def test_request_refreshes_token_once_on_401_first_attempt(client, no_sleep, monkeypatch):
     responses = [MockResponse(401), MockResponse(200)]
-    fetch_calls = []
+    mock_request = MagicMock(side_effect=responses)
 
-    def mock_request(method, url, **kwargs):
-        return responses.pop(0)
-
-    def mock_fetch_new_token():
-        fetch_calls.append(1)
+    def refresh_token():
         client._access_token = "new-token"
+
+    mock_fetch_new_token = MagicMock(side_effect=refresh_token)
 
     monkeypatch.setattr(client.session, "request", mock_request)
     monkeypatch.setattr(client, "_fetch_new_token", mock_fetch_new_token)
 
     result = client._request("GET", "http://example.com")
     assert result.status_code == 200
-    assert len(fetch_calls) == 1
+    assert mock_fetch_new_token.call_count == 1
     assert no_sleep.call_count == 0
 
 
 def test_request_raises_on_non_retryable_status(client, no_sleep, monkeypatch):
-    calls = []
-
-    def mock_request(method, url, **kwargs):
-        calls.append(1)
-        return MockResponse(404)
-
+    mock_request = MagicMock(side_effect=lambda *a, **k: MockResponse(404))
     monkeypatch.setattr(client.session, "request", mock_request)
     with pytest.raises(requests.HTTPError):
         client._request("GET", "http://example.com")
-    assert len(calls) == 1
+    assert mock_request.call_count == 1
 
 
 # -- get / get_by_ids ---------------------------------------------------------------
@@ -217,6 +221,30 @@ def test_get_returns_parsed_json(client, monkeypatch):
 
     monkeypatch.setattr(client, "_request", mock_request)
     assert client.get("some/path") == {"sample_key": "sample_value"}
+
+
+def test_get_builds_url_relative_to_api_base(client, monkeypatch):
+    recorded = {}
+
+    def mock_request(method, url, **kwargs):
+        recorded["url"] = url
+        return MockResponse(200, json_data={})
+
+    monkeypatch.setattr(client, "_request", mock_request)
+    client.get("some/path")
+    assert recorded["url"] == stepik_client.API_BASE + "some/path"
+
+
+def test_get_passes_through_an_already_absolute_url(client, monkeypatch):
+    recorded = {}
+
+    def mock_request(method, url, **kwargs):
+        recorded["url"] = url
+        return MockResponse(200, json_data={})
+
+    monkeypatch.setattr(client, "_request", mock_request)
+    client.get("https://stepik.org/media/a.txt")
+    assert recorded["url"] == "https://stepik.org/media/a.txt"
 
 
 def test_get_by_ids_batches_requests(client, monkeypatch):
