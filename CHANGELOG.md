@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented here.
 
+## [1.2.0] - 2026-08-12
+
+### Added
+- Dedicated renderer for pycharm steps: task description and project files.
+  Files the course hides are labelled `hidden`, and often reveal the answer.
+- Steps use the name the course gives them, instead of always falling back to
+  `Step <id> (<type>)`.
+
+### Changed
+- New dependency on Markdown, so re-run `pip install -r requirements.txt` when
+  upgrading.
+- Internal: simpler dictionary defaults, wider test coverage.
+
 ## [1.1.0] - 2026-08-12
 
 ### Added
