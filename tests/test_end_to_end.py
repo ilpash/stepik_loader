@@ -40,7 +40,8 @@ def course_data():
             {"id": 1002, "title": "Lesson Three", "steps": [10005, 10006, 10007, 10008]},
         ],
         "steps": [
-            # text: every resource attribute plus a non-http src that must be left alone
+            # text: every resource attribute, a non-http src that must stay as it is,
+            # and both kinds of anchor -- a file to download and a page to keep linked
             {
                 "id": 10000,
                 "position": 1,
@@ -51,6 +52,7 @@ def course_data():
                         '<img src="data:image/png;base64,abc">'
                         '<audio src="http://cdn.example.com/clip.mp3"></audio>'
                         '<a href="http://cdn.example.com/notes.pdf">notes</a>'
+                        '<a href="https://www.youtube.com/watch?v=some_video_id">the lecture</a>'
                     ),
                 },
             },
@@ -239,6 +241,7 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     assert 'src="resource_2_clip.mp3"' in text_html
     assert 'href="resource_3_notes.pdf"' in text_html
     assert 'src="data:image/png;base64,abc"' in text_html
+    assert 'href="https://www.youtube.com/watch?v=some_video_id"' in text_html
 
     choice_html = (course_dir / LESSON_2_STEP_1 / "index.html").read_text()
     assert "Mark every true statement." in choice_html
