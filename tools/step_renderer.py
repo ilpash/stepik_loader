@@ -38,7 +38,7 @@ def _is_downloadable_file(url):
     return guessed_type and guessed_type != "text/html"
 
 
-def _render_text(block, resolve, context, skip_attachments):
+def _render_text(block, resolve, skip_attachments):
     html = block.get("text", "")
     soup = BeautifulSoup(html, "html.parser")
     resource_index = 0
@@ -182,10 +182,10 @@ def _render_code_templates(options):
     return "".join(["<h2>Starter code</h2>", *parts])
 
 
-def _render_code(block, resolve, context, skip_attachments):
+def _render_code(block, resolve, skip_attachments):
     options = block.get("options", {})
     parts = [
-        _render_text(block, resolve, context, skip_attachments),
+        _render_text(block, resolve, skip_attachments),
         _render_code_samples(options.get("samples")),
         _render_code_default_limits(options),
         _render_code_templates(options),
@@ -210,13 +210,13 @@ def _render_pycharm_files(files):
     return "".join(parts)
 
 
-def _render_pycharm(block, resolve, context, skip_attachments):
+def _render_pycharm(block, resolve, skip_attachments):
     options = block.get("options", {})
     # Most statements are already HTML, but some arrive as markdown, which the format names.
     if options.get("description_format", "").upper() == "MD":
         block = {**block, "text": markdown.markdown(block["text"], extensions=["tables"])}
     parts = [
-        _render_text(block, resolve, context, skip_attachments),
+        _render_text(block, resolve, skip_attachments),
         _render_pycharm_files(options.get("files")),
         '<p class="warning">This step is solved in an IDE; submitting a solution and grading '
         "are not available offline.</p>",
@@ -267,11 +267,11 @@ def render_step(
     if block_type == "video":
         body_html = _render_video(block, resolve, context, video_quality, skip_videos)
     elif block_type == "text":
-        body_html = _render_text(block, resolve, context, skip_attachments)
+        body_html = _render_text(block, resolve, skip_attachments)
     elif block_type == "code":
-        body_html = _render_code(block, resolve, context, skip_attachments)
+        body_html = _render_code(block, resolve, skip_attachments)
     elif block_type == "pycharm":
-        body_html = _render_pycharm(block, resolve, context, skip_attachments)
+        body_html = _render_pycharm(block, resolve, skip_attachments)
     elif block_type in _TYPE_TO_QUIZ_NOTE:
         body_html = _render_quiz(block)
     else:

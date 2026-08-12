@@ -99,7 +99,7 @@ def test_render_text_rewrites_img_src_via_resolve():
         calls.append(url)
         return "local.png"
 
-    html = _render_text(block=block, resolve=mock_resolve, context="test-context", skip_attachments=False)
+    html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
     assert 'src="local.png"' in html
     assert calls == ["http://x.com/a.png"]
 
@@ -107,7 +107,7 @@ def test_render_text_rewrites_img_src_via_resolve():
 def test_render_text_skips_non_http_src():
     # A data: URI src never matches the "http"-prefix check, so resolve is never called.
     block = {"text": '<img src="data:image/png;base64,abc">'}
-    html = _render_text(block=block, resolve=None, context="test-context", skip_attachments=False)
+    html = _render_text(block=block, resolve=None, skip_attachments=False)
     assert "data:image/png;base64,abc" in html
 
 
@@ -115,7 +115,7 @@ def test_render_text_skips_anchor_tags_when_skip_attachments_true():
     # The only tag present is an <a>, and skip_attachments=True skips anchor
     # tags entirely, so resolve is never called.
     block = {"text": '<a href="http://x.com/f.pdf">link</a>'}
-    html = _render_text(block=block, resolve=None, context="test-context", skip_attachments=True)
+    html = _render_text(block=block, resolve=None, skip_attachments=True)
     assert 'href="http://x.com/f.pdf"' in html
 
 
@@ -128,7 +128,7 @@ def test_render_text_downloads_an_anchor_that_points_at_a_file():
         calls.append(url)
         return "local_notes.pdf"
 
-    html = _render_text(block=block, resolve=mock_resolve, context="test-context", skip_attachments=False)
+    html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
     assert 'href="local_notes.pdf"' in html
     assert calls == [attachment_url]
 
@@ -147,7 +147,7 @@ def test_render_text_keeps_an_anchor_that_points_at_a_web_page(page_url):
     # A web page is worthless offline and mirroring it would replace the live URL,
     # so it stays untouched -- resolve=None proves nothing tries to download it.
     block = {"text": f'<a href="{page_url}">link</a>'}
-    html = _render_text(block=block, resolve=None, context="test-context", skip_attachments=False)
+    html = _render_text(block=block, resolve=None, skip_attachments=False)
     assert f'href="{page_url}"' in html
 
 
@@ -162,7 +162,7 @@ def test_render_text_downloads_an_image_from_an_extensionless_url():
         calls.append(url)
         return "local_image"
 
-    html = _render_text(block=block, resolve=mock_resolve, context="test-context", skip_attachments=False)
+    html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
     assert 'src="local_image"' in html
     assert calls == [image_url]
 
@@ -182,7 +182,7 @@ def test_render_code_basic_case():
             "code_templates": {"python3": "print(sum())", "c++": "#include <iostream>"},
         },
     }
-    html = _render_code(block=block, resolve=None, context="test-context", skip_attachments=False)
+    html = _render_code(block=block, resolve=None, skip_attachments=False)
     assert "Print the sum of two integers." in html
     assert "<pre><code>7 3</code></pre>" in html
     assert "<pre><code>10</code></pre>" in html
@@ -204,7 +204,7 @@ def test_render_code_omits_languages_with_empty_templates():
         "text": "",
         "options": {"code_templates": {"python3": "print()", "kotlin": "", "swift": "   "}},
     }
-    html = _render_code(block=block, resolve=None, context="test-context", skip_attachments=False)
+    html = _render_code(block=block, resolve=None, skip_attachments=False)
     assert "python3" in html
     assert "kotlin" not in html
     assert "swift" not in html
@@ -212,7 +212,7 @@ def test_render_code_omits_languages_with_empty_templates():
 
 def test_render_code_renders_statement_when_options_are_missing():
     block = {"name": "code", "text": "<p>Solve the task.</p>"}
-    html = _render_code(block=block, resolve=None, context="test-context", skip_attachments=False)
+    html = _render_code(block=block, resolve=None, skip_attachments=False)
     assert "Solve the task." in html
     assert "Samples" not in html
     assert "Default limits" not in html
@@ -228,7 +228,7 @@ def test_render_code_rewrites_images_in_the_statement():
         calls.append(url)
         return "local.png"
 
-    html = _render_code(block=block, resolve=mock_resolve, context="test-context", skip_attachments=False)
+    html = _render_code(block=block, resolve=mock_resolve, skip_attachments=False)
     assert 'src="local.png"' in html
     assert calls == ["http://x.com/diagram.png"]
 
@@ -246,7 +246,7 @@ def test_render_pycharm_basic_case():
             "files": [{"name": "src/Task.kt", "text": "fun main() {\n  TODO()\n}", "is_visible": True}],
         },
     }
-    html = _render_pycharm(block=block, resolve=None, context="test-context", skip_attachments=False)
+    html = _render_pycharm(block=block, resolve=None, skip_attachments=False)
     assert "Implement the function." in html
     assert "<h3>src/Task.kt</h3>" in html
     assert "TODO()" in html
@@ -260,7 +260,7 @@ def test_render_pycharm_converts_a_markdown_statement_to_html():
         "text": "## Objects\n\nExamples accompanying the atom.",
         "options": {"description_format": "MD"},
     }
-    html = _render_pycharm(block=block, resolve=None, context="test-context", skip_attachments=False)
+    html = _render_pycharm(block=block, resolve=None, skip_attachments=False)
     assert "<h2>Objects</h2>" in html
     assert "<p>Examples accompanying the atom.</p>" in html
 
@@ -276,7 +276,7 @@ def test_render_pycharm_marks_a_file_the_course_hides():
             ]
         },
     }
-    html = _render_pycharm(block=block, resolve=None, context="test-context", skip_attachments=False)
+    html = _render_pycharm(block=block, resolve=None, skip_attachments=False)
     assert "<h3>src/Task.kt</h3>" in html
     assert '<h3>test/Tests.kt <span class="hidden-file">hidden</span></h3>' in html
     assert "class Tests" in html
@@ -284,7 +284,7 @@ def test_render_pycharm_marks_a_file_the_course_hides():
 
 def test_render_pycharm_notes_a_file_with_no_content():
     block = {"name": "pycharm", "text": "", "options": {"files": [{"name": "fizz.kt", "text": ""}]}}
-    html = _render_pycharm(block=block, resolve=None, context="test-context", skip_attachments=False)
+    html = _render_pycharm(block=block, resolve=None, skip_attachments=False)
     assert "<h3>fizz.kt</h3>" in html
     assert "This file is empty." in html
     assert "<pre>" not in html
@@ -292,7 +292,7 @@ def test_render_pycharm_notes_a_file_with_no_content():
 
 def test_render_pycharm_renders_a_statement_when_the_step_has_no_files():
     block = {"name": "pycharm", "text": "<p>Read this.</p>", "options": {"title": "Examples", "files": []}}
-    html = _render_pycharm(block=block, resolve=None, context="test-context", skip_attachments=False)
+    html = _render_pycharm(block=block, resolve=None, skip_attachments=False)
     assert "Read this." in html
     assert "Files" not in html
     assert "not available offline" in html
