@@ -63,7 +63,7 @@ def _build_module_node(section, index, unit_id_to_unit, lesson_id_to_lesson, ste
         if unit is None:
             logger.warning(
                 "module %s references unit %s which could not be resolved, skipping",
-                section.get("id"),
+                section["id"],
                 unit_id,
             )
             continue
@@ -72,13 +72,13 @@ def _build_module_node(section, index, unit_id_to_unit, lesson_id_to_lesson, ste
 
     lessons = []
     for lesson_index, unit in enumerate(module_units, start=1):
-        lesson = lesson_id_to_lesson.get(unit.get("lesson"))
+        lesson = lesson_id_to_lesson.get(unit["lesson"])
         if lesson is None:
             logger.warning(
                 "unit %s (module %s) references lesson %s which could not be resolved, skipping",
-                unit.get("id"),
-                section.get("id"),
-                unit.get("lesson"),
+                unit["id"],
+                section["id"],
+                unit["lesson"],
             )
             continue
         lessons.append(_build_lesson_node(lesson, lesson_index, step_id_to_step))

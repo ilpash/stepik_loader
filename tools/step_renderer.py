@@ -262,7 +262,7 @@ def _render_generic(block, log_label):
 def render_step(step_node, step_dir, context):
     step_dir = Path(step_dir)
     step_dir.mkdir(parents=True, exist_ok=True)
-    block = step_node.get("block", {})
+    block = step_node["block"]
     block_type = block.get("name", "unknown")
     log_label = context.log_label(step_node["id"])
 
