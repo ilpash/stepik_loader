@@ -24,7 +24,7 @@ class MockResponse:
 
 
 @pytest.fixture
-def fresh_client(tmp_path):
+def client_without_token(tmp_path):
     return StepikClient(
         client_id="test-client-id",
         client_secret="test-client-secret",
@@ -33,7 +33,7 @@ def fresh_client(tmp_path):
 
 
 @pytest.fixture
-def client(tmp_path):
+def client_with_token(tmp_path):
     client = StepikClient(
         client_id="test-client-id",
         client_secret="test-client-secret",
@@ -67,244 +67,244 @@ def test_init_reads_credentials_from_constructor_args(tmp_path):
 # -- _load_cached_token / _save_cached_token ------------------------------------
 
 
-def test_load_cached_token_accepts_fresh_matching_cache(fresh_client):
+def test_load_cached_token_accepts_fresh_matching_cache(client_without_token):
     cache = {"client_id": "test-client-id", "access_token": "cached-token", "expires_at": time.time() + 3600}
-    fresh_client.token_cache_path.write_text(json.dumps(cache))
-    fresh_client._load_cached_token()
-    assert fresh_client._access_token == "cached-token"
+    client_without_token.token_cache_path.write_text(json.dumps(cache))
+    client_without_token._load_cached_token()
+    assert client_without_token._access_token == "cached-token"
 
 
-def test_load_cached_token_ignores_cache_for_different_client_id(fresh_client):
+def test_load_cached_token_ignores_cache_for_different_client_id(client_without_token):
     cache = {"client_id": "other", "access_token": "cached-token", "expires_at": time.time() + 3600}
-    fresh_client.token_cache_path.write_text(json.dumps(cache))
-    fresh_client._load_cached_token()
-    assert fresh_client._access_token is None
+    client_without_token.token_cache_path.write_text(json.dumps(cache))
+    client_without_token._load_cached_token()
+    assert client_without_token._access_token is None
 
 
-def test_load_cached_token_ignores_expired_cache(fresh_client):
+def test_load_cached_token_ignores_expired_cache(client_without_token):
     cache = {"client_id": "test-client-id", "access_token": "cached-token", "expires_at": time.time() - 100}
-    fresh_client.token_cache_path.write_text(json.dumps(cache))
-    fresh_client._load_cached_token()
-    assert fresh_client._access_token is None
+    client_without_token.token_cache_path.write_text(json.dumps(cache))
+    client_without_token._load_cached_token()
+    assert client_without_token._access_token is None
 
 
-def test_load_cached_token_handles_missing_file(fresh_client):
-    fresh_client._load_cached_token()
-    assert fresh_client._access_token is None
+def test_load_cached_token_handles_missing_file(client_without_token):
+    client_without_token._load_cached_token()
+    assert client_without_token._access_token is None
 
 
-def test_load_cached_token_handles_corrupt_json(fresh_client):
-    fresh_client.token_cache_path.write_text("not json{{{")
-    fresh_client._load_cached_token()
-    assert fresh_client._access_token is None
+def test_load_cached_token_handles_corrupt_json(client_without_token):
+    client_without_token.token_cache_path.write_text("not json{{{")
+    client_without_token._load_cached_token()
+    assert client_without_token._access_token is None
 
 
-def test_save_cached_token_writes_expected_json(fresh_client):
-    fresh_client._access_token = "test-token"
-    fresh_client._token_expires_at = 12345
-    fresh_client._save_cached_token()
-    data = json.loads(fresh_client.token_cache_path.read_text())
+def test_save_cached_token_writes_expected_json(client_without_token):
+    client_without_token._access_token = "test-token"
+    client_without_token._token_expires_at = 12345
+    client_without_token._save_cached_token()
+    data = json.loads(client_without_token.token_cache_path.read_text())
     assert data == {"client_id": "test-client-id", "access_token": "test-token", "expires_at": 12345}
 
 
 # -- _ensure_token -----------------------------------------------------------------
 
 
-def test_ensure_token_keeps_the_token_already_in_memory(client, monkeypatch):
+def test_ensure_token_keeps_the_token_already_in_memory(client_with_token, monkeypatch):
     # The cache holds a different token, so reading it would be visible in the result.
     cache = {"client_id": "test-client-id", "access_token": "cached-token", "expires_at": time.time() + 3600}
-    client.token_cache_path.write_text(json.dumps(cache))
+    client_with_token.token_cache_path.write_text(json.dumps(cache))
     mock_fetch_new_token = MagicMock()
-    monkeypatch.setattr(client, "_fetch_new_token", mock_fetch_new_token)
+    monkeypatch.setattr(client_with_token, "_fetch_new_token", mock_fetch_new_token)
 
-    client._ensure_token()
+    client_with_token._ensure_token()
 
-    assert client._access_token == "test-token"
+    assert client_with_token._access_token == "test-token"
     assert mock_fetch_new_token.call_count == 0
 
 
-def test_ensure_token_falls_back_to_the_cache_when_memory_is_empty(fresh_client, monkeypatch):
+def test_ensure_token_falls_back_to_the_cache_when_memory_is_empty(client_without_token, monkeypatch):
     cache = {"client_id": "test-client-id", "access_token": "cached-token", "expires_at": time.time() + 3600}
-    fresh_client.token_cache_path.write_text(json.dumps(cache))
+    client_without_token.token_cache_path.write_text(json.dumps(cache))
     mock_fetch_new_token = MagicMock()
-    monkeypatch.setattr(fresh_client, "_fetch_new_token", mock_fetch_new_token)
+    monkeypatch.setattr(client_without_token, "_fetch_new_token", mock_fetch_new_token)
 
-    fresh_client._ensure_token()
+    client_without_token._ensure_token()
 
-    assert fresh_client._access_token == "cached-token"
+    assert client_without_token._access_token == "cached-token"
     assert mock_fetch_new_token.call_count == 0
 
 
-def test_ensure_token_fetches_when_the_cache_is_expired(fresh_client, monkeypatch):
+def test_ensure_token_fetches_when_the_cache_is_expired(client_without_token, monkeypatch):
     cache = {"client_id": "test-client-id", "access_token": "cached-token", "expires_at": time.time() - 100}
-    fresh_client.token_cache_path.write_text(json.dumps(cache))
+    client_without_token.token_cache_path.write_text(json.dumps(cache))
 
     def fetch_token():
-        fresh_client._access_token = "fetched-token"
+        client_without_token._access_token = "fetched-token"
 
     mock_fetch_new_token = MagicMock(side_effect=fetch_token)
-    monkeypatch.setattr(fresh_client, "_fetch_new_token", mock_fetch_new_token)
+    monkeypatch.setattr(client_without_token, "_fetch_new_token", mock_fetch_new_token)
 
-    fresh_client._ensure_token()
+    client_without_token._ensure_token()
 
-    assert fresh_client._access_token == "fetched-token"
+    assert client_without_token._access_token == "fetched-token"
     assert mock_fetch_new_token.call_count == 1
 
 
-def test_ensure_token_fetches_when_the_token_expires_within_the_margin(client, monkeypatch):
-    client._token_expires_at = time.time() + stepik_client.TOKEN_EXPIRY_MARGIN_SECONDS - 1
+def test_ensure_token_fetches_when_the_token_expires_within_the_margin(client_with_token, monkeypatch):
+    client_with_token._token_expires_at = time.time() + stepik_client.TOKEN_EXPIRY_MARGIN_SECONDS - 1
 
     def fetch_token():
-        client._access_token = "fetched-token"
+        client_with_token._access_token = "fetched-token"
 
     mock_fetch_new_token = MagicMock(side_effect=fetch_token)
-    monkeypatch.setattr(client, "_fetch_new_token", mock_fetch_new_token)
+    monkeypatch.setattr(client_with_token, "_fetch_new_token", mock_fetch_new_token)
 
-    client._ensure_token()
+    client_with_token._ensure_token()
 
-    assert client._access_token == "fetched-token"
+    assert client_with_token._access_token == "fetched-token"
     assert mock_fetch_new_token.call_count == 1
 
 
 # -- _fetch_new_token ------------------------------------------------------------
 
 
-def test_fetch_new_token_success(fresh_client, monkeypatch):
+def test_fetch_new_token_success(client_without_token, monkeypatch):
     def mock_post(url, **kwargs):
         return MockResponse(200, json_data={"access_token": "fetched-token", "expires_in": 3600})
 
-    monkeypatch.setattr(fresh_client.session, "post", mock_post)
-    fresh_client._fetch_new_token()
-    assert fresh_client._access_token == "fetched-token"
-    assert fresh_client.token_cache_path.exists()
+    monkeypatch.setattr(client_without_token.session, "post", mock_post)
+    client_without_token._fetch_new_token()
+    assert client_without_token._access_token == "fetched-token"
+    assert client_without_token.token_cache_path.exists()
 
 
-def test_fetch_new_token_raises_on_non_200(fresh_client, monkeypatch):
+def test_fetch_new_token_raises_on_non_200(client_without_token, monkeypatch):
     def mock_post(url, **kwargs):
         return MockResponse(403, text="denied")
 
-    monkeypatch.setattr(fresh_client.session, "post", mock_post)
+    monkeypatch.setattr(client_without_token.session, "post", mock_post)
     with pytest.raises(StepikAuthError):
-        fresh_client._fetch_new_token()
+        client_without_token._fetch_new_token()
 
 
-def test_fetch_new_token_retries_on_retryable_status_then_succeeds(fresh_client, no_sleep, monkeypatch):
+def test_fetch_new_token_retries_on_retryable_status_then_succeeds(client_without_token, no_sleep, monkeypatch):
     responses = [MockResponse(503), MockResponse(200, json_data={"access_token": "fetched-token", "expires_in": 3600})]
 
     def mock_post(url, **kwargs):
         return responses.pop(0)
 
-    monkeypatch.setattr(fresh_client.session, "post", mock_post)
-    fresh_client._fetch_new_token()
-    assert fresh_client._access_token == "fetched-token"
+    monkeypatch.setattr(client_without_token.session, "post", mock_post)
+    client_without_token._fetch_new_token()
+    assert client_without_token._access_token == "fetched-token"
     assert no_sleep.call_count == 1
 
 
-def test_fetch_new_token_raises_after_exhausting_retries(fresh_client, no_sleep, monkeypatch):
+def test_fetch_new_token_raises_after_exhausting_retries(client_without_token, no_sleep, monkeypatch):
     def mock_post(url, **kwargs):
         return MockResponse(503)
 
-    monkeypatch.setattr(fresh_client.session, "post", mock_post)
+    monkeypatch.setattr(client_without_token.session, "post", mock_post)
     with pytest.raises(StepikAuthError):
-        fresh_client._fetch_new_token()
+        client_without_token._fetch_new_token()
     assert no_sleep.call_count == stepik_client.MAX_RETRIES - 1
 
 
 # -- _request ---------------------------------------------------------------------
 
 
-def test_request_returns_response_on_first_success(client, no_sleep, monkeypatch):
+def test_request_returns_response_on_first_success(client_with_token, no_sleep, monkeypatch):
     mock_request = MagicMock(return_value=MockResponse(200))
-    monkeypatch.setattr(client.session, "request", mock_request)
-    result = client._request("GET", "http://example.com")
+    monkeypatch.setattr(client_with_token.session, "request", mock_request)
+    result = client_with_token._request("GET", "http://example.com")
     assert result.status_code == 200
     assert mock_request.call_count == 1
     assert no_sleep.call_count == 0
 
 
-def test_request_retries_on_retryable_status_then_succeeds(client, no_sleep, monkeypatch):
+def test_request_retries_on_retryable_status_then_succeeds(client_with_token, no_sleep, monkeypatch):
     responses = [MockResponse(503), MockResponse(200)]
 
     def mock_request(method, url, **kwargs):
         return responses.pop(0)
 
-    monkeypatch.setattr(client.session, "request", mock_request)
-    result = client._request("GET", "http://example.com")
+    monkeypatch.setattr(client_with_token.session, "request", mock_request)
+    result = client_with_token._request("GET", "http://example.com")
     assert result.status_code == 200
     assert no_sleep.call_count == 1
 
 
-def test_request_raises_after_exhausting_retries(client, no_sleep, monkeypatch):
+def test_request_raises_after_exhausting_retries(client_with_token, no_sleep, monkeypatch):
     mock_request = MagicMock(return_value=MockResponse(503))
-    monkeypatch.setattr(client.session, "request", mock_request)
+    monkeypatch.setattr(client_with_token.session, "request", mock_request)
     with pytest.raises(requests.HTTPError):
-        client._request("GET", "http://example.com")
+        client_with_token._request("GET", "http://example.com")
     assert mock_request.call_count == stepik_client.MAX_RETRIES
     assert no_sleep.call_count == stepik_client.MAX_RETRIES - 1
 
 
-def test_request_refreshes_token_once_on_401_first_attempt(client, no_sleep, monkeypatch):
+def test_request_refreshes_token_once_on_401_first_attempt(client_with_token, no_sleep, monkeypatch):
     responses = [MockResponse(401), MockResponse(200)]
     mock_request = MagicMock(side_effect=responses)
 
     def refresh_token():
-        client._access_token = "new-token"
+        client_with_token._access_token = "new-token"
 
     mock_fetch_new_token = MagicMock(side_effect=refresh_token)
 
-    monkeypatch.setattr(client.session, "request", mock_request)
-    monkeypatch.setattr(client, "_fetch_new_token", mock_fetch_new_token)
+    monkeypatch.setattr(client_with_token.session, "request", mock_request)
+    monkeypatch.setattr(client_with_token, "_fetch_new_token", mock_fetch_new_token)
 
-    result = client._request("GET", "http://example.com")
+    result = client_with_token._request("GET", "http://example.com")
     assert result.status_code == 200
     assert mock_fetch_new_token.call_count == 1
     assert no_sleep.call_count == 0
 
 
-def test_request_raises_on_non_retryable_status(client, no_sleep, monkeypatch):
+def test_request_raises_on_non_retryable_status(client_with_token, no_sleep, monkeypatch):
     mock_request = MagicMock(return_value=MockResponse(404))
-    monkeypatch.setattr(client.session, "request", mock_request)
+    monkeypatch.setattr(client_with_token.session, "request", mock_request)
     with pytest.raises(requests.HTTPError):
-        client._request("GET", "http://example.com")
+        client_with_token._request("GET", "http://example.com")
     assert mock_request.call_count == 1
 
 
 # -- get / get_by_ids ---------------------------------------------------------------
 
 
-def test_get_returns_parsed_json(client, monkeypatch):
+def test_get_returns_parsed_json(client_with_token, monkeypatch):
     def mock_request(method, url, **kwargs):
         return MockResponse(200, json_data={"sample_key": "sample_value"})
 
-    monkeypatch.setattr(client, "_request", mock_request)
-    assert client.get("some/path") == {"sample_key": "sample_value"}
+    monkeypatch.setattr(client_with_token, "_request", mock_request)
+    assert client_with_token.get("some/path") == {"sample_key": "sample_value"}
 
 
-def test_get_builds_url_relative_to_api_base(client, monkeypatch):
+def test_get_builds_url_relative_to_api_base(client_with_token, monkeypatch):
     recorded = {}
 
     def mock_request(method, url, **kwargs):
         recorded["url"] = url
         return MockResponse(200, json_data={})
 
-    monkeypatch.setattr(client, "_request", mock_request)
-    client.get("some/path")
+    monkeypatch.setattr(client_with_token, "_request", mock_request)
+    client_with_token.get("some/path")
     assert recorded["url"] == stepik_client.API_BASE + "some/path"
 
 
-def test_get_passes_through_an_already_absolute_url(client, monkeypatch):
+def test_get_passes_through_an_already_absolute_url(client_with_token, monkeypatch):
     recorded = {}
 
     def mock_request(method, url, **kwargs):
         recorded["url"] = url
         return MockResponse(200, json_data={})
 
-    monkeypatch.setattr(client, "_request", mock_request)
-    client.get("https://stepik.org/media/a.txt")
+    monkeypatch.setattr(client_with_token, "_request", mock_request)
+    client_with_token.get("https://stepik.org/media/a.txt")
     assert recorded["url"] == "https://stepik.org/media/a.txt"
 
 
-def test_get_by_ids_batches_requests(client, monkeypatch):
+def test_get_by_ids_batches_requests(client_with_token, monkeypatch):
     calls = []
 
     def mock_get(resource, params=None):
@@ -312,16 +312,16 @@ def test_get_by_ids_batches_requests(client, monkeypatch):
         batch_ids = [int(value) for _, value in params]
         return {resource: [{"id": batch_id} for batch_id in batch_ids]}
 
-    monkeypatch.setattr(client, "get", mock_get)
+    monkeypatch.setattr(client_with_token, "get", mock_get)
     ids = list(range(1, 66))
-    results = client.get_by_ids("courses", ids, batch_size=30)
+    results = client_with_token.get_by_ids("courses", ids, batch_size=30)
 
     assert [len(batch) for batch in calls] == [30, 30, 5]
     assert len(results) == 65
 
 
-def test_get_by_ids_returns_empty_list_for_no_ids(client, monkeypatch):
+def test_get_by_ids_returns_empty_list_for_no_ids(client_with_token, monkeypatch):
     mock_get = MagicMock()
-    monkeypatch.setattr(client, "get", mock_get)
-    assert client.get_by_ids("courses", []) == []
+    monkeypatch.setattr(client_with_token, "get", mock_get)
+    assert client_with_token.get_by_ids("courses", []) == []
     assert mock_get.call_count == 0
