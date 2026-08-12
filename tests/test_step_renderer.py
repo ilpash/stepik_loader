@@ -52,6 +52,12 @@ def test_pick_video_url_single_item_list_returns_it_regardless():
     assert _pick_video_url(urls, "best", "test-context") == urls[0]
 
 
+def test_pick_video_url_skips_an_entry_with_an_unreadable_quality():
+    urls = [{"quality": None, "url": "a"}, {"quality": "360", "url": "b"}]
+    result = _pick_video_url(urls, "720", "test-context")
+    assert result == {"quality": "360", "url": "b"}
+
+
 def test_pick_video_url_falls_back_to_lowest_when_requested_is_not_numeric(caplog):
     urls = [{"quality": "360", "url": "a"}, {"quality": "1080", "url": "b"}, {"quality": "720", "url": "c"}]
     result = _pick_video_url(urls, "hd", "test-context")

@@ -12,6 +12,7 @@ links to web pages keep the URL the course author wrote.
 
 import json
 import logging
+import math
 import mimetypes
 import os
 from dataclasses import dataclass
@@ -105,7 +106,7 @@ def _pick_video_url(urls, requested, log_label):
 
     def distance_from_target(url_entry):
         quality = quality_to_int(url_entry)
-        return abs(quality - target) if quality >= 0 else 10**9
+        return abs(quality - target) if quality >= 0 else math.inf
 
     closest = min(urls, key=distance_from_target)
     logger.warning(
