@@ -265,6 +265,16 @@ def test_render_pycharm_converts_a_markdown_statement_to_html(mock_resolve):
     assert "<p>Examples accompanying the atom.</p>" in html
 
 
+def test_render_pycharm_treats_a_null_description_format_as_html(mock_resolve):
+    block = {
+        "name": "pycharm",
+        "text": "<p>Implement the function.</p>",
+        "options": {"description_format": None},
+    }
+    html = _render_pycharm(block=block, resolve=mock_resolve, skip_attachments=False)
+    assert "<p>Implement the function.</p>" in html
+
+
 def test_render_pycharm_marks_a_file_the_course_hides(mock_resolve):
     block = {
         "name": "pycharm",
