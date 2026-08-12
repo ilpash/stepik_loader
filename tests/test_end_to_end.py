@@ -17,7 +17,8 @@ from conftest import MockStepikClient
 def course_data():
     """
     Raw Stepik-API-shaped fixture data for a course with two modules: one
-    text step (with an embedded image), one video step and one code step.
+    text step (with an embedded image), one video step, one code step and one
+    pycharm step.
     """
     return {
         "courses": [{"id": 1, "title": "Sample Course", "sections": [10, 11]}],
@@ -31,7 +32,7 @@ def course_data():
         ],
         "lessons": [
             {"id": 1000, "title": "Lesson One", "steps": [10000, 10002]},
-            {"id": 1001, "title": "Lesson Two", "steps": [10001]},
+            {"id": 1001, "title": "Lesson Two", "steps": [10001, 10003]},
         ],
         "steps": [
             {
@@ -70,6 +71,19 @@ def course_data():
                     },
                 },
             },
+            {
+                "id": 10003,
+                "position": 2,
+                "block": {
+                    "name": "pycharm",
+                    "text": "## Objects\n\nExamples accompanying the atom.",
+                    "options": {
+                        "title": "Exercise 1",
+                        "description_format": "MD",
+                        "files": [{"name": "src/Task.kt", "text": "fun main() {}", "is_visible": True}],
+                    },
+                },
+            },
         ],
     }
 
@@ -93,6 +107,7 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     step1_dir = "module_001_module-one/lesson_001_lesson-one/step_001_text"
     step2_dir = "module_002_module-two/lesson_001_lesson-two/step_001_video"
     step3_dir = "module_001_module-one/lesson_001_lesson-one/step_002_code"
+    step4_dir = "module_002_module-two/lesson_001_lesson-two/step_002_pycharm"
     expected_files = {
         "index.html",
         "assets/style.css",
@@ -105,6 +120,8 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
         f"{step2_dir}/video.mp4",
         f"{step3_dir}/index.html",
         f"{step3_dir}/source.json",
+        f"{step4_dir}/index.html",
+        f"{step4_dir}/source.json",
     }
     actual_files = {p.relative_to(course_dir).as_posix() for p in course_dir.rglob("*") if p.is_file()}
     assert actual_files == expected_files
@@ -114,10 +131,16 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     assert f"{step1_dir}/index.html" in toc_html
     assert f"{step2_dir}/index.html" in toc_html
     assert f"{step3_dir}/index.html" in toc_html
+    assert f"{step4_dir}/index.html" in toc_html
+    assert "Exercise 1" in toc_html
 
     step3_html = (course_dir / step3_dir / "index.html").read_text()
     assert "<pre><code>7 3</code></pre>" in step3_html
     assert "raw step data" not in step3_html
+
+    step4_html = (course_dir / step4_dir / "index.html").read_text()
+    assert "<h2>Objects</h2>" in step4_html
+    assert "src/Task.kt" in step4_html
 
 
 def test_main_respects_skip_videos_and_skip_attachments_flags(tmp_path, monkeypatch, course_data):
@@ -140,6 +163,7 @@ def test_main_respects_skip_videos_and_skip_attachments_flags(tmp_path, monkeypa
     step1_dir = "module_001_module-one/lesson_001_lesson-one/step_001_text"
     step2_dir = "module_002_module-two/lesson_001_lesson-two/step_001_video"
     step3_dir = "module_001_module-one/lesson_001_lesson-one/step_002_code"
+    step4_dir = "module_002_module-two/lesson_001_lesson-two/step_002_pycharm"
 
     # The <a> (attachment) is skipped entirely, so no local file for it, but
     # the <img> is untouched by --skip-attachments and still resolves.
@@ -153,6 +177,8 @@ def test_main_respects_skip_videos_and_skip_attachments_flags(tmp_path, monkeypa
         f"{step2_dir}/source.json",
         f"{step3_dir}/index.html",
         f"{step3_dir}/source.json",
+        f"{step4_dir}/index.html",
+        f"{step4_dir}/source.json",
     }
     actual_files = {p.relative_to(course_dir).as_posix() for p in course_dir.rglob("*") if p.is_file()}
     assert actual_files == expected_files
