@@ -118,8 +118,7 @@ _TYPE_TO_QUIZ_NOTE = {
 
 
 def _render_quiz(block):
-    prompt = block.get("text", "")
-    parts = [f'<div class="prompt">{prompt}</div>'] if prompt else []
+    parts = [block.get("text", "")]
     # block["options"] holds quiz settings, not the answers -- those come from a quiz
     # dataset that needs user-level auth, which this read-only exporter always avoids.
     note = _TYPE_TO_QUIZ_NOTE[block["name"]]
