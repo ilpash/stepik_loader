@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 
 import requests
+from dotenv import load_dotenv
 
 from course_tree import build_course_tree
 from step_renderer import StepContext, render_step
@@ -37,6 +38,7 @@ def parse_args(argv=None):
 def main(argv=None):
     args = parse_args(argv)
     logging.basicConfig(level=args.log_level, format="%(levelname)s %(message)s")
+    load_dotenv()
 
     try:
         client = StepikClient()

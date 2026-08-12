@@ -12,7 +12,6 @@ import time
 from pathlib import Path
 
 import requests
-from dotenv import load_dotenv
 
 from retry import MAX_RETRIES, RETRYABLE_STATUS_CODES, backoff_sleep
 
@@ -36,7 +35,6 @@ class StepikAuthError(RuntimeError):
 
 class StepikClient:
     def __init__(self, client_id=None, client_secret=None, token_cache_path=None):
-        load_dotenv()
         self.client_id = client_id or os.environ.get("STEPIK_CLIENT_ID")
         self.client_secret = client_secret or os.environ.get("STEPIK_CLIENT_SECRET")
         if not self.client_id or not self.client_secret:

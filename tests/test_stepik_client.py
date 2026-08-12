@@ -23,15 +23,6 @@ class MockResponse:
             raise requests.HTTPError(f"{self.status_code} error")
 
 
-@pytest.fixture(autouse=True)
-def no_dotenv(monkeypatch):
-    # Never let a real .env file on disk influence these tests.
-    def mock_load_dotenv():
-        pass
-
-    monkeypatch.setattr(stepik_client, "load_dotenv", mock_load_dotenv)
-
-
 @pytest.fixture
 def fresh_client(tmp_path):
     """
