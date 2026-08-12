@@ -3,15 +3,25 @@ from unittest.mock import MagicMock
 
 import pytest
 
+import resource_downloader
+
 
 @pytest.fixture(autouse=True)
 def no_sleep(monkeypatch):
     """
-    Skip real retry/backoff delays in stepik_client and resource_downloader
+    Skip the real retry/backoff delays that retry.backoff_sleep would wait out
     """
     mock_sleep = MagicMock()
     monkeypatch.setattr(time, "sleep", mock_sleep)
     return mock_sleep
+
+
+@pytest.fixture
+def no_downloads(monkeypatch):
+    """
+    Make any download attempt fail loudly -- None is not callable
+    """
+    monkeypatch.setattr(resource_downloader, "download_resource", None)
 
 
 class MockStepikClient:

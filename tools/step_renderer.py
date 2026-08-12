@@ -13,6 +13,7 @@ links to web pages keep the URL the course author wrote.
 import json
 import logging
 import mimetypes
+from dataclasses import dataclass
 from html import escape
 from pathlib import Path
 from urllib.parse import urlparse
@@ -27,6 +28,22 @@ logger = logging.getLogger("stepik_export")
 
 # tags/attributes that may reference a downloadable resource inside step HTML
 _RESOURCE_ATTRS = [("img", "src"), ("audio", "src"), ("source", "src"), ("a", "href")]
+
+
+@dataclass(frozen=True)
+class StepContext:
+    course_id: int
+    course_title: str
+    module_title: str
+    lesson_id: int
+    lesson_title: str
+    video_quality: str
+    access_token: str
+    skip_videos: bool = False
+    skip_attachments: bool = False
+
+    def log_label(self, step_id):
+        return f"course={self.course_id} lesson={self.lesson_id} step={step_id}"
 
 
 def _is_downloadable_file(url):
@@ -236,24 +253,12 @@ def _render_generic(block, log_label):
     )
 
 
-def render_step(
-    step_node,
-    step_dir,
-    course_title,
-    module_title,
-    lesson_title,
-    access_token,
-    video_quality,
-    course_id,
-    lesson_id,
-    skip_videos=False,
-    skip_attachments=False,
-):
+def render_step(step_node, step_dir, context):
     step_dir = Path(step_dir)
     step_dir.mkdir(parents=True, exist_ok=True)
     block = step_node.get("block", {})
     block_type = block.get("name", "unknown")
-    log_label = f"course={course_id} lesson={lesson_id} step={step_node['id']}"
+    log_label = context.log_label(step_node["id"])
 
     resolved = {}
 
@@ -262,18 +267,18 @@ def render_step(
         if url not in resolved:
             hint = filename_hint or f"resource_{index}_{resource_downloader.safe_filename(url)}"
             resolved[url] = resource_downloader.download_resource(
-                url, step_dir, log_label, access_token=access_token, filename_hint=hint
+                url, step_dir, log_label, access_token=context.access_token, filename_hint=hint
             )
         return resolved[url]
 
     if block_type == "video":
-        body_html = _render_video(block, resolve, log_label, video_quality, skip_videos)
+        body_html = _render_video(block, resolve, log_label, context.video_quality, context.skip_videos)
     elif block_type == "text":
-        body_html = _render_text(block, resolve, skip_attachments)
+        body_html = _render_text(block, resolve, context.skip_attachments)
     elif block_type == "code":
-        body_html = _render_code(block, resolve, skip_attachments)
+        body_html = _render_code(block, resolve, context.skip_attachments)
     elif block_type == "pycharm":
-        body_html = _render_pycharm(block, resolve, skip_attachments)
+        body_html = _render_pycharm(block, resolve, context.skip_attachments)
     elif block_type in _TYPE_TO_QUIZ_NOTE:
         body_html = _render_quiz(block)
     else:
@@ -285,9 +290,9 @@ def render_step(
     step_title = options_title or generated_title
 
     html = get_template("step.html.j2").render(
-        course_title=course_title,
-        module_title=module_title,
-        lesson_title=lesson_title,
+        course_title=context.course_title,
+        module_title=context.module_title,
+        lesson_title=context.lesson_title,
         step_title=step_title,
         block_type=block_type,
         body_html=body_html,

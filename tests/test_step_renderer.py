@@ -5,6 +5,7 @@ import pytest
 import resource_downloader
 from step_renderer import (
     _TYPE_TO_QUIZ_NOTE,
+    StepContext,
     _pick_video_url,
     _render_code,
     _render_generic,
@@ -366,23 +367,26 @@ def _make_step_node(block, step_id=1):
     return {"id": step_id, "block": block, "raw": {"id": step_id, "block": block}}
 
 
-def test_render_step_basic_case(tmp_path, monkeypatch):
-    monkeypatch.setattr(resource_downloader, "download_resource", None)
+def _render_step_into(step_dir, step_node, **context_overrides):
+    context = StepContext(
+        course_id=1,
+        course_title="Course",
+        module_title="Module",
+        lesson_id=2,
+        lesson_title="Lesson",
+        video_quality="best",
+        access_token="test-token",
+        **context_overrides,
+    )
+    return render_step(step_node, step_dir, context)
+
+
+def test_render_step_basic_case(tmp_path, no_downloads):
     step_dir = tmp_path / "step_01_text"
     block = {"name": "text", "text": "hello"}
     step_node = _make_step_node(block, step_id=42)
 
-    title = render_step(
-        step_node=step_node,
-        step_dir=step_dir,
-        course_title="Course",
-        module_title="Module",
-        lesson_title="Lesson",
-        access_token="test-token",
-        video_quality="best",
-        course_id=1,
-        lesson_id=2,
-    )
+    title = _render_step_into(step_dir, step_node)
 
     assert title == "Step 42 (text)"
     html = (step_dir / "index.html").read_text()
@@ -392,30 +396,18 @@ def test_render_step_basic_case(tmp_path, monkeypatch):
     assert source == step_node["raw"]
 
 
-def test_render_step_uses_the_title_a_block_keeps_under_options(tmp_path, monkeypatch):
-    monkeypatch.setattr(resource_downloader, "download_resource", None)
+def test_render_step_uses_the_title_a_block_keeps_under_options(tmp_path, no_downloads):
     block = {"name": "pycharm", "text": "<p>Implement it.</p>", "options": {"title": "Scope Functions"}}
     step_node = _make_step_node(block, step_id=99)
     step_dir = tmp_path / "step"
 
-    title = render_step(
-        step_node=step_node,
-        step_dir=step_dir,
-        course_title="Course",
-        module_title="Module",
-        lesson_title="Lesson",
-        access_token="test-token",
-        video_quality="best",
-        course_id=1,
-        lesson_id=2,
-    )
+    title = _render_step_into(step_dir, step_node)
 
     assert title == "Scope Functions"
     assert "Scope Functions" in (step_dir / "index.html").read_text()
 
 
-def test_render_step_dispatches_code_block_to_code_renderer(tmp_path, monkeypatch, caplog):
-    monkeypatch.setattr(resource_downloader, "download_resource", None)
+def test_render_step_dispatches_code_block_to_code_renderer(tmp_path, no_downloads, caplog):
     block = {
         "name": "code",
         "text": "<p>Print the sum.</p>",
@@ -424,17 +416,7 @@ def test_render_step_dispatches_code_block_to_code_renderer(tmp_path, monkeypatc
     step_node = _make_step_node(block)
     step_dir = tmp_path / "step"
 
-    render_step(
-        step_node=step_node,
-        step_dir=step_dir,
-        course_title="Course",
-        module_title="Module",
-        lesson_title="Lesson",
-        access_token="test-token",
-        video_quality="best",
-        course_id=1,
-        lesson_id=2,
-    )
+    _render_step_into(step_dir, step_node)
 
     html = (step_dir / "index.html").read_text()
     # only _render_code emits this note, so its presence is what proves the dispatch
@@ -445,8 +427,7 @@ def test_render_step_dispatches_code_block_to_code_renderer(tmp_path, monkeypatc
     assert "no dedicated renderer" not in caplog.text
 
 
-def test_render_step_dispatches_pycharm_block_to_pycharm_renderer(tmp_path, monkeypatch):
-    monkeypatch.setattr(resource_downloader, "download_resource", None)
+def test_render_step_dispatches_pycharm_block_to_pycharm_renderer(tmp_path, no_downloads):
     block = {
         "name": "pycharm",
         "text": "<p>Implement it.</p>",
@@ -455,17 +436,7 @@ def test_render_step_dispatches_pycharm_block_to_pycharm_renderer(tmp_path, monk
     step_node = _make_step_node(block)
     step_dir = tmp_path / "step"
 
-    render_step(
-        step_node=step_node,
-        step_dir=step_dir,
-        course_title="Course",
-        module_title="Module",
-        lesson_title="Lesson",
-        access_token="test-token",
-        video_quality="best",
-        course_id=1,
-        lesson_id=2,
-    )
+    _render_step_into(step_dir, step_node)
 
     html = (step_dir / "index.html").read_text()
     # only _render_pycharm emits this note, so its presence is what proves the dispatch
@@ -488,17 +459,7 @@ def test_render_step_downloads_a_url_used_by_two_tags_once(tmp_path, monkeypatch
     block = {"name": "text", "text": f'<a href="{image_url}"><img src="{image_url}"></a>'}
     step_dir = tmp_path / "step"
 
-    render_step(
-        step_node=_make_step_node(block),
-        step_dir=step_dir,
-        course_title="Course",
-        module_title="Module",
-        lesson_title="Lesson",
-        access_token="test-token",
-        video_quality="best",
-        course_id=1,
-        lesson_id=2,
-    )
+    _render_step_into(step_dir, _make_step_node(block))
 
     assert calls == [image_url]
     html = (step_dir / "index.html").read_text()
@@ -506,23 +467,12 @@ def test_render_step_downloads_a_url_used_by_two_tags_once(tmp_path, monkeypatch
     assert 'src="local_diagram.png"' in html
 
 
-def test_render_step_dispatches_unknown_block_type_to_generic_renderer(tmp_path, monkeypatch):
-    monkeypatch.setattr(resource_downloader, "download_resource", None)
+def test_render_step_dispatches_unknown_block_type_to_generic_renderer(tmp_path, no_downloads):
     block = {"name": "quiz", "custom_field": "custom_value"}
     step_node = _make_step_node(block)
     step_dir = tmp_path / "step"
 
-    render_step(
-        step_node=step_node,
-        step_dir=step_dir,
-        course_title="Course",
-        module_title="Module",
-        lesson_title="Lesson",
-        access_token="test-token",
-        video_quality="best",
-        course_id=1,
-        lesson_id=2,
-    )
+    _render_step_into(step_dir, step_node)
 
     html = (step_dir / "index.html").read_text()
     assert "raw step data" in html

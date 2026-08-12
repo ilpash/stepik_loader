@@ -16,7 +16,7 @@ from pathlib import Path
 import requests
 
 from course_tree import build_course_tree
-from step_renderer import render_step
+from step_renderer import StepContext, render_step
 from stepik_client import StepikAuthError, StepikClient
 from toc_builder import build_toc
 
@@ -78,21 +78,20 @@ def main(argv=None):
                     lesson["title"],
                     step["id"],
                 )
-                step_title = render_step(
-                    step,
-                    step_dir,
+                context = StepContext(
+                    course_id=tree["id"],
                     course_title=tree["title"],
                     module_title=module["title"],
+                    lesson_id=lesson["id"],
                     lesson_title=lesson["title"],
+                    video_quality=args.video_quality,
                     # per-step property call, so token refresh could happen if it expires mid-export
                     access_token=client.access_token,
-                    video_quality=args.video_quality,
-                    course_id=tree["id"],
-                    lesson_id=lesson["id"],
                     skip_videos=args.skip_videos,
                     skip_attachments=args.skip_attachments,
                 )
-                step["title"] = step_title
+                # build_toc reads the title back off the tree; see course_tree's docstring
+                step["title"] = render_step(step, step_dir, context)
 
     build_toc(tree, course_dir)
     logger.info("Done. Open %s in a browser.", course_dir / "index.html")
