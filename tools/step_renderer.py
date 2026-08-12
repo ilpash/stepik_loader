@@ -256,14 +256,16 @@ def render_step(
     block_type = block.get("name", "unknown")
     context = f"course={course_id} lesson={lesson_id} step={step_node['id']}"
 
+    resolved = {}
+
     def resolve(url, filename_hint, index):
-        hint = filename_hint
-        if hint is None:
-            base_name = resource_downloader.safe_filename(url)
-            hint = f"resource_{index}_{base_name}" if index else base_name
-        return resource_downloader.download_resource(
-            url, step_dir, context, access_token=access_token, filename_hint=hint
-        )
+        # The same URL can appear in several tags of one step, so download it once.
+        if url not in resolved:
+            hint = filename_hint or f"resource_{index}_{resource_downloader.safe_filename(url)}"
+            resolved[url] = resource_downloader.download_resource(
+                url, step_dir, context, access_token=access_token, filename_hint=hint
+            )
+        return resolved[url]
 
     if block_type == "video":
         body_html = _render_video(block, resolve, context, video_quality, skip_videos)

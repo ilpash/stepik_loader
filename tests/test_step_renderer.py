@@ -474,6 +474,38 @@ def test_render_step_dispatches_pycharm_block_to_pycharm_renderer(tmp_path, monk
     assert "raw step data" not in html
 
 
+def test_render_step_downloads_a_url_used_by_two_tags_once(tmp_path, monkeypatch):
+    # A picture wrapped in a link to itself names the same URL twice, and downloading
+    # it per tag would leave the step holding two copies of one file.
+    image_url = "https://cdn.example.com/some_diagram.png"
+    calls = []
+
+    def mock_download_resource(url, dest_dir, context, access_token=None, filename_hint=None):
+        calls.append(url)
+        return "local_diagram.png"
+
+    monkeypatch.setattr(resource_downloader, "download_resource", mock_download_resource)
+    block = {"name": "text", "text": f'<a href="{image_url}"><img src="{image_url}"></a>'}
+    step_dir = tmp_path / "step"
+
+    render_step(
+        step_node=_make_step_node(block),
+        step_dir=step_dir,
+        course_title="Course",
+        module_title="Module",
+        lesson_title="Lesson",
+        access_token="test-token",
+        video_quality="best",
+        course_id=1,
+        lesson_id=2,
+    )
+
+    assert calls == [image_url]
+    html = (step_dir / "index.html").read_text()
+    assert 'href="local_diagram.png"' in html
+    assert 'src="local_diagram.png"' in html
+
+
 def test_render_step_dispatches_unknown_block_type_to_generic_renderer(tmp_path, monkeypatch):
     monkeypatch.setattr(resource_downloader, "download_resource", None)
     block = {"name": "quiz", "custom_field": "custom_value"}
