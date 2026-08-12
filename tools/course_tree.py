@@ -112,7 +112,7 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
                 lesson_node["steps"].append(
                     {
                         "id": step["id"],
-                        "dir_name": _dir_name(s_idx, step.get("block", {}).get("name", "step"), prefix="step_"),
+                        "dir_name": _dir_name(s_idx, step.get("block", {}).get("name", "unknown"), prefix="step_"),
                         "block": step.get("block", {}),
                         "raw": step,
                     }
