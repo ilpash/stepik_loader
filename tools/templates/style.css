@@ -22,10 +22,9 @@
 * { box-sizing: border-box; }
 
 body {
-  margin: 0;
+  margin: 0 auto;
   padding: 1.5rem;
   max-width: 860px;
-  margin-inline: auto;
   background: var(--bg);
   color: var(--fg);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -45,16 +44,26 @@ a { color: var(--accent); }
 .breadcrumb a { color: var(--muted); text-decoration: none; }
 .breadcrumb a:hover { text-decoration: underline; }
 
-.block-type {
-  display: inline-block;
-  font-size: 0.75rem;
+.block-type,
+.hidden-file {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted);
   border: 1px solid var(--border);
   border-radius: 4px;
+}
+
+.block-type {
+  display: inline-block;
+  font-size: 0.75rem;
   padding: 0.1rem 0.5rem;
   margin-bottom: 1rem;
+}
+
+.hidden-file {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  vertical-align: middle;
 }
 
 video, img { max-width: 100%; height: auto; border-radius: 4px; }
@@ -84,17 +93,6 @@ summary {
 }
 
 details pre { margin: 0 0.6rem 0.6rem; }
-
-.hidden-file {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 0.1rem 0.4rem;
-  vertical-align: middle;
-}
 
 .warning {
   border: 1px solid #c05621;
