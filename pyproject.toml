@@ -3,6 +3,7 @@ pythonpath = ["tools"]
 testpaths = ["tests"]
 
 [tool.ruff]
+src = ["tools", "tests"]
 target-version = "py312"
 line-length = 120
 
@@ -13,9 +14,3 @@ select = ["E", "W", "F", "B", "I", "UP", "S", "C4", "SIM", "T20", "ARG"]
 # Test fixtures legitimately use bare `assert` and mock credential strings, and a
 # double's signature has to mirror the real one whether or not it reads every argument.
 "tests/*" = ["S101", "S105", "S106", "ARG001", "ARG002", "ARG005"]
-
-[tool.ruff.lint.isort]
-known-first-party = [
-    "conftest", "course_tree", "export_course", "resource_downloader",
-    "retry", "step_renderer", "stepik_client", "template_env", "toc_builder",
-]
