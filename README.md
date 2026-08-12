@@ -52,7 +52,7 @@ directly in a browser; it has no dependency on this project's code.
 The suite uses mocked HTTP responses throughout — it never touches the
 real Stepik API or network, and runs in a few seconds.
 
-## Scope (v1)
+## Scope
 
 - **Public/free courses only.** This tool uses the OAuth2 `client_credentials`
   grant, which does not carry any user identity — it can't see paid or
@@ -65,8 +65,8 @@ real Stepik API or network, and runs in a few seconds.
   their question text plus a note about what can't be shown offline. Everything
   else gets a generic fallback (raw step data shown as-is) with a warning
   logged — see `tools/step_renderer.py`.
-- **No resume/dry-run/verification tooling in v1** — kept out deliberately to
-  keep the first version simple.
+- **No resume/dry-run/verification tooling yet** — kept out deliberately to
+  keep the tool simple.
 - Interactive grading, hidden tests, and other users' submissions are never
   exported — Stepik's API doesn't expose them to non-privileged clients, and
   they wouldn't work offline anyway.

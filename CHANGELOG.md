@@ -2,6 +2,28 @@
 
 All notable changes to this project are documented here.
 
+## [1.1.0] - 2026-08-12
+
+### Added
+- Dedicated renderer for code steps: problem statement, sample input/output,
+  execution limits, and per-language starter code in collapsible sections.
+- Sorting, matching and free-answer steps now keep their question text plus a
+  note about what can't be shown offline, like the other quiz types.
+
+### Fixed
+- Choice steps no longer present a quiz settings key as an answer option.
+- Two resources in the same step can no longer overwrite each other when a
+  missing file extension is guessed.
+- Auth and network failures while fetching a course are reported as errors
+  instead of an unhandled traceback.
+- Units that cannot be resolved are logged as warnings instead of dropped.
+
+### Changed
+- Dependency minimums raised for requests, jinja2, beautifulsoup4,
+  python-dotenv, python-slugify, pytest and ruff.
+- Internal: Ruff linting enforced in CI, Dependabot updates, wider test
+  coverage, documentation corrections.
+
 ## [1.0.0] - 2026-08-11
 
 ### Added
