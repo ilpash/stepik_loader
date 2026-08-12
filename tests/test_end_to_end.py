@@ -210,7 +210,7 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
         f"{LESSON_3_STEP_4}/index.html",
         f"{LESSON_3_STEP_4}/source.json",
     }
-    actual_files = {p.relative_to(course_dir).as_posix() for p in course_dir.rglob("*") if p.is_file()}
+    actual_files = {path.relative_to(course_dir).as_posix() for path in course_dir.rglob("*") if path.is_file()}
     assert actual_files == expected_files
 
     # the table of contents links every step, and names each one however that step is named
@@ -325,7 +325,7 @@ def test_main_respects_skip_videos_and_skip_attachments_flags(tmp_path, monkeypa
         f"{LESSON_3_STEP_4}/index.html",
         f"{LESSON_3_STEP_4}/source.json",
     }
-    actual_files = {p.relative_to(course_dir).as_posix() for p in course_dir.rglob("*") if p.is_file()}
+    actual_files = {path.relative_to(course_dir).as_posix() for path in course_dir.rglob("*") if path.is_file()}
     assert actual_files == expected_files
 
     text_html = (course_dir / LESSON_1_STEP_1 / "index.html").read_text()

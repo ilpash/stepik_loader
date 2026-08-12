@@ -276,11 +276,11 @@ def test_build_course_tree_keeps_sort_order_for_a_large_lesson(minimal_mock_clie
     assert steps[0]["dir_name"] == "step_001_text"
     assert steps[104]["dir_name"] == "step_105_text"
     assert steps[-1]["dir_name"] == "step_210_text"
-    dir_names = [s["dir_name"] for s in steps]
+    dir_names = [step["dir_name"] for step in steps]
     assert dir_names == sorted(dir_names)
 
 
 def test_build_course_tree_raises_when_course_not_found():
     client = MockStepikClient({"courses": []})
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="not found or not accessible"):
         build_course_tree(client, 1)

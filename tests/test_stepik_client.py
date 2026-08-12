@@ -220,7 +220,7 @@ def test_fetch_new_token_raises_after_exhausting_retries(fresh_client, no_sleep,
 
 
 def test_request_returns_response_on_first_success(client, no_sleep, monkeypatch):
-    mock_request = MagicMock(side_effect=lambda *a, **k: MockResponse(200))
+    mock_request = MagicMock(return_value=MockResponse(200))
     monkeypatch.setattr(client.session, "request", mock_request)
     result = client._request("GET", "http://example.com")
     assert result.status_code == 200
@@ -241,7 +241,7 @@ def test_request_retries_on_retryable_status_then_succeeds(client, no_sleep, mon
 
 
 def test_request_raises_after_exhausting_retries(client, no_sleep, monkeypatch):
-    mock_request = MagicMock(side_effect=lambda *a, **k: MockResponse(503))
+    mock_request = MagicMock(return_value=MockResponse(503))
     monkeypatch.setattr(client.session, "request", mock_request)
     with pytest.raises(requests.HTTPError):
         client._request("GET", "http://example.com")
@@ -268,7 +268,7 @@ def test_request_refreshes_token_once_on_401_first_attempt(client, no_sleep, mon
 
 
 def test_request_raises_on_non_retryable_status(client, no_sleep, monkeypatch):
-    mock_request = MagicMock(side_effect=lambda *a, **k: MockResponse(404))
+    mock_request = MagicMock(return_value=MockResponse(404))
     monkeypatch.setattr(client.session, "request", mock_request)
     with pytest.raises(requests.HTTPError):
         client._request("GET", "http://example.com")
@@ -315,14 +315,14 @@ def test_get_by_ids_batches_requests(client, monkeypatch):
 
     def mock_get(resource, params=None):
         calls.append(params)
-        batch_ids = [int(v) for _, v in params]
-        return {resource: [{"id": i} for i in batch_ids]}
+        batch_ids = [int(value) for _, value in params]
+        return {resource: [{"id": batch_id} for batch_id in batch_ids]}
 
     monkeypatch.setattr(client, "get", mock_get)
     ids = list(range(1, 66))
     results = client.get_by_ids("courses", ids, batch_size=30)
 
-    assert [len(c) for c in calls] == [30, 30, 5]
+    assert [len(batch) for batch in calls] == [30, 30, 5]
     assert len(results) == 65
 
 
