@@ -17,11 +17,13 @@ def no_sleep(monkeypatch):
 
 
 @pytest.fixture
-def no_downloads(monkeypatch):
+def mock_download_resource(monkeypatch):
     """
-    Make any download attempt fail loudly -- None is not callable
+    Stand in for resource_downloader.download_resource so tests can count its calls
     """
-    monkeypatch.setattr(resource_downloader, "download_resource", None)
+    mock_download = MagicMock(return_value="local_resource")
+    monkeypatch.setattr(resource_downloader, "download_resource", mock_download)
+    return mock_download
 
 
 class MockStepikClient:

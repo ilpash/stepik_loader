@@ -1,8 +1,8 @@
 import json
+from unittest.mock import MagicMock
 
 import pytest
 
-import resource_downloader
 from step_renderer import (
     _TYPE_TO_QUIZ_NOTE,
     StepContext,
@@ -15,6 +15,12 @@ from step_renderer import (
     _render_video,
     render_step,
 )
+
+
+@pytest.fixture
+def mock_resolve():
+    return MagicMock(return_value="local_resource")
+
 
 # -- _pick_video_url ---------------------------------------------------------
 
@@ -92,46 +98,41 @@ def test_render_generic_dumps_raw_block_as_json(caplog):
 # -- _render_text --------------------------------------------------------------
 
 
-def test_render_text_rewrites_img_src_via_resolve():
+def test_render_text_rewrites_img_src_via_resolve(mock_resolve):
+    mock_resolve.return_value = "local.png"
     block = {"text": '<img src="http://x.com/a.png">'}
-    calls = []
-
-    def mock_resolve(url, filename_hint, index):
-        calls.append(url)
-        return "local.png"
 
     html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
+
     assert 'src="local.png"' in html
-    assert calls == ["http://x.com/a.png"]
+    mock_resolve.assert_called_once_with("http://x.com/a.png", filename_hint=None, index=1)
 
 
-def test_render_text_skips_non_http_src():
-    # A data: URI src never matches the "http"-prefix check, so resolve is never called.
+def test_render_text_skips_non_http_src(mock_resolve):
+    # A data: URI src never matches the "http"-prefix check, so nothing is downloaded.
     block = {"text": '<img src="data:image/png;base64,abc">'}
-    html = _render_text(block=block, resolve=None, skip_attachments=False)
+    html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "data:image/png;base64,abc" in html
+    assert mock_resolve.call_count == 0
 
 
-def test_render_text_skips_anchor_tags_when_skip_attachments_true():
-    # The only tag present is an <a>, and skip_attachments=True skips anchor
-    # tags entirely, so resolve is never called.
+def test_render_text_skips_anchor_tags_when_skip_attachments_true(mock_resolve):
+    # The only tag present is an <a>, and skip_attachments=True skips anchor tags entirely.
     block = {"text": '<a href="http://x.com/f.pdf">link</a>'}
-    html = _render_text(block=block, resolve=None, skip_attachments=True)
+    html = _render_text(block=block, resolve=mock_resolve, skip_attachments=True)
     assert 'href="http://x.com/f.pdf"' in html
+    assert mock_resolve.call_count == 0
 
 
-def test_render_text_downloads_an_anchor_that_points_at_a_file():
+def test_render_text_downloads_an_anchor_that_points_at_a_file(mock_resolve):
+    mock_resolve.return_value = "local_notes.pdf"
     attachment_url = "https://stepik.org/media/attachments/lesson/42/notes.pdf"
     block = {"text": f'<a href="{attachment_url}">notes</a>'}
-    calls = []
-
-    def mock_resolve(url, filename_hint, index):
-        calls.append(url)
-        return "local_notes.pdf"
 
     html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
+
     assert 'href="local_notes.pdf"' in html
-    assert calls == [attachment_url]
+    mock_resolve.assert_called_once_with(attachment_url, filename_hint=None, index=1)
 
 
 @pytest.mark.parametrize(
@@ -144,34 +145,31 @@ def test_render_text_downloads_an_anchor_that_points_at_a_file():
         "https://example.com/some_page.html",
     ],
 )
-def test_render_text_keeps_an_anchor_that_points_at_a_web_page(page_url):
-    # A web page is worthless offline and mirroring it would replace the live URL,
-    # so it stays untouched -- resolve=None proves nothing tries to download it.
+def test_render_text_keeps_an_anchor_that_points_at_a_web_page(page_url, mock_resolve):
+    # A web page is worthless offline and mirroring it would replace the live URL.
     block = {"text": f'<a href="{page_url}">link</a>'}
-    html = _render_text(block=block, resolve=None, skip_attachments=False)
+    html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
     assert f'href="{page_url}"' in html
+    assert mock_resolve.call_count == 0
 
 
-def test_render_text_downloads_an_image_from_an_extensionless_url():
+def test_render_text_downloads_an_image_from_an_extensionless_url(mock_resolve):
     # Stepik serves plenty of images from a URL with no extension. Only <a> hrefs are
     # filtered by media type, so an <img> downloads whatever its URL looks like.
+    mock_resolve.return_value = "local_image"
     image_url = "https://ucarecdn.stepik.net/some-image-id"
     block = {"text": f'<img src="{image_url}">'}
-    calls = []
-
-    def mock_resolve(url, filename_hint, index):
-        calls.append(url)
-        return "local_image"
 
     html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
+
     assert 'src="local_image"' in html
-    assert calls == [image_url]
+    mock_resolve.assert_called_once_with(image_url, filename_hint=None, index=1)
 
 
 # -- _render_code --------------------------------------------------------------
 
 
-def test_render_code_basic_case():
+def test_render_code_basic_case(mock_resolve):
     block = {
         "name": "code",
         "text": "<p>Print the sum of two integers.</p>",
@@ -183,7 +181,7 @@ def test_render_code_basic_case():
             "code_templates": {"python3": "print(sum())", "c++": "#include <iostream>"},
         },
     }
-    html = _render_code(block=block, resolve=None, skip_attachments=False)
+    html = _render_code(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "Print the sum of two integers." in html
     assert "<pre><code>7 3</code></pre>" in html
     assert "<pre><code>10</code></pre>" in html
@@ -197,7 +195,7 @@ def test_render_code_basic_case():
     assert "not available offline" in html
 
 
-def test_render_code_omits_languages_with_empty_templates():
+def test_render_code_omits_languages_with_empty_templates(mock_resolve):
     # Stepik lists every language it supports, leaving the template empty where the
     # author wrote none -- rendering those gives toggles that open to nothing.
     block = {
@@ -205,15 +203,15 @@ def test_render_code_omits_languages_with_empty_templates():
         "text": "",
         "options": {"code_templates": {"python3": "print()", "kotlin": "", "swift": "   "}},
     }
-    html = _render_code(block=block, resolve=None, skip_attachments=False)
+    html = _render_code(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "python3" in html
     assert "kotlin" not in html
     assert "swift" not in html
 
 
-def test_render_code_renders_statement_when_options_are_missing():
+def test_render_code_renders_statement_when_options_are_missing(mock_resolve):
     block = {"name": "code", "text": "<p>Solve the task.</p>"}
-    html = _render_code(block=block, resolve=None, skip_attachments=False)
+    html = _render_code(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "Solve the task." in html
     assert "Samples" not in html
     assert "Default limits" not in html
@@ -221,23 +219,20 @@ def test_render_code_renders_statement_when_options_are_missing():
     assert "not available offline" in html
 
 
-def test_render_code_rewrites_images_in_the_statement():
+def test_render_code_rewrites_images_in_the_statement(mock_resolve):
+    mock_resolve.return_value = "local.png"
     block = {"name": "code", "text": '<img src="http://x.com/diagram.png">', "options": {}}
-    calls = []
-
-    def mock_resolve(url, filename_hint, index):
-        calls.append(url)
-        return "local.png"
 
     html = _render_code(block=block, resolve=mock_resolve, skip_attachments=False)
+
     assert 'src="local.png"' in html
-    assert calls == ["http://x.com/diagram.png"]
+    mock_resolve.assert_called_once_with("http://x.com/diagram.png", filename_hint=None, index=1)
 
 
 # -- _render_pycharm -----------------------------------------------------------
 
 
-def test_render_pycharm_basic_case():
+def test_render_pycharm_basic_case(mock_resolve):
     block = {
         "name": "pycharm",
         "text": "<p>Implement the function.</p>",
@@ -247,7 +242,7 @@ def test_render_pycharm_basic_case():
             "files": [{"name": "src/Task.kt", "text": "fun main() {\n  TODO()\n}", "is_visible": True}],
         },
     }
-    html = _render_pycharm(block=block, resolve=None, skip_attachments=False)
+    html = _render_pycharm(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "Implement the function." in html
     assert "<h3>src/Task.kt</h3>" in html
     assert "TODO()" in html
@@ -255,18 +250,18 @@ def test_render_pycharm_basic_case():
     assert "not available offline" in html
 
 
-def test_render_pycharm_converts_a_markdown_statement_to_html():
+def test_render_pycharm_converts_a_markdown_statement_to_html(mock_resolve):
     block = {
         "name": "pycharm",
         "text": "## Objects\n\nExamples accompanying the atom.",
         "options": {"description_format": "MD"},
     }
-    html = _render_pycharm(block=block, resolve=None, skip_attachments=False)
+    html = _render_pycharm(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "<h2>Objects</h2>" in html
     assert "<p>Examples accompanying the atom.</p>" in html
 
 
-def test_render_pycharm_marks_a_file_the_course_hides():
+def test_render_pycharm_marks_a_file_the_course_hides(mock_resolve):
     block = {
         "name": "pycharm",
         "text": "",
@@ -277,23 +272,23 @@ def test_render_pycharm_marks_a_file_the_course_hides():
             ]
         },
     }
-    html = _render_pycharm(block=block, resolve=None, skip_attachments=False)
+    html = _render_pycharm(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "<h3>src/Task.kt</h3>" in html
     assert '<h3>test/Tests.kt <span class="hidden-file">hidden</span></h3>' in html
     assert "class Tests" in html
 
 
-def test_render_pycharm_notes_a_file_with_no_content():
+def test_render_pycharm_notes_a_file_with_no_content(mock_resolve):
     block = {"name": "pycharm", "text": "", "options": {"files": [{"name": "fizz.kt", "text": ""}]}}
-    html = _render_pycharm(block=block, resolve=None, skip_attachments=False)
+    html = _render_pycharm(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "<h3>fizz.kt</h3>" in html
     assert "This file is empty." in html
     assert "<pre>" not in html
 
 
-def test_render_pycharm_renders_a_statement_when_the_step_has_no_files():
+def test_render_pycharm_renders_a_statement_when_the_step_has_no_files(mock_resolve):
     block = {"name": "pycharm", "text": "<p>Read this.</p>", "options": {"title": "Examples", "files": []}}
-    html = _render_pycharm(block=block, resolve=None, skip_attachments=False)
+    html = _render_pycharm(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "Read this." in html
     assert "Files" not in html
     assert "not available offline" in html
@@ -302,37 +297,35 @@ def test_render_pycharm_renders_a_statement_when_the_step_has_no_files():
 # -- _render_video --------------------------------------------------------------
 
 
-def test_render_video_returns_warning_html_when_skip_videos_true():
+def test_render_video_returns_warning_html_when_skip_videos_true(mock_resolve):
     html = _render_video(
         block={"video": {"urls": [{"quality": "720", "url": "x"}]}},
-        resolve=None,
+        resolve=mock_resolve,
         log_label="test-context",
         quality="best",
         skip_videos=True,
     )
     assert "skipped" in html
+    assert mock_resolve.call_count == 0
 
 
-def test_render_video_returns_warning_when_no_urls():
+def test_render_video_returns_warning_when_no_urls(mock_resolve):
     # urls=[] makes _pick_video_url return None, so _render_video returns
-    # its "unavailable" warning before ever calling resolve.
+    # its "unavailable" warning before ever downloading anything.
     html = _render_video(
         block={"video": {"urls": []}},
-        resolve=None,
+        resolve=mock_resolve,
         log_label="test-context",
         quality="best",
         skip_videos=False,
     )
     assert "unavailable" in html.lower()
+    assert mock_resolve.call_count == 0
 
 
-def test_render_video_calls_resolve_with_selected_url_and_returns_video_tag():
+def test_render_video_calls_resolve_with_selected_url_and_returns_video_tag(mock_resolve):
+    mock_resolve.return_value = "video.mp4"
     block = {"video": {"urls": [{"quality": "720", "url": "http://x.com/v.mp4"}]}}
-
-    def mock_resolve(url, filename_hint, index):
-        assert url == "http://x.com/v.mp4"
-        assert filename_hint == "video.mp4"
-        return "video.mp4"
 
     html = _render_video(
         block=block,
@@ -341,14 +334,14 @@ def test_render_video_calls_resolve_with_selected_url_and_returns_video_tag():
         quality="best",
         skip_videos=False,
     )
+
     assert html == '<video controls src="video.mp4"></video>'
+    mock_resolve.assert_called_once_with("http://x.com/v.mp4", filename_hint="video.mp4", index=0)
 
 
-def test_render_video_returns_warning_when_resolve_fails():
+def test_render_video_returns_warning_when_resolve_fails(mock_resolve):
+    mock_resolve.return_value = None
     block = {"video": {"urls": [{"quality": "720", "url": "http://x.com/v.mp4"}]}}
-
-    def mock_resolve(url, filename_hint, index):
-        return None
 
     html = _render_video(
         block=block,
@@ -382,7 +375,7 @@ def _render_step_into(step_dir, step_node, **context_overrides):
     return render_step(step_node, step_dir, context)
 
 
-def test_render_step_basic_case(tmp_path, no_downloads):
+def test_render_step_basic_case(tmp_path, mock_download_resource):
     step_dir = tmp_path / "step_01_text"
     block = {"name": "text", "text": "hello"}
     step_node = _make_step_node(block, step_id=42)
@@ -397,7 +390,7 @@ def test_render_step_basic_case(tmp_path, no_downloads):
     assert source == step_node["raw"]
 
 
-def test_render_step_uses_the_title_a_block_keeps_under_options(tmp_path, no_downloads):
+def test_render_step_uses_the_title_a_block_keeps_under_options(tmp_path, mock_download_resource):
     block = {"name": "pycharm", "text": "<p>Implement it.</p>", "options": {"title": "Scope Functions"}}
     step_node = _make_step_node(block, step_id=99)
     step_dir = tmp_path / "step"
@@ -408,7 +401,7 @@ def test_render_step_uses_the_title_a_block_keeps_under_options(tmp_path, no_dow
     assert "Scope Functions" in (step_dir / "index.html").read_text()
 
 
-def test_render_step_dispatches_code_block_to_code_renderer(tmp_path, no_downloads, caplog):
+def test_render_step_dispatches_code_block_to_code_renderer(tmp_path, mock_download_resource, caplog):
     block = {
         "name": "code",
         "text": "<p>Print the sum.</p>",
@@ -428,7 +421,7 @@ def test_render_step_dispatches_code_block_to_code_renderer(tmp_path, no_downloa
     assert "no dedicated renderer" not in caplog.text
 
 
-def test_render_step_dispatches_pycharm_block_to_pycharm_renderer(tmp_path, no_downloads):
+def test_render_step_dispatches_pycharm_block_to_pycharm_renderer(tmp_path, mock_download_resource):
     block = {
         "name": "pycharm",
         "text": "<p>Implement it.</p>",
@@ -446,29 +439,23 @@ def test_render_step_dispatches_pycharm_block_to_pycharm_renderer(tmp_path, no_d
     assert "raw step data" not in html
 
 
-def test_render_step_downloads_a_url_used_by_two_tags_once(tmp_path, monkeypatch):
+def test_render_step_downloads_a_url_used_by_two_tags_once(tmp_path, mock_download_resource):
     # A picture wrapped in a link to itself names the same URL twice, and downloading
     # it per tag would leave the step holding two copies of one file.
+    mock_download_resource.return_value = "local_diagram.png"
     image_url = "https://cdn.example.com/some_diagram.png"
-    calls = []
-
-    def mock_download_resource(url, dest_dir, log_label, access_token=None, filename_hint=None):
-        calls.append(url)
-        return "local_diagram.png"
-
-    monkeypatch.setattr(resource_downloader, "download_resource", mock_download_resource)
     block = {"name": "text", "text": f'<a href="{image_url}"><img src="{image_url}"></a>'}
     step_dir = tmp_path / "step"
 
     _render_step_into(step_dir, _make_step_node(block))
 
-    assert calls == [image_url]
+    assert mock_download_resource.call_count == 1
     html = (step_dir / "index.html").read_text()
     assert 'href="local_diagram.png"' in html
     assert 'src="local_diagram.png"' in html
 
 
-def test_render_step_dispatches_unknown_block_type_to_generic_renderer(tmp_path, no_downloads):
+def test_render_step_dispatches_unknown_block_type_to_generic_renderer(tmp_path, mock_download_resource):
     block = {"name": "quiz", "custom_field": "custom_value"}
     step_node = _make_step_node(block)
     step_dir = tmp_path / "step"
