@@ -46,7 +46,6 @@ def course_data():
                 "position": 1,
                 "block": {
                     "name": "text",
-                    "title": "Intro",
                     "text": (
                         '<img src="http://cdn.example.com/pic.png">'
                         '<img src="data:image/png;base64,abc">'
@@ -71,7 +70,6 @@ def course_data():
                 "position": 2,
                 "block": {
                     "name": "code",
-                    "title": "Sum Two Numbers",
                     "text": "<p>Print the sum.</p>",
                     "options": {
                         "samples": [["7 3", "10"], ["1 2", "3"]],
@@ -227,7 +225,8 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     assert f"{LESSON_3_STEP_2}/index.html" in toc_html
     assert f"{LESSON_3_STEP_3}/index.html" in toc_html
     assert f"{LESSON_3_STEP_4}/index.html" in toc_html
-    assert "Intro" in toc_html
+    assert "Step 10000 (text)" in toc_html
+    assert "Step 10001 (code)" in toc_html
     assert "Exercise 1" in toc_html
     assert "Exercise 2" in toc_html
     assert "Step 10005 (video)" in toc_html
