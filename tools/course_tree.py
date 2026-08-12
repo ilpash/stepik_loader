@@ -104,8 +104,7 @@ def build_course_tree(client: StepikClient, course_id: int) -> dict:
     units = client.get_by_ids("units", all_unit_ids)
     unit_id_to_unit = {unit["id"]: unit for unit in units}
 
-    lesson_ids = [unit_id_to_unit[unit_id]["lesson"] for unit_id in all_unit_ids if unit_id in unit_id_to_unit]
-    lessons = client.get_by_ids("lessons", lesson_ids)
+    lessons = client.get_by_ids("lessons", [unit["lesson"] for unit in units])
     lesson_id_to_lesson = {lesson["id"]: lesson for lesson in lessons}
 
     all_step_ids = [step_id for lesson in lessons for step_id in lesson.get("steps", [])]
