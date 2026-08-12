@@ -174,6 +174,24 @@ def test_download_resource_removes_partial_file_when_stream_breaks(tmp_path, mon
     assert list(tmp_path.iterdir()) == []
 
 
+def test_download_resource_removes_partial_file_when_the_disk_write_fails(tmp_path, monkeypatch, no_sleep):
+    # A failed write is reported as a miss like any other, so one unwritable file
+    # can't take the whole export down with it.
+    class UnwritableStreamResponse(MockStreamResponse):
+        def iter_content(self, chunk_size):
+            yield b"first half"
+            raise OSError("no space left on device")
+
+    monkeypatch.setattr(
+        resource_downloader._download_session,
+        "get",
+        lambda url, headers=None, stream=None, timeout=None: UnwritableStreamResponse(200),
+    )
+    result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
+    assert result is None
+    assert list(tmp_path.iterdir()) == []
+
+
 def test_download_resource_returns_none_on_connection_error(tmp_path, monkeypatch, no_sleep):
     def mock_get(url, headers=None, stream=None, timeout=None):
         raise requests.ConnectionError("connection refused")

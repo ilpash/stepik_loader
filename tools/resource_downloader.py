@@ -84,13 +84,13 @@ def download_resource(url, dest_dir, context, access_token=None, filename_hint=N
                             for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
                                 if chunk:
                                     f.write(chunk)
-                    except requests.RequestException:
+                    except (requests.RequestException, OSError):
                         # Don't leave a truncated file behind for this attempt.
                         dest_path.unlink(missing_ok=True)
                         raise
                     logger.info("  downloaded %s", dest_path.name)
                     return dest_path.name
-        except requests.RequestException as exc:
+        except (requests.RequestException, OSError) as exc:
             last_error = exc
 
         backoff_sleep(attempt)
