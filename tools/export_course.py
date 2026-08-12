@@ -62,7 +62,7 @@ def main(argv=None):
     course_dir = Path(args.output_dir) / tree["dir_name"]
     logger.info("Exporting '%s' to %s/", tree["title"], course_dir)
 
-    total_steps = sum(len(lesson["steps"]) for m in tree["modules"] for lesson in m["lessons"])
+    total_steps = sum(len(lesson["steps"]) for module in tree["modules"] for lesson in module["lessons"])
     done = 0
 
     for module in tree["modules"]:
