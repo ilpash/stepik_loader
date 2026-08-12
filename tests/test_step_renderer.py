@@ -305,7 +305,7 @@ def test_render_video_returns_warning_html_when_skip_videos_true():
     html = _render_video(
         block={"video": {"urls": [{"quality": "720", "url": "x"}]}},
         resolve=None,
-        context="test-context",
+        log_label="test-context",
         quality="best",
         skip_videos=True,
     )
@@ -318,7 +318,7 @@ def test_render_video_returns_warning_when_no_urls():
     html = _render_video(
         block={"video": {"urls": []}},
         resolve=None,
-        context="test-context",
+        log_label="test-context",
         quality="best",
         skip_videos=False,
     )
@@ -336,7 +336,7 @@ def test_render_video_calls_resolve_with_selected_url_and_returns_video_tag():
     html = _render_video(
         block=block,
         resolve=mock_resolve,
-        context="test-context",
+        log_label="test-context",
         quality="best",
         skip_videos=False,
     )
@@ -352,7 +352,7 @@ def test_render_video_returns_warning_when_resolve_fails():
     html = _render_video(
         block=block,
         resolve=mock_resolve,
-        context="test-context",
+        log_label="test-context",
         quality="best",
         skip_videos=False,
     )
@@ -480,7 +480,7 @@ def test_render_step_downloads_a_url_used_by_two_tags_once(tmp_path, monkeypatch
     image_url = "https://cdn.example.com/some_diagram.png"
     calls = []
 
-    def mock_download_resource(url, dest_dir, context, access_token=None, filename_hint=None):
+    def mock_download_resource(url, dest_dir, log_label, access_token=None, filename_hint=None):
         calls.append(url)
         return "local_diagram.png"
 

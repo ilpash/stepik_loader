@@ -45,7 +45,7 @@ def _unique_dest(dest_dir, filename):
     return dest_dir / f"{stem}_{i}{suffix}"
 
 
-def download_resource(url, dest_dir, context, access_token=None, filename_hint=None):
+def download_resource(url, dest_dir, log_label, access_token=None, filename_hint=None):
     """
     Download `url` into `dest_dir`. Returns the local filename on success,
     or None on failure (a warning is logged in that case).
@@ -69,7 +69,7 @@ def download_resource(url, dest_dir, context, access_token=None, filename_hint=N
                 if response.status_code in RETRYABLE_STATUS_CODES:
                     last_error = RuntimeError(f"HTTP {response.status_code}")
                 elif response.status_code >= 400:
-                    logger.warning("[%s] failed to download %s: HTTP %s", context, url, response.status_code)
+                    logger.warning("[%s] failed to download %s: HTTP %s", log_label, url, response.status_code)
                     return None
                 else:
                     name = filename
@@ -95,5 +95,5 @@ def download_resource(url, dest_dir, context, access_token=None, filename_hint=N
 
         backoff_sleep(attempt)
 
-    logger.warning("[%s] failed to download %s after %d attempts: %s", context, url, MAX_RETRIES, last_error)
+    logger.warning("[%s] failed to download %s after %d attempts: %s", log_label, url, MAX_RETRIES, last_error)
     return None

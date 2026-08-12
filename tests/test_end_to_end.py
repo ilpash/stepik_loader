@@ -154,7 +154,7 @@ def downloaded_urls(monkeypatch):
     """Records every URL the export asks for, and writes a placeholder file for it."""
     urls = []
 
-    def mock_download_resource(url, dest_dir, context, access_token=None, filename_hint=None):
+    def mock_download_resource(url, dest_dir, log_label, access_token=None, filename_hint=None):
         urls.append(url)
         dest_dir = Path(dest_dir)
         dest_dir.mkdir(parents=True, exist_ok=True)

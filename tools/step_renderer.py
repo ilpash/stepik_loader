@@ -58,7 +58,7 @@ def _render_text(block, resolve, skip_attachments):
     return str(soup)
 
 
-def _pick_video_url(urls, requested, context):
+def _pick_video_url(urls, requested, log_label):
     if not urls:
         return None
 
@@ -87,22 +87,22 @@ def _pick_video_url(urls, requested, context):
     closest = min(urls, key=distance_from_target)
     logger.warning(
         "[%s] requested video quality %s not available, using %s instead",
-        context,
+        log_label,
         requested,
         closest.get("quality"),
     )
     return closest
 
 
-def _render_video(block, resolve, context, quality, skip_videos):
+def _render_video(block, resolve, log_label, quality, skip_videos):
     if skip_videos:
         return '<p class="warning">Video download skipped (--skip-videos).</p>'
 
     video = block.get("video", {})
     urls = video.get("urls", [])
-    selected = _pick_video_url(urls, quality, context)
+    selected = _pick_video_url(urls, quality, log_label)
     if not selected or not selected.get("url"):
-        logger.warning("[%s] video step has no downloadable urls", context)
+        logger.warning("[%s] video step has no downloadable urls", log_label)
         return '<p class="warning">Video unavailable: no downloadable URL was returned by the API.</p>'
 
     local = resolve(selected["url"], filename_hint="video.mp4", index=0)
@@ -224,8 +224,10 @@ def _render_pycharm(block, resolve, skip_attachments):
     return "".join(part for part in parts if part)
 
 
-def _render_generic(block, context):
-    logger.warning("[%s] no dedicated renderer for block type '%s', using generic fallback", context, block.get("name"))
+def _render_generic(block, log_label):
+    logger.warning(
+        "[%s] no dedicated renderer for block type '%s', using generic fallback", log_label, block.get("name")
+    )
     dump = json.dumps(block, ensure_ascii=False, indent=2)
     return (
         '<p class="warning">This step type does not have a dedicated offline renderer yet. '
@@ -251,7 +253,7 @@ def render_step(
     step_dir.mkdir(parents=True, exist_ok=True)
     block = step_node.get("block", {})
     block_type = block.get("name", "unknown")
-    context = f"course={course_id} lesson={lesson_id} step={step_node['id']}"
+    log_label = f"course={course_id} lesson={lesson_id} step={step_node['id']}"
 
     resolved = {}
 
@@ -260,12 +262,12 @@ def render_step(
         if url not in resolved:
             hint = filename_hint or f"resource_{index}_{resource_downloader.safe_filename(url)}"
             resolved[url] = resource_downloader.download_resource(
-                url, step_dir, context, access_token=access_token, filename_hint=hint
+                url, step_dir, log_label, access_token=access_token, filename_hint=hint
             )
         return resolved[url]
 
     if block_type == "video":
-        body_html = _render_video(block, resolve, context, video_quality, skip_videos)
+        body_html = _render_video(block, resolve, log_label, video_quality, skip_videos)
     elif block_type == "text":
         body_html = _render_text(block, resolve, skip_attachments)
     elif block_type == "code":
@@ -275,7 +277,7 @@ def render_step(
     elif block_type in _TYPE_TO_QUIZ_NOTE:
         body_html = _render_quiz(block)
     else:
-        body_html = _render_generic(block, context)
+        body_html = _render_generic(block, log_label)
 
     # a step keeps its name under options, and most types have no name at all
     options_title = block.get("options", {}).get("title")
