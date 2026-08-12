@@ -46,6 +46,26 @@ def _unique_dest(dest_dir, filename):
             return candidate
 
 
+def _name_from_content_type(filename, response):
+    if Path(filename).suffix:
+        return filename
+    content_type = response.headers.get("Content-Type", "").split(";")[0].strip()
+    extension = mimetypes.guess_extension(content_type) if content_type else None
+    return filename + extension if extension else filename
+
+
+def _write_stream(response, dest_path):
+    try:
+        with open(dest_path, "wb") as destination:
+            for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
+                if chunk:
+                    destination.write(chunk)
+    except (requests.RequestException, OSError):
+        # Don't leave a truncated file behind for this attempt.
+        dest_path.unlink(missing_ok=True)
+        raise
+
+
 def download_resource(url, dest_dir, log_label, access_token=None, filename_hint=None):
     """
     Returns the local filename, or None if the download failed (logged as a warning).
@@ -72,22 +92,8 @@ def download_resource(url, dest_dir, log_label, access_token=None, filename_hint
                     logger.warning("[%s] failed to download %s: HTTP %s", log_label, url, response.status_code)
                     return None
                 else:
-                    name = filename
-                    if not Path(name).suffix:
-                        ctype = response.headers.get("Content-Type", "").split(";")[0].strip()
-                        ext = mimetypes.guess_extension(ctype) if ctype else None
-                        if ext:
-                            name += ext
-                    dest_path = _unique_dest(dest_dir, name)
-                    try:
-                        with open(dest_path, "wb") as f:
-                            for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
-                                if chunk:
-                                    f.write(chunk)
-                    except (requests.RequestException, OSError):
-                        # Don't leave a truncated file behind for this attempt.
-                        dest_path.unlink(missing_ok=True)
-                        raise
+                    dest_path = _unique_dest(dest_dir, _name_from_content_type(filename, response))
+                    _write_stream(response, dest_path)
                     logger.info("  downloaded %s", dest_path.name)
                     return dest_path.name
         except (requests.RequestException, OSError) as exc:
