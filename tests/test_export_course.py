@@ -95,7 +95,7 @@ def test_main_returns_1_when_stepik_cannot_be_reached(monkeypatch):
 
 def test_main_propagates_unexpected_error_from_render_phase(tmp_path, monkeypatch):
     # Only fetch failures are caught and turned into exit code 1; render-phase errors propagate as-is.
-    class StubClientWithToken:
+    class MockClientWithToken:
         access_token = "mock-token"
 
     tree = {
@@ -124,7 +124,7 @@ def test_main_propagates_unexpected_error_from_render_phase(tmp_path, monkeypatc
     def raise_render_error(*args, **kwargs):
         raise RuntimeError("disk write failed")
 
-    monkeypatch.setattr(export_course, "StepikClient", StubClientWithToken)
+    monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
     monkeypatch.setattr(export_course, "build_course_tree", mock_build_course_tree)
     monkeypatch.setattr(export_course, "render_step", raise_render_error)
 
