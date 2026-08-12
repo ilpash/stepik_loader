@@ -61,6 +61,7 @@ def test_render_quiz_basic_case():
     html = _render_quiz(block)
     assert "Mark every true statement." in html
     assert "not available offline" in html
+    assert "More than one answer may be correct" in html
     assert "is_multiple_choice" not in html
     assert "<li>" not in html
 
@@ -71,12 +72,6 @@ def test_render_quiz_keeps_the_question_for_every_quiz_type(block_type):
     html = _render_quiz(block)
     assert "The question" in html
     assert 'class="warning"' in html
-
-
-def test_render_quiz_notes_when_more_than_one_answer_may_be_correct():
-    block = {"name": "choice", "text": "Pick all that apply", "options": {"is_multiple_choice": True}}
-    html = _render_quiz(block)
-    assert "More than one answer may be correct" in html
 
 
 def test_render_quiz_omits_multiple_answer_note_for_single_choice():
