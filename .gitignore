@@ -1,6 +1,5 @@
 .env
 stepik_token.json
-.tmp/
 .DS_Store
 __pycache__/
 *.pyc
