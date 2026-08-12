@@ -85,27 +85,27 @@ def _pick_video_url(urls, requested, log_label):
     if not urls:
         return None
 
-    def quality_to_int(u):
+    def quality_to_int(url_entry):
         try:
-            return int(u.get("quality"))
+            return int(url_entry.get("quality"))
         except (TypeError, ValueError):
             return -1
 
     if requested == "best":
         return max(urls, key=quality_to_int)
 
-    for u in urls:
-        if str(u.get("quality")) == str(requested):
-            return u
+    for url_entry in urls:
+        if str(url_entry.get("quality")) == str(requested):
+            return url_entry
 
     try:
         target = int(requested)
     except ValueError:
         target = 0
 
-    def distance_from_target(u):
-        q = quality_to_int(u)
-        return abs(q - target) if q >= 0 else 10**9
+    def distance_from_target(url_entry):
+        quality = quality_to_int(url_entry)
+        return abs(quality - target) if quality >= 0 else 10**9
 
     closest = min(urls, key=distance_from_target)
     logger.warning(
