@@ -26,6 +26,9 @@ STEPIK_AUTH_HOSTS = {"stepik.org", "www.stepik.org"}
 
 DEFAULT_TOKEN_CACHE = Path(__file__).resolve().parent.parent / "stepik_token.json"
 
+# A token this close to expiring counts as expired already.
+TOKEN_EXPIRY_MARGIN_SECONDS = 30
+
 
 class StepikAuthError(RuntimeError):
     pass
@@ -58,7 +61,7 @@ class StepikClient:
             return
         if data.get("client_id") != self.client_id:
             return
-        if data.get("expires_at", 0) > time.time() + 30:
+        if data.get("expires_at", 0) > time.time() + TOKEN_EXPIRY_MARGIN_SECONDS:
             self._access_token = data["access_token"]
             self._token_expires_at = data["expires_at"]
 
@@ -105,11 +108,14 @@ class StepikClient:
 
         raise StepikAuthError(f"Failed to obtain Stepik access token after {MAX_RETRIES} attempts: {last_error}")
 
+    def _has_fresh_token(self):
+        return self._access_token and self._token_expires_at > time.time() + TOKEN_EXPIRY_MARGIN_SECONDS
+
     def _ensure_token(self):
-        if self._access_token and self._token_expires_at > time.time() + 30:
+        if self._has_fresh_token():
             return
         self._load_cached_token()
-        if self._access_token and self._token_expires_at > time.time() + 30:
+        if self._has_fresh_token():
             return
         self._fetch_new_token()
 

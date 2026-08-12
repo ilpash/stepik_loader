@@ -122,6 +122,65 @@ def test_save_cached_token_writes_expected_json(fresh_client):
     assert data == {"client_id": "test-client-id", "access_token": "test-token", "expires_at": 12345}
 
 
+# -- _ensure_token -----------------------------------------------------------------
+
+
+def test_ensure_token_keeps_the_token_already_in_memory(client, monkeypatch):
+    # The cache holds a different token, so reading it would be visible in the result.
+    cache = {"client_id": "test-client-id", "access_token": "cached-token", "expires_at": time.time() + 3600}
+    client.token_cache_path.write_text(json.dumps(cache))
+    mock_fetch_new_token = MagicMock()
+    monkeypatch.setattr(client, "_fetch_new_token", mock_fetch_new_token)
+
+    client._ensure_token()
+
+    assert client._access_token == "test-token"
+    assert mock_fetch_new_token.call_count == 0
+
+
+def test_ensure_token_falls_back_to_the_cache_when_memory_is_empty(fresh_client, monkeypatch):
+    cache = {"client_id": "test-client-id", "access_token": "cached-token", "expires_at": time.time() + 3600}
+    fresh_client.token_cache_path.write_text(json.dumps(cache))
+    mock_fetch_new_token = MagicMock()
+    monkeypatch.setattr(fresh_client, "_fetch_new_token", mock_fetch_new_token)
+
+    fresh_client._ensure_token()
+
+    assert fresh_client._access_token == "cached-token"
+    assert mock_fetch_new_token.call_count == 0
+
+
+def test_ensure_token_fetches_when_the_cache_is_expired(fresh_client, monkeypatch):
+    cache = {"client_id": "test-client-id", "access_token": "cached-token", "expires_at": time.time() - 100}
+    fresh_client.token_cache_path.write_text(json.dumps(cache))
+
+    def fetch_token():
+        fresh_client._access_token = "fetched-token"
+
+    mock_fetch_new_token = MagicMock(side_effect=fetch_token)
+    monkeypatch.setattr(fresh_client, "_fetch_new_token", mock_fetch_new_token)
+
+    fresh_client._ensure_token()
+
+    assert fresh_client._access_token == "fetched-token"
+    assert mock_fetch_new_token.call_count == 1
+
+
+def test_ensure_token_fetches_when_the_token_expires_within_the_margin(client, monkeypatch):
+    client._token_expires_at = time.time() + stepik_client.TOKEN_EXPIRY_MARGIN_SECONDS - 1
+
+    def fetch_token():
+        client._access_token = "fetched-token"
+
+    mock_fetch_new_token = MagicMock(side_effect=fetch_token)
+    monkeypatch.setattr(client, "_fetch_new_token", mock_fetch_new_token)
+
+    client._ensure_token()
+
+    assert client._access_token == "fetched-token"
+    assert mock_fetch_new_token.call_count == 1
+
+
 # -- _fetch_new_token ------------------------------------------------------------
 
 
