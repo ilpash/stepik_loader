@@ -47,8 +47,7 @@ def _unique_dest(dest_dir, filename):
 
 def download_resource(url, dest_dir, log_label, access_token=None, filename_hint=None):
     """
-    Download `url` into `dest_dir`. Returns the local filename on success,
-    or None on failure (a warning is logged in that case).
+    Returns the local filename, or None if the download failed (logged as a warning).
     """
     dest_dir = Path(dest_dir)
     dest_dir.mkdir(parents=True, exist_ok=True)

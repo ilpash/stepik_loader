@@ -153,7 +153,6 @@ def course_data():
 
 @pytest.fixture
 def downloaded_urls(monkeypatch):
-    """Records every URL the export asks for, and writes a placeholder file for it."""
     urls = []
 
     def mock_download_resource(url, dest_dir, log_label, access_token=None, filename_hint=None):

@@ -11,8 +11,7 @@ RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 
 def backoff_sleep(attempt):
     """
-    Sleep the exponential-backoff delay for a failed `attempt` (0-based),
-    unless it was the last attempt.
+    Waits longer after each attempt.
     """
     if attempt < MAX_RETRIES - 1:
         time.sleep(2**attempt)

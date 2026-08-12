@@ -8,10 +8,6 @@ from resource_downloader import _unique_dest, download_resource, safe_filename
 
 
 class MockStreamResponse:
-    """
-    Mimics a requests.Response used as a context manager with stream=True.
-    """
-
     def __init__(self, status_code, chunks=(b"data",), headers=None):
         self.status_code = status_code
         self.headers = headers or {}

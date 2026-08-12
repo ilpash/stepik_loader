@@ -63,7 +63,7 @@ def test_build_toc_writes_index_html_with_course_title_and_modules(tmp_path, sam
 
 
 def test_build_toc_step_title_falls_back_to_dir_name_when_title_missing(tmp_path, sample_course_tree):
-    # None of the sample steps have a "title" key, so the fallback (dir_name) must be used.
+    # No step in the fixture carries a "title" key.
     build_toc(sample_course_tree, tmp_path)
 
     html = (tmp_path / "index.html").read_text()

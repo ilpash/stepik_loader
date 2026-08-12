@@ -8,9 +8,6 @@ import resource_downloader
 
 @pytest.fixture(autouse=True)
 def no_sleep(monkeypatch):
-    """
-    Skip the real retry/backoff delays that retry.backoff_sleep would wait out
-    """
     mock_sleep = MagicMock()
     monkeypatch.setattr(time, "sleep", mock_sleep)
     return mock_sleep
@@ -25,12 +22,8 @@ def mock_download_resource(monkeypatch):
 
 class MockStepikClient:
     """
-    A StepikClient double that returns canned `data` per resource instead
-    of hitting the network. Only implements what callers actually use:
-    get_by_ids and access_token.
-
-    Every call is recorded in `get_by_ids_calls` as (resource, ids), so tests
-    can check which ids a caller asked for.
+    Returns canned `data` per resource instead of hitting the network, and
+    records every call in `get_by_ids_calls` as (resource, ids).
     """
 
     access_token = "mock-token"

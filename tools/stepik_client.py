@@ -151,18 +151,14 @@ class StepikClient:
         raise last_error or StepikAuthError(f"Request to {url} failed after {MAX_RETRIES} attempts")
 
     def get(self, path, params=None):
-        """
-        GET a single API path (relative to API_BASE) and return the parsed JSON body.
-        """
         url = path if path.startswith("http") else API_BASE + path.lstrip("/")
         response = self._request("GET", url, params=params)
         return response.json()
 
     def get_by_ids(self, resource, ids, batch_size=30):
         """
-        Fetch a list of objects for `resource` (e.g. 'courses', 'lessons', 'steps')
-        by id, batching requests to avoid oversized query strings. Returns a flat
-        list of the objects, in no guaranteed order.
+        Batches the ids to keep each query string small. The order of the
+        returned objects is not guaranteed.
         """
         ids = list(ids)
         results = []

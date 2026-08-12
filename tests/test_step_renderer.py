@@ -109,7 +109,6 @@ def test_render_text_rewrites_img_src_via_resolve(mock_resolve):
 
 
 def test_render_text_skips_non_http_src(mock_resolve):
-    # A data: URI src never matches the "http"-prefix check, so nothing is downloaded.
     block = {"text": '<img src="data:image/png;base64,abc">'}
     html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "data:image/png;base64,abc" in html
@@ -117,7 +116,6 @@ def test_render_text_skips_non_http_src(mock_resolve):
 
 
 def test_render_text_skips_anchor_tags_when_skip_attachments_true(mock_resolve):
-    # The only tag present is an <a>, and skip_attachments=True skips anchor tags entirely.
     block = {"text": '<a href="http://x.com/f.pdf">link</a>'}
     html = _render_text(block=block, resolve=mock_resolve, skip_attachments=True)
     assert 'href="http://x.com/f.pdf"' in html

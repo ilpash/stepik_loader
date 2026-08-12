@@ -25,9 +25,6 @@ class MockResponse:
 
 @pytest.fixture
 def fresh_client(tmp_path):
-    """
-    A client with valid credentials but no token fetched yet.
-    """
     return StepikClient(
         client_id="test-client-id",
         client_secret="test-client-secret",
@@ -37,9 +34,6 @@ def fresh_client(tmp_path):
 
 @pytest.fixture
 def client(tmp_path):
-    """
-    A client that's already "authenticated", for _request/get/get_by_ids tests.
-    """
     client = StepikClient(
         client_id="test-client-id",
         client_secret="test-client-secret",
@@ -327,7 +321,6 @@ def test_get_by_ids_batches_requests(client, monkeypatch):
 
 
 def test_get_by_ids_returns_empty_list_for_no_ids(client, monkeypatch):
-    # Patched to guard against a regression making a real HTTP request.
     mock_get = MagicMock()
     monkeypatch.setattr(client, "get", mock_get)
     assert client.get_by_ids("courses", []) == []

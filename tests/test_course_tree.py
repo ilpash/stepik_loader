@@ -6,10 +6,6 @@ from course_tree import MAX_SLUG_LEN, _dir_name, build_course_tree
 
 @pytest.fixture
 def minimal_mock_client_data():
-    """
-    Raw Stepik-API-shaped fixture data for the minimal case: exactly one
-    module, one lesson, one step.
-    """
     return {
         "courses": [{"id": 1, "title": "Tiny Course", "sections": [10]}],
         "sections": [{"id": 10, "title": "Only Module", "position": 1, "units": [100]}],
@@ -21,11 +17,6 @@ def minimal_mock_client_data():
 
 @pytest.fixture
 def mock_client_data():
-    """
-    Raw Stepik-API-shaped fixture data for a course with two modules: one
-    with a single lesson (one step), and one with two lessons (one step
-    and two steps, respectively).
-    """
     return {
         "courses": [{"id": 1, "title": "Sample Course", "sections": [10, 11]}],
         "sections": [
