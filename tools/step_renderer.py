@@ -232,7 +232,11 @@ def render_step(
     else:
         body_html = _render_generic(block, context)
 
-    step_title = block.get("title") or f"Step {step_node['id']} ({block_type})"
+    # a name could be contained in the block's own title or under options, and is often absent
+    block_title = block.get("title")
+    options_title = block.get("options", {}).get("title")
+    generated_title = f"Step {step_node['id']} ({block_type})"
+    step_title = block_title or options_title or generated_title
 
     html = _env.get_template("step.html.j2").render(
         course_title=course_title,
