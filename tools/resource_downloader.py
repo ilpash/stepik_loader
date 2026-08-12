@@ -31,7 +31,7 @@ _download_session = requests.Session()
 def safe_filename(url, fallback="resource"):
     name = unquote(Path(urlparse(url).path).name) or fallback
     name = re.sub(r"[^A-Za-z0-9._-]", "_", name)
-    return name[:150] or fallback
+    return name[:150]
 
 
 def _unique_dest(dest_dir, filename):
