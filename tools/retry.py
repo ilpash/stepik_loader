@@ -11,7 +11,7 @@ RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 
 def backoff_sleep(attempt):
     """
-    Waits longer after each attempt.
+    Doubles the wait per attempt, and skips it after the last one.
     """
     if attempt < MAX_RETRIES - 1:
         time.sleep(2**attempt)
