@@ -5,7 +5,7 @@ client, and only ever attaches the Stepik Authorization header when the
 resource host is actually stepik.org -- third-party CDNs never see it.
 
 A single resource failure is caught, logged as a warning tagged with the
-calling context (course/lesson/step id), and reported as a miss (None) --
+log label (course/lesson/step id), and reported as a miss (None) --
 it never aborts the export.
 """
 
