@@ -8,10 +8,7 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader
-
-TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
-_env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
+from template_env import TEMPLATES_DIR, get_template
 
 
 def build_toc(course_tree, course_dir):
@@ -34,7 +31,7 @@ def build_toc(course_tree, course_dir):
             lessons.append({"title": lesson["title"], "steps": steps})
         modules.append({"title": module["title"], "lessons": lessons})
 
-    html = _env.get_template("toc.html.j2").render(
+    html = get_template("toc.html.j2").render(
         course_title=course_tree["title"],
         course_id=course_tree["id"],
         export_date=datetime.now().strftime("%Y-%m-%d"),

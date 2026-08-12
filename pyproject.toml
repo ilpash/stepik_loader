@@ -16,5 +16,5 @@ select = ["E", "W", "F", "B", "I", "UP", "S", "C4", "SIM", "T20"]
 [tool.ruff.lint.isort]
 known-first-party = [
     "conftest", "course_tree", "export_course", "resource_downloader",
-    "retry", "step_renderer", "stepik_client", "toc_builder",
+    "retry", "step_renderer", "stepik_client", "template_env", "toc_builder",
 ]

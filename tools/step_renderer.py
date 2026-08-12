@@ -19,14 +19,11 @@ from urllib.parse import urlparse
 
 import markdown
 from bs4 import BeautifulSoup
-from jinja2 import Environment, FileSystemLoader
 
 import resource_downloader
+from template_env import get_template
 
 logger = logging.getLogger("stepik_export")
-
-TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
-_env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
 
 # tags/attributes that may reference a downloadable resource inside step HTML
 _RESOURCE_ATTRS = [("img", "src"), ("audio", "src"), ("source", "src"), ("a", "href")]
@@ -285,7 +282,7 @@ def render_step(
     generated_title = f"Step {step_node['id']} ({block_type})"
     step_title = options_title or generated_title
 
-    html = _env.get_template("step.html.j2").render(
+    html = get_template("step.html.j2").render(
         course_title=course_title,
         module_title=module_title,
         lesson_title=lesson_title,
