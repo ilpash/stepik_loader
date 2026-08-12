@@ -2,8 +2,8 @@
 Authenticated access to the Stepik REST API.
 
 Handles OAuth2 client_credentials auth (public content only), on-disk token
-caching, pagination, batched ids[] lookups, and a small hand-rolled
-retry/backoff loop for transient failures (429 / 5xx / connection errors).
+caching, batched ids[] lookups, and a small hand-rolled retry/backoff loop
+for transient failures (429 / 5xx / connection errors).
 """
 
 import json

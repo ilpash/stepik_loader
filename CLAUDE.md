@@ -57,14 +57,14 @@ This loop is how the framework improves over time.
 
 **Directory layout:**
 ```
-.tmp/               # Temporary files. Regenerated as needed.
+exports/            # Exported courses -- the deliverables
 tools/              # Python scripts for deterministic execution
 workflows/          # Markdown SOPs defining what to do and how
-.env                # API keys and environment variables (NEVER store secrets anywhere else)
+.env                # API keys and environment variables (the only place credentials are configured)
 stepik_token.json   # Cached Stepik OAuth2 access token (gitignored)
 ```
 
-**Core principle:** Local files may be either temporary processing artifacts or final deliverables depending on the project requirements. Everything in `.tmp/` is disposable.
+**Core principle:** Local files may be either temporary processing artifacts or final deliverables depending on the project requirements.
 
 ## Bottom Line
 
