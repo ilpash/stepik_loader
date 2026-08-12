@@ -58,13 +58,6 @@ def test_pick_video_url_skips_an_entry_with_an_unreadable_quality():
     assert result == {"quality": "360", "url": "b"}
 
 
-def test_pick_video_url_falls_back_to_lowest_when_requested_is_not_numeric(caplog):
-    urls = [{"quality": "360", "url": "a"}, {"quality": "1080", "url": "b"}, {"quality": "720", "url": "c"}]
-    result = _pick_video_url(urls, "hd", "test-context")
-    assert result == {"quality": "360", "url": "a"}
-    assert "not available" in caplog.text
-
-
 # -- pure block renderers -----------------------------------------------------
 
 

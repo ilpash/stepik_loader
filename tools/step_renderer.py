@@ -96,13 +96,10 @@ def _pick_video_url(urls, requested, log_label):
         return max(urls, key=quality_to_int)
 
     for url_entry in urls:
-        if str(url_entry.get("quality")) == str(requested):
+        if str(url_entry.get("quality")) == requested:
             return url_entry
 
-    try:
-        target = int(requested)
-    except ValueError:
-        target = 0
+    target = int(requested)
 
     def distance_from_target(url_entry):
         quality = quality_to_int(url_entry)
