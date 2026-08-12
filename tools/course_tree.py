@@ -13,8 +13,6 @@ import logging
 
 from slugify import slugify
 
-from stepik_client import StepikClient
-
 logger = logging.getLogger("stepik_export")
 
 MAX_SLUG_LEN = 50
@@ -91,7 +89,7 @@ def _build_module_node(section, index, unit_id_to_unit, lesson_id_to_lesson, ste
     }
 
 
-def build_course_tree(client: StepikClient, course_id: int) -> dict:
+def build_course_tree(client, course_id):
     courses = client.get_by_ids("courses", [course_id])
     if not courses:
         raise ValueError(f"Course {course_id} not found or not accessible with current auth scope")
