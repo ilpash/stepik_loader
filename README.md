@@ -58,18 +58,22 @@ real Stepik API or network, and runs in a few seconds.
   grant, which does not carry any user identity — it can't see paid or
   enrolled-only content. Supporting that would require the `authorization_code`
   flow (real browser login) and is intentionally not built yet.
-- **Dedicated renderers** exist for `text`, `video` and `code` step types —
-  code steps keep their problem statement, sample input/output, execution
-  limits, and the starter code for every language the course offers. Quiz types
+- **Dedicated renderers** exist for `text`, `video`, `code` and `pycharm` step
+  types — code steps keep their problem statement, sample input/output, execution
+  limits, and the starter code for every language the course offers, and pycharm
+  steps keep their task description and project files. Quiz types
   (`choice`, `string`, `number`, `sorting`, `matching`, `free-answer`) keep
   their question text plus a note about what can't be shown offline. Everything
   else gets a generic fallback (raw step data shown as-is) with a warning
   logged — see `tools/step_renderer.py`.
 - **No resume/dry-run/verification tooling yet** — kept out deliberately to
   keep the tool simple.
-- Interactive grading, hidden tests, and other users' submissions are never
-  exported — Stepik's API doesn't expose them to non-privileged clients, and
-  they wouldn't work offline anyway.
+- Interactive grading and other users' submissions are never exported — Stepik's
+  API doesn't expose them to non-privileged clients, and they wouldn't work
+  offline anyway. Tests are the one exception: for `pycharm` steps the API does
+  hand them over, so they end up in the export marked `hidden`. Their assertions
+  and expected output often reveal the answer, so skip them if you'd rather
+  solve the task yourself.
 
 ## Legal note
 

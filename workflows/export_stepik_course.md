@@ -43,9 +43,11 @@ that course under `exports/<course_id>_<slug>/`, following the
 
 ## Known limitations (by design)
 - Only public/free courses are accessible (`client_credentials` auth only).
-- Quiz grading, hidden tests, and "correct answer" flags are never exported —
-  Stepik doesn't expose them to non-privileged API clients.
-- Only `text`, `video`, and `code` step types get a dedicated renderer. Quiz
+- Quiz grading and "correct answer" flags are never exported — Stepik doesn't
+  expose them to non-privileged API clients. The exception is `pycharm` test
+  files, which the API does return: they are exported and marked `hidden`, and
+  their assertions often reveal the answer.
+- Only `text`, `video`, `code`, and `pycharm` step types get a dedicated renderer. Quiz
   types (`choice`, `string`, `number`, `sorting`, `matching`, `free-answer`)
   keep their question text plus a note about what can't be shown offline.
   Everything else (`math`, `table`, `dataset`, `admin`, …) falls back to a raw

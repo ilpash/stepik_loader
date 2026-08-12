@@ -8,6 +8,7 @@ from step_renderer import (
     _pick_video_url,
     _render_code,
     _render_generic,
+    _render_pycharm,
     _render_quiz,
     _render_text,
     _render_video,
@@ -189,6 +190,71 @@ def test_render_code_rewrites_images_in_the_statement():
     assert calls == ["http://x.com/diagram.png"]
 
 
+# -- _render_pycharm -----------------------------------------------------------
+
+
+def test_render_pycharm_basic_case():
+    block = {
+        "name": "pycharm",
+        "text": "<p>Implement the function.</p>",
+        "options": {
+            "title": "Exercise 1",
+            "description_format": "html",
+            "files": [{"name": "src/Task.kt", "text": "fun main() {\n  TODO()\n}", "is_visible": True}],
+        },
+    }
+    html = _render_pycharm(block=block, resolve=None, context="test-context", skip_attachments=False)
+    assert "Implement the function." in html
+    assert "<h3>src/Task.kt</h3>" in html
+    assert "TODO()" in html
+    assert "hidden" not in html
+    assert "not available offline" in html
+
+
+def test_render_pycharm_converts_a_markdown_statement_to_html():
+    block = {
+        "name": "pycharm",
+        "text": "## Objects\n\nExamples accompanying the atom.",
+        "options": {"description_format": "MD"},
+    }
+    html = _render_pycharm(block=block, resolve=None, context="test-context", skip_attachments=False)
+    assert "<h2>Objects</h2>" in html
+    assert "<p>Examples accompanying the atom.</p>" in html
+
+
+def test_render_pycharm_marks_a_file_the_course_hides():
+    block = {
+        "name": "pycharm",
+        "text": "",
+        "options": {
+            "files": [
+                {"name": "src/Task.kt", "text": "fun main() {}", "is_visible": True},
+                {"name": "test/Tests.kt", "text": "class Tests", "is_visible": False},
+            ]
+        },
+    }
+    html = _render_pycharm(block=block, resolve=None, context="test-context", skip_attachments=False)
+    assert "<h3>src/Task.kt</h3>" in html
+    assert '<h3>test/Tests.kt <span class="hidden-file">hidden</span></h3>' in html
+    assert "class Tests" in html
+
+
+def test_render_pycharm_notes_a_file_with_no_content():
+    block = {"name": "pycharm", "text": "", "options": {"files": [{"name": "fizz.kt", "text": ""}]}}
+    html = _render_pycharm(block=block, resolve=None, context="test-context", skip_attachments=False)
+    assert "<h3>fizz.kt</h3>" in html
+    assert "This file is empty." in html
+    assert "<pre>" not in html
+
+
+def test_render_pycharm_renders_a_statement_when_the_step_has_no_files():
+    block = {"name": "pycharm", "text": "<p>Read this.</p>", "options": {"title": "Examples", "files": []}}
+    html = _render_pycharm(block=block, resolve=None, context="test-context", skip_attachments=False)
+    assert "Read this." in html
+    assert "Files" not in html
+    assert "not available offline" in html
+
+
 # -- _render_video --------------------------------------------------------------
 
 
@@ -352,6 +418,35 @@ def test_render_step_dispatches_code_block_to_code_renderer(tmp_path, monkeypatc
     assert "<summary>python3</summary>" in html
     assert "raw step data" not in html
     assert "no dedicated renderer" not in caplog.text
+
+
+def test_render_step_dispatches_pycharm_block_to_pycharm_renderer(tmp_path, monkeypatch):
+    monkeypatch.setattr(resource_downloader, "download_resource", None)
+    block = {
+        "name": "pycharm",
+        "text": "<p>Implement it.</p>",
+        "options": {"title": "Exercise 1", "files": [{"name": "src/Task.kt", "text": "fun main() {}"}]},
+    }
+    step_node = _make_step_node(block)
+    step_dir = tmp_path / "step"
+
+    render_step(
+        step_node=step_node,
+        step_dir=step_dir,
+        course_title="Course",
+        module_title="Module",
+        lesson_title="Lesson",
+        access_token="test-token",
+        video_quality="best",
+        course_id=1,
+        lesson_id=2,
+    )
+
+    html = (step_dir / "index.html").read_text()
+    # only _render_pycharm emits this note, so its presence is what proves the dispatch
+    assert "solved in an IDE" in html
+    assert "src/Task.kt" in html
+    assert "raw step data" not in html
 
 
 def test_render_step_dispatches_unknown_block_type_to_generic_renderer(tmp_path, monkeypatch):

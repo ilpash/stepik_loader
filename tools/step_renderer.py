@@ -3,9 +3,10 @@ Renders a single step's `block` JSON into a self-contained index.html,
 downloading any resources it references (video / images / audio / attachments)
 into the step's own directory via resource_downloader.
 
-Dedicated renderers exist for text, video and code blocks, and quiz blocks keep
-their question text plus a note about what can't be shown offline. Every other
-block type falls back to a generic "raw content" dump, with a warning logged
+Dedicated renderers exist for text, video, code and pycharm blocks, and quiz
+blocks keep their question text plus a note about what can't be shown offline.
+Every other block type falls back to a generic "raw content" dump, with a
+warning logged
 """
 
 import json
@@ -13,6 +14,7 @@ import logging
 from html import escape
 from pathlib import Path
 
+import markdown
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader
 
@@ -183,6 +185,35 @@ def _render_code(block, resolve, context, skip_attachments):
     return "".join(part for part in parts if part)
 
 
+def _render_pycharm_files(files):
+    if not files:
+        return ""
+    parts = ["<h2>Files</h2>"]
+    for file in files:
+        # A plain task file often omits is_visible, so only an explicit false means hidden.
+        label = escape(file["name"])
+        if file.get("is_visible") is False:
+            label += ' <span class="hidden-file">hidden</span>'
+        parts.append(f"<h3>{label}</h3>")
+        source = file["text"]
+        parts.append(f"<pre><code>{escape(source)}</code></pre>" if source.strip() else "<p>This file is empty.</p>")
+    return "".join(parts)
+
+
+def _render_pycharm(block, resolve, context, skip_attachments):
+    options = block.get("options", {})
+    # Most statements are already HTML, but some arrive as markdown, which the format names.
+    if options.get("description_format", "").upper() == "MD":
+        block = {**block, "text": markdown.markdown(block["text"], extensions=["tables"])}
+    parts = [
+        _render_text(block, resolve, context, skip_attachments),
+        _render_pycharm_files(options.get("files")),
+        '<p class="warning">This step is solved in an IDE; submitting a solution and grading '
+        "are not available offline.</p>",
+    ]
+    return "".join(part for part in parts if part)
+
+
 def _render_generic(block, context):
     logger.warning("[%s] no dedicated renderer for block type '%s', using generic fallback", context, block.get("name"))
     dump = json.dumps(block, ensure_ascii=False, indent=2)
@@ -227,6 +258,8 @@ def render_step(
         body_html = _render_text(block, resolve, context, skip_attachments)
     elif block_type == "code":
         body_html = _render_code(block, resolve, context, skip_attachments)
+    elif block_type == "pycharm":
+        body_html = _render_pycharm(block, resolve, context, skip_attachments)
     elif block_type in _TYPE_TO_QUIZ_NOTE:
         body_html = _render_quiz(block)
     else:
