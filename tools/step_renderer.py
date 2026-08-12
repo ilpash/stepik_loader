@@ -154,8 +154,7 @@ def _render_quiz(block):
     # block["options"] holds quiz settings, not the answers -- those come from a quiz
     # dataset that needs user-level auth, which this read-only exporter always avoids.
     note = _TYPE_TO_QUIZ_NOTE[block["name"]]
-    options = block.get("options")
-    if isinstance(options, dict) and options.get("is_multiple_choice"):
+    if block.get("options", {}).get("is_multiple_choice"):
         note += " More than one answer may be correct."
     parts.append(f'<p class="warning">{note}</p>')
     return "".join(parts)
