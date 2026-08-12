@@ -158,7 +158,7 @@ class StepikClient:
         """
         Fetch a list of objects for `resource` (e.g. 'courses', 'lessons', 'steps')
         by id, batching requests to avoid oversized query strings. Returns a flat
-        list of the objects, in no guaranteed order (callers should re-order by id).
+        list of the objects, in no guaranteed order.
         """
         ids = list(ids)
         results = []
