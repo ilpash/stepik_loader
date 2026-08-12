@@ -386,6 +386,35 @@ def test_render_step_uses_the_title_a_block_keeps_under_options(tmp_path, monkey
     assert "Scope Functions" in (step_dir / "index.html").read_text()
 
 
+def test_render_step_prefers_the_block_title_over_the_one_under_options(tmp_path, monkeypatch):
+    monkeypatch.setattr(resource_downloader, "download_resource", None)
+    block = {
+        "name": "pycharm",
+        "text": "<p>Implement it.</p>",
+        "title": "Block Title",
+        "options": {"title": "Options Title"},
+    }
+    step_node = _make_step_node(block, step_id=7)
+    step_dir = tmp_path / "step"
+
+    title = render_step(
+        step_node=step_node,
+        step_dir=step_dir,
+        course_title="Course",
+        module_title="Module",
+        lesson_title="Lesson",
+        access_token="test-token",
+        video_quality="best",
+        course_id=1,
+        lesson_id=2,
+    )
+
+    html = (step_dir / "index.html").read_text()
+    assert title == "Block Title"
+    assert "Options Title" not in html
+    assert "Step 7" not in html
+
+
 def test_render_step_dispatches_code_block_to_code_renderer(tmp_path, monkeypatch, caplog):
     monkeypatch.setattr(resource_downloader, "download_resource", None)
     block = {
