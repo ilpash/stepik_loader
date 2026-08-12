@@ -66,6 +66,10 @@ real Stepik API or network, and runs in a few seconds.
   their question text plus a note about what can't be shown offline. Everything
   else gets a generic fallback (raw step data shown as-is) with a warning
   logged — see `tools/step_renderer.py`.
+- **Links are kept, not mirrored.** A hyperlink in step text is downloaded only when
+  it points at a file (a PDF, an archive, an image). Links to web pages — a video,
+  an article, another step of the same course — keep the URL the course author wrote,
+  so they still work whenever you're online.
 - **No resume/dry-run/verification tooling yet** — kept out deliberately to
   keep the tool simple.
 - Interactive grading and other users' submissions are never exported — Stepik's

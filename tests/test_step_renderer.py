@@ -119,6 +119,54 @@ def test_render_text_skips_anchor_tags_when_skip_attachments_true():
     assert 'href="http://x.com/f.pdf"' in html
 
 
+def test_render_text_downloads_an_anchor_that_points_at_a_file():
+    attachment_url = "https://stepik.org/media/attachments/lesson/42/notes.pdf"
+    block = {"text": f'<a href="{attachment_url}">notes</a>'}
+    calls = []
+
+    def mock_resolve(url, filename_hint, index):
+        calls.append(url)
+        return "local_notes.pdf"
+
+    html = _render_text(block=block, resolve=mock_resolve, context="test-context", skip_attachments=False)
+    assert 'href="local_notes.pdf"' in html
+    assert calls == [attachment_url]
+
+
+@pytest.mark.parametrize(
+    "page_url",
+    [
+        "https://www.youtube.com/watch?v=some_video_id",
+        "https://bit.ly/some_short_link",
+        "https://stepik.org/lesson/some-lesson-42/step/3?unit=100",
+        "https://en.wikipedia.org/wiki/Some_article",
+        "https://example.com/some_page.html",
+    ],
+)
+def test_render_text_keeps_an_anchor_that_points_at_a_web_page(page_url):
+    # A web page is worthless offline and mirroring it would replace the live URL,
+    # so it stays untouched -- resolve=None proves nothing tries to download it.
+    block = {"text": f'<a href="{page_url}">link</a>'}
+    html = _render_text(block=block, resolve=None, context="test-context", skip_attachments=False)
+    assert f'href="{page_url}"' in html
+
+
+def test_render_text_downloads_an_image_from_an_extensionless_url():
+    # Stepik serves plenty of images from a URL with no extension. Only <a> hrefs are
+    # filtered by media type, so an <img> downloads whatever its URL looks like.
+    image_url = "https://ucarecdn.stepik.net/some-image-id"
+    block = {"text": f'<img src="{image_url}">'}
+    calls = []
+
+    def mock_resolve(url, filename_hint, index):
+        calls.append(url)
+        return "local_image"
+
+    html = _render_text(block=block, resolve=mock_resolve, context="test-context", skip_attachments=False)
+    assert 'src="local_image"' in html
+    assert calls == [image_url]
+
+
 # -- _render_code --------------------------------------------------------------
 
 

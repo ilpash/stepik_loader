@@ -55,6 +55,9 @@ that course under `exports/<course_id>_<slug>/`, following the
   course leans heavily on one of these types and the fallback isn't good
   enough, that's a signal to build a dedicated renderer for it in
   `tools/step_renderer.py` — see CLAUDE.md's self-improvement loop.
+- Only a hyperlink pointing at a file is downloaded into the step. Links to web
+  pages keep their original URL, so they need a connection to open — mirroring
+  them would save a page that is useless offline and lose the live URL.
 - Re-running an export always overwrites; there's no resume/skip-existing
   logic in v1.
 

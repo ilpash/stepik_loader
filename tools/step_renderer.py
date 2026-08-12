@@ -6,13 +6,16 @@ into the step's own directory via resource_downloader.
 Dedicated renderers exist for text, video, code and pycharm blocks, and quiz
 blocks keep their question text plus a note about what can't be shown offline.
 Every other block type falls back to a generic "raw content" dump, with a
-warning logged
+warning logged. A hyperlink is only downloaded when it points at a file --
+links to web pages keep the URL the course author wrote.
 """
 
 import json
 import logging
+import mimetypes
 from html import escape
 from pathlib import Path
+from urllib.parse import urlparse
 
 import markdown
 from bs4 import BeautifulSoup
@@ -29,6 +32,15 @@ _env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
 _RESOURCE_ATTRS = [("img", "src"), ("audio", "src"), ("source", "src"), ("a", "href")]
 
 
+def _is_downloadable_file(url):
+    # Only <a> hrefs are asked this: an anchor points either at a file to save or at a
+    # web page to keep as a link, and the media type of its path tells the two apart.
+    # img/audio/source always point at media and never reach this check, so an image
+    # still downloads when Stepik serves it from an extensionless URL.
+    guessed_type, _ = mimetypes.guess_type(urlparse(url).path)
+    return guessed_type and guessed_type != "text/html"
+
+
 def _render_text(block, resolve, context, skip_attachments):
     html = block.get("text", "")
     soup = BeautifulSoup(html, "html.parser")
@@ -39,6 +51,8 @@ def _render_text(block, resolve, context, skip_attachments):
         for tag in soup.find_all(tag_name):
             url = tag.get(attr)
             if not url or not url.startswith("http"):
+                continue
+            if tag_name == "a" and not _is_downloadable_file(url):
                 continue
             resource_index += 1
             local = resolve(url, filename_hint=None, index=resource_index)
