@@ -414,6 +414,8 @@ def test_render_step_dispatches_code_block_to_code_renderer(tmp_path, monkeypatc
     )
 
     html = (step_dir / "index.html").read_text()
+    # only _render_code emits this note, so its presence is what proves the dispatch
+    assert "asks you to write a program" in html
     assert "Print the sum." in html
     assert "<summary>python3</summary>" in html
     assert "raw step data" not in html
