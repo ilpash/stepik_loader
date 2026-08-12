@@ -72,6 +72,19 @@ pre {
 code { padding: 0.1rem 0.3rem; }
 pre code { padding: 0; }
 
+details {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin: 0.4rem 0;
+}
+
+summary {
+  cursor: pointer;
+  padding: 0.4rem 0.6rem;
+}
+
+details pre { margin: 0 0.6rem 0.6rem; }
+
 .warning {
   border: 1px solid #c05621;
   background: rgba(192, 86, 33, 0.08);

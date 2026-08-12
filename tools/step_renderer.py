@@ -3,9 +3,9 @@ Renders a single step's `block` JSON into a self-contained index.html,
 downloading any resources it references (video / images / audio / attachments)
 into the step's own directory via resource_downloader.
 
-Dedicated renderers exist for text and video blocks, and quiz blocks keep their
-question text plus a note about what can't be shown offline. Every other block
-type falls back to a generic "raw content" dump, with a warning logged
+Dedicated renderers exist for text, video and code blocks, and quiz blocks keep
+their question text plus a note about what can't be shown offline. Every other
+block type falls back to a generic "raw content" dump, with a warning logged
 """
 
 import json
@@ -128,6 +128,61 @@ def _render_quiz(block):
     return "".join(parts)
 
 
+def _render_code_samples(samples):
+    if not samples:
+        return ""
+    parts = ["<h2>Samples</h2>"]
+    for index, (sample_input, expected_output) in enumerate(samples, start=1):
+        parts.append(
+            f"<h3>Sample {index}</h3>"
+            f"<h4>Input</h4><pre><code>{escape(sample_input)}</code></pre>"
+            f"<h4>Expected output</h4><pre><code>{escape(expected_output)}</code></pre>"
+        )
+    return "".join(parts)
+
+
+def _render_code_default_limits(options):
+    # Stepik builds both limits from one source and puts them in the options dict
+    # together, so they are either both there or both missing -- never one alone.
+    time_limit = options.get("execution_time_limit")
+    memory_limit = options.get("execution_memory_limit")
+    if time_limit is None:
+        return ""
+    return f"<p>Default limits: {time_limit} s, {memory_limit} MB.</p>"
+
+
+def _render_code_templates(options):
+    # Courses commonly offer 20-45 languages, so each template collapses into its
+    # own <details> to keep the problem statement and samples at the top of the page.
+    # options["limits"] is a per-language table that usually overrides the step defaults.
+    language_limits = options.get("limits", {})
+    parts = []
+    for language, source in sorted(options.get("code_templates", {}).items()):
+        if not source.strip():
+            continue
+        label = escape(language)
+        limit = language_limits.get(language)
+        if limit:
+            label += f" — {limit['time']} s, {limit['memory']} MB"
+        parts.append(f"<details><summary>{label}</summary><pre><code>{escape(source)}</code></pre></details>")
+    if not parts:
+        return ""
+    return "".join(["<h2>Starter code</h2>", *parts])
+
+
+def _render_code(block, resolve, context, skip_attachments):
+    options = block.get("options", {})
+    parts = [
+        _render_text(block, resolve, context, skip_attachments),
+        _render_code_samples(options.get("samples")),
+        _render_code_default_limits(options),
+        _render_code_templates(options),
+        '<p class="warning">This step asks you to write a program; submitting a solution and '
+        "grading are not available offline.</p>",
+    ]
+    return "".join(part for part in parts if part)
+
+
 def _render_generic(block, context):
     logger.warning("[%s] no dedicated renderer for block type '%s', using generic fallback", context, block.get("name"))
     dump = json.dumps(block, ensure_ascii=False, indent=2)
@@ -170,6 +225,8 @@ def render_step(
         body_html = _render_video(block, resolve, context, video_quality, skip_videos)
     elif block_type == "text":
         body_html = _render_text(block, resolve, context, skip_attachments)
+    elif block_type == "code":
+        body_html = _render_code(block, resolve, context, skip_attachments)
     elif block_type in _TYPE_TO_QUIZ_NOTE:
         body_html = _render_quiz(block)
     else:

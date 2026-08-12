@@ -45,9 +45,10 @@ that course under `exports/<course_id>_<slug>/`, following the
 - Only public/free courses are accessible (`client_credentials` auth only).
 - Quiz grading, hidden tests, and "correct answer" flags are never exported —
   Stepik doesn't expose them to non-privileged API clients.
-- Only `text`, `video`, `choice`, `string`, and `number` step types get a
-  dedicated renderer. Everything else (`math`, `sorting`, `matching`,
-  `free-answer`, `table`, `code`, `dataset`, `admin`, …) falls back to a raw
+- Only `text`, `video`, and `code` step types get a dedicated renderer. Quiz
+  types (`choice`, `string`, `number`, `sorting`, `matching`, `free-answer`)
+  keep their question text plus a note about what can't be shown offline.
+  Everything else (`math`, `table`, `dataset`, `admin`, …) falls back to a raw
   JSON dump inside the step's `index.html`, with a warning logged. If a
   course leans heavily on one of these types and the fallback isn't good
   enough, that's a signal to build a dedicated renderer for it in

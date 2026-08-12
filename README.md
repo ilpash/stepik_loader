@@ -58,7 +58,9 @@ real Stepik API or network, and runs in a few seconds.
   grant, which does not carry any user identity — it can't see paid or
   enrolled-only content. Supporting that would require the `authorization_code`
   flow (real browser login) and is intentionally not built yet.
-- **Dedicated renderers** exist for `text` and `video` step types. Quiz types
+- **Dedicated renderers** exist for `text`, `video` and `code` step types —
+  code steps keep their problem statement, sample input/output, execution
+  limits, and the starter code for every language the course offers. Quiz types
   (`choice`, `string`, `number`, `sorting`, `matching`, `free-answer`) keep
   their question text plus a note about what can't be shown offline. Everything
   else gets a generic fallback (raw step data shown as-is) with a warning
