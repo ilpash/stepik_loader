@@ -7,11 +7,12 @@ target-version = "py312"
 line-length = 120
 
 [tool.ruff.lint]
-select = ["E", "W", "F", "B", "I", "UP", "S", "C4", "SIM", "T20"]
+select = ["E", "W", "F", "B", "I", "UP", "S", "C4", "SIM", "T20", "ARG"]
 
 [tool.ruff.lint.per-file-ignores]
-# Test fixtures legitimately use bare `assert` and fake credential strings.
-"tests/*" = ["S101", "S105", "S106"]
+# Test fixtures legitimately use bare `assert` and mock credential strings, and a
+# double's signature has to mirror the real one whether or not it reads every argument.
+"tests/*" = ["S101", "S105", "S106", "ARG001", "ARG002", "ARG005"]
 
 [tool.ruff.lint.isort]
 known-first-party = [
