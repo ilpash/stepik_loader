@@ -26,7 +26,7 @@ def build_toc(course_tree, course_dir):
         for lesson in module["lessons"]:
             steps = [
                 {
-                    "title": step.get("title") or step["dir_name"],
+                    "title": step.get("title", step["dir_name"]),
                     "href": f"{module['dir_name']}/{lesson['dir_name']}/{step['dir_name']}/index.html",
                 }
                 for step in lesson["steps"]

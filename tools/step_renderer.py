@@ -30,7 +30,7 @@ _RESOURCE_ATTRS = [("img", "src"), ("audio", "src"), ("source", "src"), ("a", "h
 
 
 def _render_text(block, resolve, context, skip_attachments):
-    html = block.get("text") or ""
+    html = block.get("text", "")
     soup = BeautifulSoup(html, "html.parser")
     resource_index = 0
     for tag_name, attr in _RESOURCE_ATTRS:
@@ -87,8 +87,8 @@ def _render_video(block, resolve, context, quality, skip_videos):
     if skip_videos:
         return '<p class="warning">Video download skipped (--skip-videos).</p>'
 
-    video = block.get("video") or {}
-    urls = video.get("urls") or []
+    video = block.get("video", {})
+    urls = video.get("urls", [])
     selected = _pick_video_url(urls, quality, context)
     if not selected or not selected.get("url"):
         logger.warning("[%s] video step has no downloadable urls", context)
@@ -118,7 +118,7 @@ _TYPE_TO_QUIZ_NOTE = {
 
 
 def _render_quiz(block):
-    prompt = block.get("text") or ""
+    prompt = block.get("text", "")
     parts = [f'<div class="prompt">{prompt}</div>'] if prompt else []
     # block["options"] holds quiz settings, not the answers -- those come from a quiz
     # dataset that needs user-level auth, which this read-only exporter always avoids.
@@ -239,7 +239,7 @@ def render_step(
 ):
     step_dir = Path(step_dir)
     step_dir.mkdir(parents=True, exist_ok=True)
-    block = step_node.get("block") or {}
+    block = step_node.get("block", {})
     block_type = block.get("name", "unknown")
     context = f"course={course_id} lesson={lesson_id} step={step_node['id']}"
 
