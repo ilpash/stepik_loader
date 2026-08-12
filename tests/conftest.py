@@ -18,9 +18,6 @@ def no_sleep(monkeypatch):
 
 @pytest.fixture
 def mock_download_resource(monkeypatch):
-    """
-    Stand in for resource_downloader.download_resource so tests can count its calls
-    """
     mock_download = MagicMock(return_value="local_resource")
     monkeypatch.setattr(resource_downloader, "download_resource", mock_download)
     return mock_download

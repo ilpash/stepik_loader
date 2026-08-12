@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock
 
+import pytest
 import requests
 
 import resource_downloader
@@ -24,6 +25,13 @@ class MockStreamResponse:
 
     def iter_content(self, chunk_size):
         yield from self._chunks
+
+
+@pytest.fixture
+def mock_session_get(monkeypatch):
+    mock_get = MagicMock()
+    monkeypatch.setattr(resource_downloader._download_session, "get", mock_get)
+    return mock_get
 
 
 # -- safe_filename ---------------------------------------------------------------
@@ -64,117 +72,78 @@ def test_unique_dest_increments_past_multiple_collisions(tmp_path):
 # -- download_resource ---------------------------------------------------------------
 
 
-def test_download_resource_success_writes_file_and_returns_filename(tmp_path, monkeypatch):
-    monkeypatch.setattr(
-        resource_downloader._download_session,
-        "get",
-        lambda url, headers=None, stream=None, timeout=None: MockStreamResponse(200, chunks=[b"hello"]),
-    )
+def test_download_resource_success_writes_file_and_returns_filename(tmp_path, mock_session_get):
+    mock_session_get.return_value = MockStreamResponse(200, chunks=[b"hello"])
     result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
     assert result == "a.txt"
     assert (tmp_path / "a.txt").read_bytes() == b"hello"
 
 
-def test_download_resource_attaches_auth_header_for_stepik_host(tmp_path, monkeypatch):
-    recorded = {}
-
-    def mock_get(url, headers=None, stream=None, timeout=None):
-        recorded["headers"] = headers
-        return MockStreamResponse(200)
-
-    monkeypatch.setattr(resource_downloader._download_session, "get", mock_get)
+def test_download_resource_attaches_auth_header_for_stepik_host(tmp_path, mock_session_get):
+    mock_session_get.return_value = MockStreamResponse(200)
     download_resource("https://stepik.org/media/a.txt", tmp_path, "test-context", access_token="test-token")
-    assert recorded["headers"].get("Authorization") == "Bearer test-token"
+    assert mock_session_get.call_args.kwargs["headers"].get("Authorization") == "Bearer test-token"
 
 
-def test_download_resource_omits_auth_header_for_non_stepik_host(tmp_path, monkeypatch):
-    recorded = {}
-
-    def mock_get(url, headers=None, stream=None, timeout=None):
-        recorded["headers"] = headers
-        return MockStreamResponse(200)
-
-    monkeypatch.setattr(resource_downloader._download_session, "get", mock_get)
+def test_download_resource_omits_auth_header_for_non_stepik_host(tmp_path, mock_session_get):
+    mock_session_get.return_value = MockStreamResponse(200)
     download_resource("https://example.com/a.txt", tmp_path, "test-context", access_token="test-token")
-    assert "Authorization" not in recorded["headers"]
+    assert "Authorization" not in mock_session_get.call_args.kwargs["headers"]
 
 
-def test_download_resource_guesses_extension_from_content_type_when_hint_has_no_suffix(tmp_path, monkeypatch):
-    monkeypatch.setattr(
-        resource_downloader._download_session,
-        "get",
-        lambda url, headers=None, stream=None, timeout=None: MockStreamResponse(
-            200, chunks=[b"x"], headers={"Content-Type": "video/mp4"}
-        ),
-    )
+def test_download_resource_guesses_extension_from_content_type_when_hint_has_no_suffix(tmp_path, mock_session_get):
+    mock_session_get.return_value = MockStreamResponse(200, chunks=[b"x"], headers={"Content-Type": "video/mp4"})
     result = download_resource("http://example.com/video", tmp_path, "test-context", filename_hint="video")
     assert result.endswith(".mp4")
 
 
-def test_download_resource_keeps_guessed_extension_unique(tmp_path, monkeypatch):
+def test_download_resource_keeps_guessed_extension_unique(tmp_path, mock_session_get):
     # The hint has no extension, so it becomes "video.mp4", which this directory already has.
     (tmp_path / "video.mp4").write_bytes(b"existing file")
-    monkeypatch.setattr(
-        resource_downloader._download_session,
-        "get",
-        lambda url, headers=None, stream=None, timeout=None: MockStreamResponse(
-            200, chunks=[b"new"], headers={"Content-Type": "video/mp4"}
-        ),
-    )
+    mock_session_get.return_value = MockStreamResponse(200, chunks=[b"new"], headers={"Content-Type": "video/mp4"})
     result = download_resource("http://example.com/video", tmp_path, "test-context", filename_hint="video")
     assert result == "video_2.mp4"
     assert (tmp_path / "video_2.mp4").read_bytes() == b"new"
     assert (tmp_path / "video.mp4").read_bytes() == b"existing file"
 
 
-def test_download_resource_returns_none_on_non_retryable_http_error(tmp_path, monkeypatch):
-    monkeypatch.setattr(
-        resource_downloader._download_session,
-        "get",
-        lambda url, headers=None, stream=None, timeout=None: MockStreamResponse(404),
-    )
+def test_download_resource_returns_none_on_non_retryable_http_error(tmp_path, mock_session_get):
+    mock_session_get.return_value = MockStreamResponse(404)
     result = download_resource("http://example.com/missing.txt", tmp_path, "test-context")
     assert result is None
     assert list(tmp_path.iterdir()) == []
 
 
-def test_download_resource_retries_on_retryable_status_then_succeeds(tmp_path, monkeypatch, no_sleep):
-    responses = [MockStreamResponse(503), MockStreamResponse(200, chunks=[b"ok"])]
-    mock_get = MagicMock(side_effect=responses)
-    monkeypatch.setattr(resource_downloader._download_session, "get", mock_get)
+def test_download_resource_retries_on_retryable_status_then_succeeds(tmp_path, mock_session_get, no_sleep):
+    mock_session_get.side_effect = [MockStreamResponse(503), MockStreamResponse(200, chunks=[b"ok"])]
     result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
-    assert mock_get.call_count == 2
+    assert mock_session_get.call_count == 2
     assert result == "a.txt"
     assert (tmp_path / "a.txt").read_bytes() == b"ok"
     assert no_sleep.call_count == 1
 
 
-def test_download_resource_returns_none_after_exhausting_retries(tmp_path, monkeypatch, no_sleep):
-    mock_get = MagicMock(side_effect=lambda *a, **k: MockStreamResponse(503))
-    monkeypatch.setattr(resource_downloader._download_session, "get", mock_get)
+def test_download_resource_returns_none_after_exhausting_retries(tmp_path, mock_session_get, no_sleep):
+    mock_session_get.return_value = MockStreamResponse(503)
     result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
     assert result is None
-    assert mock_get.call_count == resource_downloader.MAX_RETRIES
+    assert mock_session_get.call_count == resource_downloader.MAX_RETRIES
     assert no_sleep.call_count == resource_downloader.MAX_RETRIES - 1
 
 
-def test_download_resource_removes_partial_file_when_stream_breaks(tmp_path, monkeypatch, no_sleep):
+def test_download_resource_removes_partial_file_when_stream_breaks(tmp_path, mock_session_get, no_sleep):
     class BrokenStreamResponse(MockStreamResponse):
         def iter_content(self, chunk_size):
             yield b"first half"
             raise requests.ConnectionError("stream dropped")
 
-    monkeypatch.setattr(
-        resource_downloader._download_session,
-        "get",
-        lambda url, headers=None, stream=None, timeout=None: BrokenStreamResponse(200),
-    )
+    mock_session_get.return_value = BrokenStreamResponse(200)
     result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
     assert result is None
     assert list(tmp_path.iterdir()) == []
 
 
-def test_download_resource_removes_partial_file_when_the_disk_write_fails(tmp_path, monkeypatch, no_sleep):
+def test_download_resource_removes_partial_file_when_the_disk_write_fails(tmp_path, mock_session_get, no_sleep):
     # A failed write is reported as a miss like any other, so one unwritable file
     # can't take the whole export down with it.
     class UnwritableStreamResponse(MockStreamResponse):
@@ -182,20 +151,13 @@ def test_download_resource_removes_partial_file_when_the_disk_write_fails(tmp_pa
             yield b"first half"
             raise OSError("no space left on device")
 
-    monkeypatch.setattr(
-        resource_downloader._download_session,
-        "get",
-        lambda url, headers=None, stream=None, timeout=None: UnwritableStreamResponse(200),
-    )
+    mock_session_get.return_value = UnwritableStreamResponse(200)
     result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
     assert result is None
     assert list(tmp_path.iterdir()) == []
 
 
-def test_download_resource_returns_none_on_connection_error(tmp_path, monkeypatch, no_sleep):
-    def mock_get(url, headers=None, stream=None, timeout=None):
-        raise requests.ConnectionError("connection refused")
-
-    monkeypatch.setattr(resource_downloader._download_session, "get", mock_get)
+def test_download_resource_returns_none_on_connection_error(tmp_path, mock_session_get, no_sleep):
+    mock_session_get.side_effect = requests.ConnectionError("connection refused")
     result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
     assert result is None
