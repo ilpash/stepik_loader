@@ -29,8 +29,8 @@ CHUNK_SIZE = 64 * 1024
 _download_session = requests.Session()
 
 
-def safe_filename(url, fallback="resource"):
-    name = unquote(Path(urlparse(url).path).name) or fallback
+def safe_filename(url):
+    name = unquote(Path(urlparse(url).path).name) or "resource"
     name = re.sub(r"[^A-Za-z0-9._-]", "_", name)
     return name[:150]
 
