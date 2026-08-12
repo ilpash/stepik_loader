@@ -6,6 +6,8 @@
   --border: #e0e0e0;
   --accent: #2b6cb0;
   --code-bg: #f5f5f5;
+  --warning: #9c4415;
+  --warning-bg: rgba(156, 68, 21, 0.08);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -16,6 +18,8 @@
     --border: #3a3a3a;
     --accent: #6ea8dc;
     --code-bg: #262626;
+    --warning: #f0a868;
+    --warning-bg: rgba(240, 168, 104, 0.1);
   }
 }
 
@@ -95,9 +99,9 @@ summary {
 details pre { margin: 0 0.6rem 0.6rem; }
 
 .warning {
-  border: 1px solid #c05621;
-  background: rgba(192, 86, 33, 0.08);
-  color: #c05621;
+  border: 1px solid var(--warning);
+  background: var(--warning-bg);
+  color: var(--warning);
   border-radius: 4px;
   padding: 0.6rem 0.9rem;
   font-size: 0.9rem;
