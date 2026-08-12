@@ -9,6 +9,7 @@ calling context (course/lesson/step id), and reported as a miss (None) --
 it never aborts the export.
 """
 
+import itertools
 import logging
 import mimetypes
 import re
@@ -39,10 +40,10 @@ def _unique_dest(dest_dir, filename):
     if not dest.exists():
         return dest
     stem, suffix = dest.stem, dest.suffix
-    i = 2
-    while (dest_dir / f"{stem}_{i}{suffix}").exists():
-        i += 1
-    return dest_dir / f"{stem}_{i}{suffix}"
+    for index in itertools.count(2):
+        candidate = dest_dir / f"{stem}_{index}{suffix}"
+        if not candidate.exists():
+            return candidate
 
 
 def download_resource(url, dest_dir, log_label, access_token=None, filename_hint=None):
