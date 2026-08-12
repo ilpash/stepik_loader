@@ -81,6 +81,7 @@ def main(argv=None):
                 context = StepContext(
                     course_id=tree["id"],
                     course_title=tree["title"],
+                    course_dir=course_dir,
                     module_title=module["title"],
                     lesson_id=lesson["id"],
                     lesson_title=lesson["title"],

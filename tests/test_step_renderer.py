@@ -371,6 +371,7 @@ def _render_step_into(step_dir, step_node, **context_overrides):
     context = StepContext(
         course_id=1,
         course_title="Course",
+        course_dir=step_dir.parent,
         module_title="Module",
         lesson_id=2,
         lesson_title="Lesson",

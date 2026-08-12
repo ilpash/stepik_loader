@@ -232,6 +232,9 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     assert "Step 10005 (video)" in toc_html
 
     text_html = (course_dir / LESSON_1_STEP_1 / "index.html").read_text()
+    # a step sits three levels below the course root, and both links back must clear it
+    assert 'href="../../../assets/style.css"' in text_html
+    assert 'href="../../../index.html"' in text_html
     assert 'src="resource_1_pic.png"' in text_html
     assert 'src="resource_2_clip.mp3"' in text_html
     assert 'href="resource_3_notes.pdf"' in text_html

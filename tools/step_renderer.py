@@ -13,6 +13,7 @@ links to web pages keep the URL the course author wrote.
 import json
 import logging
 import mimetypes
+import os
 from dataclasses import dataclass
 from html import escape
 from pathlib import Path
@@ -34,6 +35,7 @@ _RESOURCE_ATTRS = [("img", "src"), ("audio", "src"), ("source", "src"), ("a", "h
 class StepContext:
     course_id: int
     course_title: str
+    course_dir: Path
     module_title: str
     lesson_id: int
     lesson_title: str
@@ -44,6 +46,10 @@ class StepContext:
 
     def log_label(self, step_id):
         return f"course={self.course_id} lesson={self.lesson_id} step={step_id}"
+
+    def link_from(self, step_dir, *course_relative_parts):
+        target = self.course_dir.joinpath(*course_relative_parts)
+        return Path(os.path.relpath(target, step_dir)).as_posix()
 
 
 def _is_downloadable_file(url):
@@ -296,8 +302,8 @@ def render_step(step_node, step_dir, context):
         step_title=step_title,
         block_type=block_type,
         body_html=body_html,
-        css_path="../../../assets/style.css",
-        toc_path="../../../index.html",
+        css_path=context.link_from(step_dir, "assets", "style.css"),
+        toc_path=context.link_from(step_dir, "index.html"),
     )
     (step_dir / "index.html").write_text(html, encoding="utf-8")
     (step_dir / "source.json").write_text(json.dumps(step_node["raw"], ensure_ascii=False, indent=2), encoding="utf-8")
