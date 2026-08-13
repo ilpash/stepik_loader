@@ -19,9 +19,12 @@ MAX_SLUG_LEN = 50
 DIR_INDEX_WIDTH = 3
 
 
+def _slug(title):
+    return slugify(title or "untitled", max_length=MAX_SLUG_LEN)
+
+
 def _dir_name(index, title, prefix=""):
-    slug = slugify(title or "untitled", max_length=MAX_SLUG_LEN)
-    return f"{prefix}{index:0{DIR_INDEX_WIDTH}d}_{slug}"
+    return f"{prefix}{index:0{DIR_INDEX_WIDTH}d}_{_slug(title)}"
 
 
 def _build_lesson_node(lesson, index, step_id_to_step):
@@ -46,10 +49,11 @@ def _build_lesson_node(lesson, index, step_id_to_step):
             }
         )
 
+    title = lesson.get("title", "")
     return {
         "id": lesson["id"],
-        "title": lesson.get("title", ""),
-        "dir_name": _dir_name(index, lesson.get("title"), prefix="lesson_"),
+        "title": title,
+        "dir_name": _dir_name(index, title, prefix="lesson_"),
         "steps": steps,
     }
 
@@ -81,10 +85,11 @@ def _build_module_node(section, index, unit_id_to_unit, lesson_id_to_lesson, ste
             continue
         lessons.append(_build_lesson_node(lesson, lesson_index, step_id_to_step))
 
+    title = section.get("title", "")
     return {
         "id": section["id"],
-        "title": section.get("title", ""),
-        "dir_name": _dir_name(index, section.get("title"), prefix="module_"),
+        "title": title,
+        "dir_name": _dir_name(index, title, prefix="module_"),
         "lessons": lessons,
     }
 
@@ -109,11 +114,11 @@ def build_course_tree(client, course_id):
     steps = client.get_by_ids("steps", all_step_ids)
     step_id_to_step = {step["id"]: step for step in steps}
 
-    course_slug = slugify(course.get("title", "course"), max_length=MAX_SLUG_LEN)
+    title = course.get("title", "")
     return {
         "id": course["id"],
-        "title": course.get("title", ""),
-        "dir_name": f"{course['id']}_{course_slug}",
+        "title": title,
+        "dir_name": f"{course['id']}_{_slug(title)}",
         "modules": [
             _build_module_node(section, index, unit_id_to_unit, lesson_id_to_lesson, step_id_to_step)
             for index, section in enumerate(sections, start=1)
