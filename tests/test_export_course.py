@@ -105,14 +105,14 @@ def test_main_propagates_unexpected_error_from_render_phase(tmp_path, monkeypatc
         "dir_name": "1_course",
         "modules": [
             {
-                "dir_name": "module_01_m",
+                "dir_name": "module_001_module-one",
                 "title": "Module",
                 "lessons": [
                     {
                         "id": 1000,
-                        "dir_name": "lesson_01_l",
+                        "dir_name": "lesson_001_lesson-one",
                         "title": "Lesson",
-                        "steps": [{"id": 10000, "dir_name": "step_01_text"}],
+                        "steps": [{"id": 10000, "dir_name": "step_001_text"}],
                     }
                 ],
             }

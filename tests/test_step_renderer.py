@@ -29,33 +29,37 @@ def test_pick_video_url_returns_none_for_empty_list():
     assert _pick_video_url([], "best", "test-context") is None
 
 
+def _video_url(quality):
+    return {"quality": quality, "url": f"https://cdn.example.com/lecture-{quality}.mp4"}
+
+
 def test_pick_video_url_best_picks_highest_quality():
-    urls = [{"quality": "360", "url": "a"}, {"quality": "1080", "url": "b"}, {"quality": "720", "url": "c"}]
-    assert _pick_video_url(urls, "best", "test-context") == {"quality": "1080", "url": "b"}
+    urls = [_video_url("360"), _video_url("1080"), _video_url("720")]
+    assert _pick_video_url(urls, "best", "test-context") == _video_url("1080")
 
 
 def test_pick_video_url_exact_string_match():
-    urls = [{"quality": "360", "url": "a"}, {"quality": "720", "url": "b"}, {"quality": "1080", "url": "c"}]
-    assert _pick_video_url(urls, "720", "test-context") == {"quality": "720", "url": "b"}
+    urls = [_video_url("360"), _video_url("720"), _video_url("1080")]
+    assert _pick_video_url(urls, "720", "test-context") == _video_url("720")
 
 
 def test_pick_video_url_falls_back_to_nearest_when_exact_missing(caplog):
     # 720 falls between 480 and 1080, nearer to 480 (240 away) than 1080 (360 away).
-    urls = [{"quality": "360", "url": "a"}, {"quality": "480", "url": "b"}, {"quality": "1080", "url": "c"}]
+    urls = [_video_url("360"), _video_url("480"), _video_url("1080")]
     result = _pick_video_url(urls, "720", "test-context")
-    assert result == {"quality": "480", "url": "b"}
+    assert result == _video_url("480")
     assert "not available" in caplog.text
 
 
 def test_pick_video_url_single_item_list_returns_it_regardless():
-    urls = [{"quality": "240", "url": "only"}]
+    urls = [_video_url("240")]
     assert _pick_video_url(urls, "best", "test-context") == urls[0]
 
 
 def test_pick_video_url_skips_an_entry_with_an_unreadable_quality():
-    urls = [{"quality": None, "url": "a"}, {"quality": "360", "url": "b"}]
+    urls = [_video_url(None), _video_url("360")]
     result = _pick_video_url(urls, "720", "test-context")
-    assert result == {"quality": "360", "url": "b"}
+    assert result == _video_url("360")
 
 
 # -- pure block renderers -----------------------------------------------------
@@ -99,12 +103,12 @@ def test_render_generic_dumps_raw_block_as_json(caplog):
 
 def test_render_text_rewrites_img_src_via_resolve(mock_resolve):
     mock_resolve.return_value = "local.png"
-    block = {"text": '<img src="http://x.com/a.png">'}
+    block = {"text": '<img src="https://cdn.example.com/diagram.png">'}
 
     html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
 
     assert 'src="local.png"' in html
-    mock_resolve.assert_called_once_with("http://x.com/a.png", filename_hint=None, index=1)
+    mock_resolve.assert_called_once_with("https://cdn.example.com/diagram.png", filename_hint=None, index=1)
 
 
 def test_render_text_skips_non_http_src(mock_resolve):
@@ -115,9 +119,9 @@ def test_render_text_skips_non_http_src(mock_resolve):
 
 
 def test_render_text_skips_anchor_tags_when_skip_attachments_true(mock_resolve):
-    block = {"text": '<a href="http://x.com/f.pdf">link</a>'}
+    block = {"text": '<a href="https://cdn.example.com/handout.pdf">link</a>'}
     html = _render_text(block=block, resolve=mock_resolve, skip_attachments=True)
-    assert 'href="http://x.com/f.pdf"' in html
+    assert 'href="https://cdn.example.com/handout.pdf"' in html
     assert mock_resolve.call_count == 0
 
 
@@ -218,12 +222,12 @@ def test_render_code_renders_statement_when_options_are_missing(mock_resolve):
 
 def test_render_code_rewrites_images_in_the_statement(mock_resolve):
     mock_resolve.return_value = "local.png"
-    block = {"name": "code", "text": '<img src="http://x.com/diagram.png">', "options": {}}
+    block = {"name": "code", "text": '<img src="https://cdn.example.com/flowchart.png">', "options": {}}
 
     html = _render_code(block=block, resolve=mock_resolve, skip_attachments=False)
 
     assert 'src="local.png"' in html
-    mock_resolve.assert_called_once_with("http://x.com/diagram.png", filename_hint=None, index=1)
+    mock_resolve.assert_called_once_with("https://cdn.example.com/flowchart.png", filename_hint=None, index=1)
 
 
 # -- _render_pycharm -----------------------------------------------------------
@@ -332,7 +336,7 @@ def test_render_video_returns_warning_when_no_urls(mock_resolve):
 
 def test_render_video_calls_resolve_with_selected_url_and_returns_video_tag(mock_resolve):
     mock_resolve.return_value = "video.mp4"
-    block = {"video": {"urls": [{"quality": "720", "url": "http://x.com/v.mp4"}]}}
+    block = {"video": {"urls": [{"quality": "720", "url": "https://cdn.example.com/lecture.mp4"}]}}
 
     html = _render_video(
         block=block,
@@ -343,12 +347,12 @@ def test_render_video_calls_resolve_with_selected_url_and_returns_video_tag(mock
     )
 
     assert html == '<video controls src="video.mp4"></video>'
-    mock_resolve.assert_called_once_with("http://x.com/v.mp4", filename_hint="video.mp4", index=0)
+    mock_resolve.assert_called_once_with("https://cdn.example.com/lecture.mp4", filename_hint="video.mp4", index=0)
 
 
 def test_render_video_returns_warning_when_resolve_fails(mock_resolve):
     mock_resolve.return_value = None
-    block = {"video": {"urls": [{"quality": "720", "url": "http://x.com/v.mp4"}]}}
+    block = {"video": {"urls": [{"quality": "720", "url": "https://cdn.example.com/lecture.mp4"}]}}
 
     html = _render_video(
         block=block,

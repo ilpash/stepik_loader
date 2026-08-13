@@ -34,16 +34,16 @@ def mock_session_get(monkeypatch):
 
 
 def test_safe_filename_sanitizes_and_uses_basename():
-    assert safe_filename("https://x.com/path/My File!.png") == "My_File_.png"
+    assert safe_filename("https://cdn.example.com/path/My File!.png") == "My_File_.png"
 
 
 def test_safe_filename_falls_back_when_url_has_no_basename():
-    assert safe_filename("https://x.com/") == "resource"
+    assert safe_filename("https://cdn.example.com/") == "resource"
 
 
 def test_safe_filename_truncates_to_150_chars():
     long_name = "a" * 300 + ".png"
-    result = safe_filename(f"https://x.com/{long_name}")
+    result = safe_filename(f"https://cdn.example.com/{long_name}")
     assert len(result) <= 150
 
 
@@ -51,18 +51,18 @@ def test_safe_filename_truncates_to_150_chars():
 
 
 def test_unique_dest_returns_plain_path_when_no_collision(tmp_path):
-    assert _unique_dest(tmp_path, "a.txt") == tmp_path / "a.txt"
+    assert _unique_dest(tmp_path, "notes.txt") == tmp_path / "notes.txt"
 
 
 def test_unique_dest_appends_suffix_on_collision(tmp_path):
-    (tmp_path / "a.txt").write_text("x")
-    assert _unique_dest(tmp_path, "a.txt") == tmp_path / "a_2.txt"
+    (tmp_path / "notes.txt").write_text("existing file")
+    assert _unique_dest(tmp_path, "notes.txt") == tmp_path / "notes_2.txt"
 
 
 def test_unique_dest_increments_past_multiple_collisions(tmp_path):
-    (tmp_path / "a.txt").write_text("x")
-    (tmp_path / "a_2.txt").write_text("x")
-    assert _unique_dest(tmp_path, "a.txt") == tmp_path / "a_3.txt"
+    (tmp_path / "notes.txt").write_text("existing file")
+    (tmp_path / "notes_2.txt").write_text("existing file")
+    assert _unique_dest(tmp_path, "notes.txt") == tmp_path / "notes_3.txt"
 
 
 # -- download_resource ---------------------------------------------------------------
@@ -70,20 +70,20 @@ def test_unique_dest_increments_past_multiple_collisions(tmp_path):
 
 def test_download_resource_success_writes_file_and_returns_filename(tmp_path, mock_session_get):
     mock_session_get.return_value = MockStreamResponse(200, chunks=[b"hello"])
-    result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
-    assert result == "a.txt"
-    assert (tmp_path / "a.txt").read_bytes() == b"hello"
+    result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
+    assert result == "notes.txt"
+    assert (tmp_path / "notes.txt").read_bytes() == b"hello"
 
 
 def test_download_resource_attaches_auth_header_for_stepik_host(tmp_path, mock_session_get):
     mock_session_get.return_value = MockStreamResponse(200)
-    download_resource("https://stepik.org/media/a.txt", tmp_path, "test-context", access_token="test-token")
+    download_resource("https://stepik.org/media/notes.txt", tmp_path, "test-context", access_token="test-token")
     assert mock_session_get.call_args.kwargs["headers"].get("Authorization") == "Bearer test-token"
 
 
 def test_download_resource_omits_auth_header_for_non_stepik_host(tmp_path, mock_session_get):
     mock_session_get.return_value = MockStreamResponse(200)
-    download_resource("https://example.com/a.txt", tmp_path, "test-context", access_token="test-token")
+    download_resource("https://example.com/notes.txt", tmp_path, "test-context", access_token="test-token")
     assert "Authorization" not in mock_session_get.call_args.kwargs["headers"]
 
 
@@ -112,16 +112,16 @@ def test_download_resource_returns_none_on_non_retryable_http_error(tmp_path, mo
 
 def test_download_resource_retries_on_retryable_status_then_succeeds(tmp_path, mock_session_get, no_sleep):
     mock_session_get.side_effect = [MockStreamResponse(503), MockStreamResponse(200, chunks=[b"ok"])]
-    result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
+    result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
     assert mock_session_get.call_count == 2
-    assert result == "a.txt"
-    assert (tmp_path / "a.txt").read_bytes() == b"ok"
+    assert result == "notes.txt"
+    assert (tmp_path / "notes.txt").read_bytes() == b"ok"
     assert no_sleep.call_count == 1
 
 
 def test_download_resource_returns_none_after_exhausting_retries(tmp_path, mock_session_get, no_sleep):
     mock_session_get.return_value = MockStreamResponse(503)
-    result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
+    result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
     assert result is None
     assert mock_session_get.call_count == resource_downloader.MAX_RETRIES
     assert no_sleep.call_count == resource_downloader.MAX_RETRIES - 1
@@ -134,7 +134,7 @@ def test_download_resource_removes_partial_file_when_stream_breaks(tmp_path, moc
             raise requests.ConnectionError("stream dropped")
 
     mock_session_get.return_value = BrokenStreamResponse(200)
-    result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
+    result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
     assert result is None
     assert list(tmp_path.iterdir()) == []
 
@@ -148,12 +148,12 @@ def test_download_resource_removes_partial_file_when_the_disk_write_fails(tmp_pa
             raise OSError("no space left on device")
 
     mock_session_get.return_value = UnwritableStreamResponse(200)
-    result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
+    result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
     assert result is None
     assert list(tmp_path.iterdir()) == []
 
 
 def test_download_resource_returns_none_on_connection_error(tmp_path, mock_session_get, no_sleep):
     mock_session_get.side_effect = requests.ConnectionError("connection refused")
-    result = download_resource("http://example.com/a.txt", tmp_path, "test-context")
+    result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
     assert result is None
