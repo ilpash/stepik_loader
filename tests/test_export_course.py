@@ -53,7 +53,7 @@ def test_parse_args_parses_flags_and_overrides():
 # -- main error paths ------------------------------------------------------------
 
 
-class MockStepikClient:
+class MockClientWithToken:
     access_token = "mock-token"
 
 
@@ -66,7 +66,7 @@ def test_main_returns_1_when_auth_fails(monkeypatch):
 
 
 def test_main_returns_1_when_course_fetch_fails(monkeypatch):
-    monkeypatch.setattr(export_course, "StepikClient", MockStepikClient)
+    monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
 
     def raise_fetch_error(client, course_id):
         raise ValueError("course not found or not accessible")
@@ -78,7 +78,7 @@ def test_main_returns_1_when_course_fetch_fails(monkeypatch):
 def test_main_returns_1_when_credentials_are_rejected_while_fetching(monkeypatch):
     # StepikClient() only checks that the env vars exist; the token is fetched
     # lazily, so a rejected secret surfaces here rather than at construction.
-    monkeypatch.setattr(export_course, "StepikClient", MockStepikClient)
+    monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
 
     def raise_auth_error(client, course_id):
         raise StepikAuthError("HTTP 401 from https://stepik.org/oauth2/token/")
@@ -88,7 +88,7 @@ def test_main_returns_1_when_credentials_are_rejected_while_fetching(monkeypatch
 
 
 def test_main_returns_1_when_stepik_cannot_be_reached(monkeypatch):
-    monkeypatch.setattr(export_course, "StepikClient", MockStepikClient)
+    monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
 
     def raise_connection_error(client, course_id):
         raise requests.ConnectionError("connection refused")
@@ -125,7 +125,7 @@ def test_main_propagates_unexpected_error_from_render_phase(tmp_path, monkeypatc
     def raise_render_error(*args, **kwargs):
         raise RuntimeError("disk write failed")
 
-    monkeypatch.setattr(export_course, "StepikClient", MockStepikClient)
+    monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
     monkeypatch.setattr(export_course, "build_course_tree", mock_build_course_tree)
     monkeypatch.setattr(export_course, "render_step", raise_render_error)
 
