@@ -18,11 +18,6 @@ from retry import MAX_RETRIES, RETRYABLE_STATUS_CODES, backoff_sleep
 API_BASE = "https://stepik.org/api/"
 AUTH_URL = "https://stepik.org/oauth2/token/"
 
-# Hosts that are allowed to receive the Stepik Authorization header.
-# Resource downloads (video/image/attachment CDNs) must never send it
-# to anything outside this set.
-STEPIK_AUTH_HOSTS = {"stepik.org", "www.stepik.org"}
-
 DEFAULT_TOKEN_CACHE = Path(__file__).resolve().parent.parent / "stepik_token.json"
 
 # A token this close to expiring counts as expired already.

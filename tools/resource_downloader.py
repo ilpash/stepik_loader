@@ -19,11 +19,15 @@ from urllib.parse import unquote, urlparse
 import requests
 
 from retry import MAX_RETRIES, RETRYABLE_STATUS_CODES, backoff_sleep
-from stepik_client import STEPIK_AUTH_HOSTS
 
 logger = logging.getLogger("stepik_export")
 
 CHUNK_SIZE = 64 * 1024
+
+# Hosts that are allowed to receive the Stepik Authorization header.
+# Resource downloads (video/image/attachment CDNs) must never send it
+# to anything outside this set.
+STEPIK_AUTH_HOSTS = {"stepik.org", "www.stepik.org"}
 
 # This session never has a default Authorization header, unlike StepikClient's.
 _download_session = requests.Session()
