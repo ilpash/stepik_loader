@@ -34,12 +34,13 @@ that course under `exports/<course_id>_<slug>/`, following the
 3. Watch the console output. It prints one line per step as it's processed, and
    `WARNING` lines for anything that failed or fell back to a generic
    renderer — each warning is tagged with `course=... lesson=... step=...`.
-4. When it finishes, it prints the path to the root `index.html`. Open that
-   file to sanity-check the export.
-5. Report to the user: how many steps were exported, and a summary of any
-   warnings (failed downloads, unsupported block types, quality fallbacks).
-   Do not silently skip warnings — alongside the test suite, they're the
-   completeness signal for this tool.
+4. When it finishes, it prints `Steps exported: N. Warnings: M.` followed by the
+   path to the root `index.html`. Open that file to sanity-check the export.
+5. Report to the user: take both counts from that line rather than tallying log
+   lines by hand. When `M` is not zero, read the `WARNING` lines and summarise
+   what they were (failed downloads, unsupported block types, quality
+   fallbacks). Do not silently skip warnings — alongside the test suite, they're
+   the completeness signal for this tool.
 
 ## Known limitations (by design)
 - Only public/free courses are accessible (`client_credentials` auth only).
