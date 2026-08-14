@@ -86,6 +86,8 @@ def main(argv=None):
     logger.info("Exporting '%s' to %s/", tree["title"], course_dir)
 
     total_steps = sum(len(lesson["steps"]) for module in tree["modules"] for lesson in module["lessons"])
+    if not total_steps:
+        logger.warning("Course %s has no steps to export.", args.course_id)
     done = 0
 
     for module in tree["modules"]:

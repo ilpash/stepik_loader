@@ -97,6 +97,17 @@ def test_main_returns_1_when_stepik_cannot_be_reached(monkeypatch):
     assert export_course.main(["--course-id", "1"]) == 1
 
 
+def test_main_warns_when_the_course_has_no_steps(tmp_path, monkeypatch, caplog):
+    empty_tree = {"id": 1, "title": "Course", "dir_name": "1_course", "modules": []}
+    monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
+    monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: empty_tree)
+
+    exit_code = export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
+
+    assert exit_code == 0
+    assert "has no steps to export" in caplog.text
+
+
 def test_main_propagates_unexpected_error_from_render_phase(tmp_path, monkeypatch):
     # Only fetch failures are caught and turned into exit code 1; render-phase errors propagate as-is.
     tree = {
