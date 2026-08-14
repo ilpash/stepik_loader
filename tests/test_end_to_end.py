@@ -4,6 +4,7 @@ Stepik API and all network downloads mocked, proving the whole tree-build ->
 render -> TOC pipeline actually produces a correct offline folder on disk.
 """
 
+import logging
 from pathlib import Path
 
 import pytest
@@ -285,6 +286,16 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
 
     number_html = (course_dir / LESSON_3_STEP_4 / "index.html").read_text()
     assert "expects a typed answer" in number_html
+
+
+def test_main_reports_the_step_and_warning_counts(tmp_path, monkeypatch, course_data, downloaded_urls, caplog):
+    # The table step is the only one without a dedicated renderer, so it is the one warning.
+    caplog.set_level(logging.INFO, logger="stepik_export")
+    monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
+
+    export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
+
+    assert "Steps exported: 9. Warnings: 1." in caplog.text
 
 
 def test_main_respects_skip_videos_and_skip_attachments_flags(tmp_path, monkeypatch, course_data, downloaded_urls):

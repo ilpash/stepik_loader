@@ -21,7 +21,19 @@ from step_renderer import StepContext, render_step
 from stepik_client import StepikAuthError, StepikClient
 from toc_builder import build_toc
 
+
+class WarningCounter(logging.Handler):
+    def __init__(self):
+        super().__init__(level=logging.WARNING)
+        self.count = 0
+
+    def emit(self, _record):
+        self.count += 1
+
+
 logger = logging.getLogger("stepik_export")
+warning_counter = WarningCounter()
+logger.addHandler(warning_counter)
 
 
 def parse_args(argv=None):
@@ -49,6 +61,7 @@ def main(argv=None):
     args = parse_args(argv)
     logging.basicConfig(level=args.log_level, format="%(levelname)s %(message)s")
     load_dotenv()
+    warning_counter.count = 0
 
     try:
         client = StepikClient()
@@ -107,6 +120,7 @@ def main(argv=None):
                 step["title"] = render_step(step, step_dir, context)
 
     build_toc(tree, course_dir)
+    logger.info("Steps exported: %d. Warnings: %d.", total_steps, warning_counter.count)
     logger.info("Done. Open %s in a browser.", course_dir / "index.html")
     return 0
 
