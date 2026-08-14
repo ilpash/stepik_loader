@@ -467,7 +467,7 @@ def test_render_step_downloads_a_url_used_by_two_tags_once(tmp_path, mock_downlo
 
 
 def test_render_step_dispatches_unknown_block_type_to_generic_renderer(tmp_path, mock_download_resource):
-    block = {"name": "quiz", "custom_field": "custom_value"}
+    block = {"name": "unsupported-block", "custom_field": "custom_value"}
     step_node = _make_step_node(block)
     step_dir = tmp_path / "step"
 
