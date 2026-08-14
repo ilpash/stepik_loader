@@ -26,12 +26,22 @@ logger = logging.getLogger("stepik_export")
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description="Export a Stepik course for offline use.")
-    parser.add_argument("--course-id", type=int, required=True)
-    parser.add_argument("--output-dir", default="exports")
-    parser.add_argument("--video-quality", default="best", choices=["best", "360", "720", "1080"])
-    parser.add_argument("--skip-videos", action="store_true")
-    parser.add_argument("--skip-attachments", action="store_true")
-    parser.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"])
+    parser.add_argument("--course-id", type=int, required=True, help="id of the public Stepik course to export")
+    parser.add_argument("--output-dir", default="exports", help="parent directory for the exported course folder")
+    parser.add_argument(
+        "--video-quality",
+        default="best",
+        choices=["best", "360", "720", "1080"],
+        help="preferred video resolution; if a step is not available in it, the closest one is used",
+    )
+    parser.add_argument("--skip-videos", action="store_true", help="render video steps without downloading the video")
+    parser.add_argument("--skip-attachments", action="store_true", help="leave linked files as their original url")
+    parser.add_argument(
+        "--log-level",
+        default="INFO",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+        help="lowest log severity printed to the console",
+    )
     return parser.parse_args(argv)
 
 
