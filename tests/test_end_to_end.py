@@ -177,6 +177,36 @@ LESSON_3_STEP_2 = "module_002_module-two/lesson_001_lesson-three/step_002_pychar
 LESSON_3_STEP_3 = "module_002_module-two/lesson_001_lesson-three/step_003_pycharm"
 LESSON_3_STEP_4 = "module_002_module-two/lesson_001_lesson-three/step_004_number"
 
+ALL_STEPS = [
+    LESSON_1_STEP_1,
+    LESSON_2_STEP_1,
+    LESSON_2_STEP_2,
+    LESSON_2_STEP_3,
+    LESSON_2_STEP_4,
+    LESSON_3_STEP_1,
+    LESSON_3_STEP_2,
+    LESSON_3_STEP_3,
+    LESSON_3_STEP_4,
+]
+
+ATTACHMENT_FILE = f"{LESSON_1_STEP_1}/resource_3_notes.pdf"
+VIDEO_FILE = f"{LESSON_3_STEP_1}/video.mp4"
+
+EXPECTED_FILES = {
+    "index.html",
+    "assets/style.css",
+    f"{LESSON_1_STEP_1}/resource_1_pic.png",
+    f"{LESSON_1_STEP_1}/resource_2_clip.mp3",
+    ATTACHMENT_FILE,
+    VIDEO_FILE,
+    *(f"{step}/index.html" for step in ALL_STEPS),
+    *(f"{step}/source.json" for step in ALL_STEPS),
+}
+
+
+def _exported_files(course_dir):
+    return {path.relative_to(course_dir).as_posix() for path in course_dir.rglob("*") if path.is_file()}
+
 
 def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_data, downloaded_urls):
     monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
@@ -185,34 +215,7 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     assert exit_code == 0
 
     course_dir = tmp_path / "1_sample-course"
-    expected_files = {
-        "index.html",
-        "assets/style.css",
-        f"{LESSON_1_STEP_1}/index.html",
-        f"{LESSON_1_STEP_1}/source.json",
-        f"{LESSON_1_STEP_1}/resource_1_pic.png",
-        f"{LESSON_1_STEP_1}/resource_2_clip.mp3",
-        f"{LESSON_1_STEP_1}/resource_3_notes.pdf",
-        f"{LESSON_2_STEP_1}/index.html",
-        f"{LESSON_2_STEP_1}/source.json",
-        f"{LESSON_2_STEP_2}/index.html",
-        f"{LESSON_2_STEP_2}/source.json",
-        f"{LESSON_2_STEP_3}/index.html",
-        f"{LESSON_2_STEP_3}/source.json",
-        f"{LESSON_2_STEP_4}/index.html",
-        f"{LESSON_2_STEP_4}/source.json",
-        f"{LESSON_3_STEP_1}/index.html",
-        f"{LESSON_3_STEP_1}/source.json",
-        f"{LESSON_3_STEP_1}/video.mp4",
-        f"{LESSON_3_STEP_2}/index.html",
-        f"{LESSON_3_STEP_2}/source.json",
-        f"{LESSON_3_STEP_3}/index.html",
-        f"{LESSON_3_STEP_3}/source.json",
-        f"{LESSON_3_STEP_4}/index.html",
-        f"{LESSON_3_STEP_4}/source.json",
-    }
-    actual_files = {path.relative_to(course_dir).as_posix() for path in course_dir.rglob("*") if path.is_file()}
-    assert actual_files == expected_files
+    assert _exported_files(course_dir) == EXPECTED_FILES
 
     # the table of contents links every step, and names each one however that step is named
     toc_html = (course_dir / "index.html").read_text()
@@ -303,32 +306,7 @@ def test_main_respects_skip_videos_and_skip_attachments_flags(tmp_path, monkeypa
 
     # The <a> (attachment) is skipped entirely, so no local file for it, but
     # the <img> and <audio> are untouched by --skip-attachments and still resolve.
-    expected_files = {
-        "index.html",
-        "assets/style.css",
-        f"{LESSON_1_STEP_1}/index.html",
-        f"{LESSON_1_STEP_1}/source.json",
-        f"{LESSON_1_STEP_1}/resource_1_pic.png",
-        f"{LESSON_1_STEP_1}/resource_2_clip.mp3",
-        f"{LESSON_2_STEP_1}/index.html",
-        f"{LESSON_2_STEP_1}/source.json",
-        f"{LESSON_2_STEP_2}/index.html",
-        f"{LESSON_2_STEP_2}/source.json",
-        f"{LESSON_2_STEP_3}/index.html",
-        f"{LESSON_2_STEP_3}/source.json",
-        f"{LESSON_2_STEP_4}/index.html",
-        f"{LESSON_2_STEP_4}/source.json",
-        f"{LESSON_3_STEP_1}/index.html",
-        f"{LESSON_3_STEP_1}/source.json",
-        f"{LESSON_3_STEP_2}/index.html",
-        f"{LESSON_3_STEP_2}/source.json",
-        f"{LESSON_3_STEP_3}/index.html",
-        f"{LESSON_3_STEP_3}/source.json",
-        f"{LESSON_3_STEP_4}/index.html",
-        f"{LESSON_3_STEP_4}/source.json",
-    }
-    actual_files = {path.relative_to(course_dir).as_posix() for path in course_dir.rglob("*") if path.is_file()}
-    assert actual_files == expected_files
+    assert _exported_files(course_dir) == EXPECTED_FILES - {ATTACHMENT_FILE, VIDEO_FILE}
 
     text_html = (course_dir / LESSON_1_STEP_1 / "index.html").read_text()
     assert 'href="http://cdn.example.com/notes.pdf"' in text_html
