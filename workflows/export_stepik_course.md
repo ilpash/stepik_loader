@@ -19,14 +19,14 @@ that course under `exports/<course_id>_<slug>/`, following the
   no access to paid or enrolled-only content. If `export_course.py` reports a
   fetch failure for the course, the most likely cause is that the course
   requires enrollment — tell the user this rather than treating it as a bug.
-- Dependencies from `requirements.txt` must be installed (`pip install -r requirements.txt`,
-  ideally in a venv).
+- Dependencies from `requirements.txt` must be installed
+  (`.venv/bin/pip install -r requirements.txt`); see README's Setup section.
 
 ## Steps
 1. Confirm the course ID with the user if it wasn't given explicitly.
 2. Run the exporter:
    ```
-   python tools/export_course.py --course-id <ID> [--video-quality best|360|720|1080] [--skip-videos] [--skip-attachments]
+   .venv/bin/python tools/export_course.py --course-id <ID> [--video-quality best|360|720|1080] [--skip-videos] [--skip-attachments]
    ```
    - Default output directory is `exports/`; override with `--output-dir` if the user wants it elsewhere.
    - Default video quality is `best`.
