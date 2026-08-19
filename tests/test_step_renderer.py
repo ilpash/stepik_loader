@@ -125,6 +125,47 @@ def test_render_text_skips_anchor_tags_when_skip_attachments_true(mock_resolve):
     assert mock_resolve.call_count == 0
 
 
+def test_render_text_downloads_an_image_from_a_root_relative_url(mock_resolve):
+    # Stepik writes its own media root-relative, which resolves against file:// offline.
+    mock_resolve.return_value = "local_city.jpg"
+    block = {"text": '<img src="/media/attachments/lessons/460/city.jpg">'}
+
+    html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
+
+    assert 'src="local_city.jpg"' in html
+    mock_resolve.assert_called_once_with(
+        "https://stepik.org/media/attachments/lessons/460/city.jpg", filename_hint=None, index=1
+    )
+
+
+def test_render_text_downloads_audio_from_a_protocol_relative_url(mock_resolve):
+    mock_resolve.return_value = "local_word.mp3"
+    block = {"text": '<audio src="//audio.example.com/some_recording.mp3"></audio>'}
+
+    html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
+
+    assert 'src="local_word.mp3"' in html
+    mock_resolve.assert_called_once_with("https://audio.example.com/some_recording.mp3", filename_hint=None, index=1)
+
+
+def test_render_text_adds_the_site_to_a_root_relative_page_link(mock_resolve):
+    block = {"text": '<a href="/lesson/some-lesson-42/step/3">the next step</a>'}
+
+    html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
+
+    assert 'href="https://stepik.org/lesson/some-lesson-42/step/3"' in html
+    assert mock_resolve.call_count == 0
+
+
+def test_render_text_adds_the_site_to_a_root_relative_link_when_skip_attachments_true(mock_resolve):
+    block = {"text": '<a href="/media/attachments/lesson/42/notes.pdf">notes</a>'}
+
+    html = _render_text(block=block, resolve=mock_resolve, skip_attachments=True)
+
+    assert 'href="https://stepik.org/media/attachments/lesson/42/notes.pdf"' in html
+    assert mock_resolve.call_count == 0
+
+
 def test_render_text_downloads_an_anchor_that_points_at_a_file(mock_resolve):
     mock_resolve.return_value = "local_notes.pdf"
     attachment_url = "https://stepik.org/media/attachments/lesson/42/notes.pdf"

@@ -31,6 +31,8 @@ logger = logging.getLogger("stepik_export")
 # tags/attributes that may reference a downloadable resource inside step HTML
 _RESOURCE_ATTRS = [("img", "src"), ("audio", "src"), ("source", "src"), ("a", "href")]
 
+STEPIK_BASE_URL = "https://stepik.org"
+
 
 @dataclass(frozen=True)
 class StepContext:
@@ -62,18 +64,27 @@ def _is_downloadable_file(url):
     return guessed_type and guessed_type != "text/html"
 
 
+def _normalize_url_to_absolute(url):
+    if not url:
+        return ""
+    if url.startswith("//"):
+        return f"https:{url}"
+    if url.startswith("/"):
+        return STEPIK_BASE_URL + url
+    return url
+
+
 def _render_text(block, resolve, skip_attachments):
     html = block.get("text", "")
     soup = BeautifulSoup(html, "html.parser")
     resource_index = 0
     for tag_name, attr in _RESOURCE_ATTRS:
-        if tag_name == "a" and skip_attachments:
-            continue
         for tag in soup.find_all(tag_name):
-            url = tag.get(attr)
-            if not url or not url.startswith("http"):
+            url = _normalize_url_to_absolute(tag.get(attr))
+            if not url.startswith("http"):
                 continue
-            if tag_name == "a" and not _is_downloadable_file(url):
+            if tag_name == "a" and (skip_attachments or not _is_downloadable_file(url)):
+                tag[attr] = url
                 continue
             resource_index += 1
             local = resolve(url, filename_hint=None, index=resource_index)

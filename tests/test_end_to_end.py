@@ -41,18 +41,22 @@ def course_data():
             {"id": 1002, "title": "Lesson Three", "steps": [10005, 10006, 10007, 10008]},
         ],
         "steps": [
-            # text: every resource attribute, a non-http src that must stay as it is,
-            # and both kinds of anchor -- a file to download and a page to keep linked
+            # text: every resource attribute, every way a url can be written (absolute,
+            # root-relative, protocol-relative, and a non-http src that must stay as it
+            # is), and both kinds of anchor -- a file to download and a page to keep linked
             {
                 "id": 10000,
                 "position": 1,
                 "block": {
                     "name": "text",
                     "text": (
-                        '<img src="http://cdn.example.com/pic.png">'
+                        '<img src="http://cdn.example.com/some_picture.png">'
+                        '<img src="/media/attachments/lessons/460/some_diagram.png">'
                         '<img src="data:image/png;base64,abc">'
-                        '<audio src="http://cdn.example.com/clip.mp3"></audio>'
-                        '<a href="http://cdn.example.com/notes.pdf">notes</a>'
+                        '<audio src="http://cdn.example.com/some_audio.mp3"></audio>'
+                        '<audio src="//audio.example.com/some_recording.mp3"></audio>'
+                        '<a href="http://cdn.example.com/some_notes.pdf">notes</a>'
+                        '<a href="/lesson/some-lesson-42/step/3">the next step</a>'
                         '<a href="https://www.youtube.com/watch?v=some_video_id">the lecture</a>'
                     ),
                 },
@@ -190,14 +194,16 @@ ALL_STEPS = [
     LESSON_3_STEP_4,
 ]
 
-ATTACHMENT_FILE = f"{LESSON_1_STEP_1}/resource_3_notes.pdf"
+ATTACHMENT_FILE = f"{LESSON_1_STEP_1}/resource_5_some_notes.pdf"
 VIDEO_FILE = f"{LESSON_3_STEP_1}/video.mp4"
 
 EXPECTED_FILES = {
     "index.html",
     "assets/style.css",
-    f"{LESSON_1_STEP_1}/resource_1_pic.png",
-    f"{LESSON_1_STEP_1}/resource_2_clip.mp3",
+    f"{LESSON_1_STEP_1}/resource_1_some_picture.png",
+    f"{LESSON_1_STEP_1}/resource_2_some_diagram.png",
+    f"{LESSON_1_STEP_1}/resource_3_some_audio.mp3",
+    f"{LESSON_1_STEP_1}/resource_4_some_recording.mp3",
     ATTACHMENT_FILE,
     VIDEO_FILE,
     *(f"{step}/index.html" for step in ALL_STEPS),
@@ -240,11 +246,14 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     # a step sits three levels below the course root, and both links back must clear it
     assert 'href="../../../assets/style.css"' in text_html
     assert 'href="../../../index.html"' in text_html
-    assert 'src="resource_1_pic.png"' in text_html
-    assert 'src="resource_2_clip.mp3"' in text_html
-    assert 'href="resource_3_notes.pdf"' in text_html
+    assert 'src="resource_1_some_picture.png"' in text_html
+    assert 'src="resource_2_some_diagram.png"' in text_html
+    assert 'src="resource_3_some_audio.mp3"' in text_html
+    assert 'src="resource_4_some_recording.mp3"' in text_html
+    assert 'href="resource_5_some_notes.pdf"' in text_html
     assert 'src="data:image/png;base64,abc"' in text_html
     assert 'href="https://www.youtube.com/watch?v=some_video_id"' in text_html
+    assert 'href="https://stepik.org/lesson/some-lesson-42/step/3"' in text_html
 
     choice_html = (course_dir / LESSON_2_STEP_1 / "index.html").read_text()
     assert "Mark every true statement." in choice_html
@@ -320,8 +329,14 @@ def test_main_respects_skip_videos_and_skip_attachments_flags(tmp_path, monkeypa
     assert _exported_files(course_dir) == EXPECTED_FILES - {ATTACHMENT_FILE, VIDEO_FILE}
 
     text_html = (course_dir / LESSON_1_STEP_1 / "index.html").read_text()
-    assert 'href="http://cdn.example.com/notes.pdf"' in text_html
+    assert 'href="http://cdn.example.com/some_notes.pdf"' in text_html
+    assert 'href="https://stepik.org/lesson/some-lesson-42/step/3"' in text_html
 
     video_html = (course_dir / LESSON_3_STEP_1 / "index.html").read_text()
     assert "Video download skipped" in video_html
-    assert downloaded_urls == ["http://cdn.example.com/pic.png", "http://cdn.example.com/clip.mp3"]
+    assert downloaded_urls == [
+        "http://cdn.example.com/some_picture.png",
+        "https://stepik.org/media/attachments/lessons/460/some_diagram.png",
+        "http://cdn.example.com/some_audio.mp3",
+        "https://audio.example.com/some_recording.mp3",
+    ]
