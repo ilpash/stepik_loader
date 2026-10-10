@@ -65,11 +65,17 @@ def test_pick_video_url_skips_an_entry_with_an_unreadable_quality():
 # -- pure block renderers -----------------------------------------------------
 
 
-def test_render_quiz_basic_case():
+def test_render_quiz_basic_case(mock_resolve):
     # Real API shape: block["options"] is a settings dict, not a list of answers.
-    block = {"name": "choice", "text": "Mark every true statement.", "options": {"is_multiple_choice": True}}
-    html = _render_quiz(block)
+    mock_resolve.return_value = "local_picture.png"
+    block = {
+        "name": "choice",
+        "text": '<img src="https://cdn.example.com/some_picture.png"> Mark every true statement.',
+        "options": {"is_multiple_choice": True},
+    }
+    html = _render_quiz(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "Mark every true statement." in html
+    assert 'src="local_picture.png"' in html
     assert "not available offline" in html
     assert "More than one answer may be correct" in html
     assert "is_multiple_choice" not in html
@@ -77,16 +83,16 @@ def test_render_quiz_basic_case():
 
 
 @pytest.mark.parametrize("block_type", sorted(_TYPE_TO_QUIZ_NOTE))
-def test_render_quiz_keeps_the_question_for_every_quiz_type(block_type):
+def test_render_quiz_keeps_the_question_for_every_quiz_type(block_type, mock_resolve):
     block = {"name": block_type, "text": "The question", "options": {}}
-    html = _render_quiz(block)
+    html = _render_quiz(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "The question" in html
     assert 'class="warning"' in html
 
 
-def test_render_quiz_omits_multiple_answer_note_for_single_choice():
+def test_render_quiz_omits_multiple_answer_note_for_single_choice(mock_resolve):
     block = {"name": "choice", "text": "Pick one", "options": {"is_multiple_choice": False}}
-    html = _render_quiz(block)
+    html = _render_quiz(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "More than one answer" not in html
 
 

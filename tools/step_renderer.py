@@ -160,8 +160,8 @@ _TYPE_TO_QUIZ_NOTE = {
 }
 
 
-def _render_quiz(block):
-    parts = [block.get("text", "")]
+def _render_quiz(block, resolve, skip_attachments):
+    parts = [_render_text(block, resolve, skip_attachments)]
     # block["options"] holds quiz settings, not the answers -- those come from a quiz
     # dataset that needs user-level auth, which this read-only exporter always avoids.
     note = _TYPE_TO_QUIZ_NOTE[block["name"]]
@@ -294,7 +294,7 @@ def render_step(step_node, step_dir, context):
     elif block_type == "pycharm":
         body_html = _render_pycharm(block, resolve, context.skip_attachments)
     elif block_type in _TYPE_TO_QUIZ_NOTE:
-        body_html = _render_quiz(block)
+        body_html = _render_quiz(block, resolve, context.skip_attachments)
     else:
         body_html = _render_generic(block, log_label)
 

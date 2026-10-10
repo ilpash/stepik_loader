@@ -67,7 +67,7 @@ def course_data():
                 "position": 1,
                 "block": {
                     "name": "choice",
-                    "text": "<p>Mark every true statement.</p>",
+                    "text": '<img src="http://cdn.example.com/some_photo.png"><p>Mark every true statement.</p>',
                     "options": {"is_multiple_choice": True},
                 },
             },
@@ -204,6 +204,7 @@ EXPECTED_FILES = {
     f"{LESSON_1_STEP_1}/resource_2_some_diagram.png",
     f"{LESSON_1_STEP_1}/resource_3_some_audio.mp3",
     f"{LESSON_1_STEP_1}/resource_4_some_recording.mp3",
+    f"{LESSON_2_STEP_1}/resource_1_some_photo.png",
     ATTACHMENT_FILE,
     VIDEO_FILE,
     *(f"{step}/index.html" for step in ALL_STEPS),
@@ -257,6 +258,7 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
 
     choice_html = (course_dir / LESSON_2_STEP_1 / "index.html").read_text()
     assert "Mark every true statement." in choice_html
+    assert 'src="resource_1_some_photo.png"' in choice_html
     assert "asks you to choose an answer" in choice_html
     assert "More than one answer may be correct" in choice_html
 
@@ -339,4 +341,5 @@ def test_main_respects_skip_videos_and_skip_attachments_flags(tmp_path, monkeypa
         "https://stepik.org/media/attachments/lessons/460/some_diagram.png",
         "http://cdn.example.com/some_audio.mp3",
         "https://audio.example.com/some_recording.mp3",
+        "http://cdn.example.com/some_photo.png",
     ]
