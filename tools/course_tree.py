@@ -26,15 +26,19 @@ def _dir_name(index, title, prefix=""):
     return f"{prefix}{index:0{DIR_INDEX_WIDTH}d}_{_slug(title)}"
 
 
-def _build_lesson_node(lesson, index, step_id_to_step):
-    lesson_steps = []
-    for step_id in lesson.get("steps", []):
-        step = step_id_to_step.get(step_id)
-        if step is None:
-            logger.warning("lesson %s references step %s which could not be resolved, skipping", lesson["id"], step_id)
+def _resolve_ids_to_items(owner_label, kind, ids, id_to_item):
+    items = []
+    for item_id in ids:
+        item = id_to_item.get(item_id)
+        if item is None:
+            logger.warning("%s references %s %s which could not be resolved, skipping", owner_label, kind, item_id)
             continue
-        lesson_steps.append(step)
-    lesson_steps.sort(key=lambda step: step.get("position", 0))
+        items.append(item)
+    return sorted(items, key=lambda item: item.get("position", 0))
+
+
+def _build_lesson_node(lesson, index, step_id_to_step):
+    lesson_steps = _resolve_ids_to_items(f"lesson {lesson['id']}", "step", lesson.get("steps", []), step_id_to_step)
 
     steps = []
     for step_index, step in enumerate(lesson_steps, start=1):
@@ -58,18 +62,7 @@ def _build_lesson_node(lesson, index, step_id_to_step):
 
 
 def _build_module_node(section, index, unit_id_to_unit, lesson_id_to_lesson, step_id_to_step):
-    module_units = []
-    for unit_id in section.get("units", []):
-        unit = unit_id_to_unit.get(unit_id)
-        if unit is None:
-            logger.warning(
-                "module %s references unit %s which could not be resolved, skipping",
-                section["id"],
-                unit_id,
-            )
-            continue
-        module_units.append(unit)
-    module_units.sort(key=lambda unit: unit.get("position", 0))
+    module_units = _resolve_ids_to_items(f"module {section['id']}", "unit", section.get("units", []), unit_id_to_unit)
 
     lessons = []
     for lesson_index, unit in enumerate(module_units, start=1):
