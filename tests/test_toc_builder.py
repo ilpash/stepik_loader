@@ -26,11 +26,13 @@ def sample_course_tree():
                         "steps": [
                             {
                                 "id": 10000,
+                                "title": "First Step",
                                 "dir_name": "step_001_text",
                                 "block": {"name": "text"},
                             },
                             {
                                 "id": 10001,
+                                "title": "Second Step",
                                 "dir_name": "step_002_text",
                                 "block": {"name": "text"},
                             },
@@ -61,13 +63,4 @@ def test_build_toc_writes_index_html_with_course_title_and_modules(tmp_path, sam
     for step in lesson["steps"]:
         href = f"{module['dir_name']}/{lesson['dir_name']}/{step['dir_name']}/index.html"
         assert href in html
-
-
-def test_build_toc_step_title_falls_back_to_dir_name_when_title_missing(tmp_path, sample_course_tree):
-    # No step in the fixture carries a "title" key.
-    build_toc(sample_course_tree, tmp_path)
-
-    html = (tmp_path / "index.html").read_text()
-    step = sample_course_tree["modules"][0]["lessons"][0]["steps"][0]
-    # Anchored to the link text, since dir_name also appears in the href.
-    assert f">1. {step['dir_name']}</a>" in html
+        assert step["title"] in html

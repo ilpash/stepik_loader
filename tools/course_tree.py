@@ -5,8 +5,7 @@ directory names already assigned at every level.
 
 Step nodes don't carry a "title" key from here -- export_course.main() sets
 step["title"] on each node after render_step() renders it, and toc_builder's
-build_toc() relies on that having run first (it falls back to dir_name
-otherwise).
+build_toc() relies on that having run first.
 """
 
 import logging
