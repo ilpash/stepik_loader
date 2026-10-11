@@ -9,7 +9,8 @@
 Downloads a public Stepik course via the official REST API and converts it
 into a self-contained, portable offline copy: one `course/module/lesson/step`
 directory tree, one `index.html` per step (with its own video/images/audio/
-attachments alongside it), and a single root `index.html` table of contents.
+attachments and a `source.json` of the step's raw API data alongside it), and
+a single root `index.html` table of contents.
 
 See `workflows/export_stepik_course.md` for the full operating procedure this
 tool follows, and `CLAUDE.md` for the WAT framework this project is built on.
