@@ -61,7 +61,7 @@ def _is_downloadable_file(url):
     # img/audio/source always point at media and never reach this check, so an image
     # still downloads when Stepik serves it from an extensionless URL.
     guessed_type, _ = mimetypes.guess_type(urlparse(url).path)
-    return guessed_type and guessed_type != "text/html"
+    return bool(guessed_type and guessed_type != "text/html")
 
 
 def _normalize_url_to_absolute(url):
