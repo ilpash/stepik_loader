@@ -144,6 +144,15 @@ def test_render_text_downloads_an_image_from_a_root_relative_url(mock_resolve):
     )
 
 
+def test_render_text_keeps_the_absolute_url_when_a_download_fails(mock_resolve):
+    mock_resolve.return_value = None
+    block = {"text": '<img src="/media/attachments/lessons/460/city.jpg">'}
+
+    html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
+
+    assert 'src="https://stepik.org/media/attachments/lessons/460/city.jpg"' in html
+
+
 def test_render_text_downloads_audio_from_a_protocol_relative_url(mock_resolve):
     mock_resolve.return_value = "local_word.mp3"
     block = {"text": '<audio src="//audio.example.com/some_recording.mp3"></audio>'}

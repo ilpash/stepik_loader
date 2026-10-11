@@ -87,9 +87,7 @@ def _render_text(block, resolve, skip_attachments):
                 tag[attr] = url
                 continue
             resource_index += 1
-            local = resolve(url, filename_hint=None, index=resource_index)
-            if local:
-                tag[attr] = local
+            tag[attr] = resolve(url, filename_hint=None, index=resource_index) or url
     return str(soup)
 
 
