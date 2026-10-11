@@ -2,10 +2,6 @@
 Walks a Stepik course's hierarchy (course -> section (module) -> unit -> lesson -> step)
 via the API and returns one ordered tree, with filesystem-safe
 directory names already assigned at every level.
-
-Step nodes don't carry a "title" key from here -- export_course.main() sets
-step["title"] on each node after render_step() renders it, and toc_builder's
-build_toc() relies on that having run first.
 """
 
 import logging
@@ -43,10 +39,14 @@ def _build_lesson_node(lesson, index, step_id_to_step):
     steps = []
     for step_index, step in enumerate(lesson_steps, start=1):
         block = step.get("block", {})
+        block_type = block.get("name", "unknown")
+        # a step keeps its name under options, and most types have no name at all
+        title = block.get("options", {}).get("title") or f"Step {step['id']} ({block_type})"
         steps.append(
             {
                 "id": step["id"],
-                "dir_name": _dir_name(step_index, block.get("name", "unknown"), prefix="step_"),
+                "title": title,
+                "dir_name": _dir_name(step_index, block_type, prefix="step_"),
                 "block": block,
                 "raw": step,
             }

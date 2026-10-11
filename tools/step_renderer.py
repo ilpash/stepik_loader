@@ -296,16 +296,11 @@ def render_step(step_node, step_dir, context):
     else:
         body_html = _render_generic(block, log_label)
 
-    # a step keeps its name under options, and most types have no name at all
-    options_title = block.get("options", {}).get("title")
-    generated_title = f"Step {step_node['id']} ({block_type})"
-    step_title = options_title or generated_title
-
     html = get_template("step.html.j2").render(
         course_title=context.course_title,
         module_title=context.module_title,
         lesson_title=context.lesson_title,
-        step_title=step_title,
+        step_title=step_node["title"],
         block_type=block_type,
         body_html=body_html,
         css_path=context.link_from(step_dir, "assets", "style.css"),
@@ -313,4 +308,3 @@ def render_step(step_node, step_dir, context):
     )
     (step_dir / "index.html").write_text(html, encoding="utf-8")
     (step_dir / "source.json").write_text(json.dumps(step_node["raw"], ensure_ascii=False, indent=2), encoding="utf-8")
-    return step_title

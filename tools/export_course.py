@@ -124,8 +124,7 @@ def main(argv=None):
                     skip_videos=args.skip_videos,
                     skip_attachments=args.skip_attachments,
                 )
-                # build_toc reads the title back off the tree; see course_tree's docstring
-                step["title"] = render_step(step, step_dir, context)
+                render_step(step, step_dir, context)
 
     build_toc(tree, course_dir)
     logger.info("Steps exported: %d. Warnings: %d.", total_steps, warning_counter.count)

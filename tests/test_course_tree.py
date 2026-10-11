@@ -37,7 +37,11 @@ def mock_client_data():
             {"id": 10000, "position": 1, "block": {"name": "text", "text": "hello"}},
             {"id": 10001, "position": 1, "block": {"name": "video", "video": {"urls": []}}},
             {"id": 10002, "position": 1, "block": {"name": "text", "text": "step one"}},
-            {"id": 10003, "position": 2, "block": {"name": "text", "text": "step two"}},
+            {
+                "id": 10003,
+                "position": 2,
+                "block": {"name": "pycharm", "text": "step two", "options": {"title": "Scopes"}},
+            },
         ],
     }
 
@@ -87,6 +91,7 @@ def test_build_course_tree_handles_single_module_lesson_and_step(minimal_mock_cl
                         "steps": [
                             {
                                 "id": 10000,
+                                "title": "Step 10000 (text)",
                                 "dir_name": "step_001_text",
                                 "block": {"name": "text", "text": "hi"},
                                 "raw": {"id": 10000, "position": 1, "block": {"name": "text", "text": "hi"}},
@@ -121,6 +126,7 @@ def test_build_course_tree_happy_path(mock_client_data):
                         "steps": [
                             {
                                 "id": 10000,
+                                "title": "Step 10000 (text)",
                                 "dir_name": "step_001_text",
                                 "block": {"name": "text", "text": "hello"},
                                 "raw": {"id": 10000, "position": 1, "block": {"name": "text", "text": "hello"}},
@@ -141,6 +147,7 @@ def test_build_course_tree_happy_path(mock_client_data):
                         "steps": [
                             {
                                 "id": 10001,
+                                "title": "Step 10001 (video)",
                                 "dir_name": "step_001_video",
                                 "block": {"name": "video", "video": {"urls": []}},
                                 "raw": {"id": 10001, "position": 1, "block": {"name": "video", "video": {"urls": []}}},
@@ -154,15 +161,21 @@ def test_build_course_tree_happy_path(mock_client_data):
                         "steps": [
                             {
                                 "id": 10002,
+                                "title": "Step 10002 (text)",
                                 "dir_name": "step_001_text",
                                 "block": {"name": "text", "text": "step one"},
                                 "raw": {"id": 10002, "position": 1, "block": {"name": "text", "text": "step one"}},
                             },
                             {
                                 "id": 10003,
-                                "dir_name": "step_002_text",
-                                "block": {"name": "text", "text": "step two"},
-                                "raw": {"id": 10003, "position": 2, "block": {"name": "text", "text": "step two"}},
+                                "title": "Scopes",
+                                "dir_name": "step_002_pycharm",
+                                "block": {"name": "pycharm", "text": "step two", "options": {"title": "Scopes"}},
+                                "raw": {
+                                    "id": 10003,
+                                    "position": 2,
+                                    "block": {"name": "pycharm", "text": "step two", "options": {"title": "Scopes"}},
+                                },
                             },
                         ],
                     },

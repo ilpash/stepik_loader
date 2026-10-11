@@ -425,7 +425,7 @@ def test_render_video_returns_warning_when_resolve_fails(mock_resolve):
 
 
 def _make_step_node(block, step_id=1):
-    return {"id": step_id, "block": block, "raw": {"id": step_id, "block": block}}
+    return {"id": step_id, "title": "Step title", "block": block, "raw": {"id": step_id, "block": block}}
 
 
 def _render_step_into(step_dir, step_node, **context_overrides):
@@ -440,7 +440,7 @@ def _render_step_into(step_dir, step_node, **context_overrides):
         access_token="test-token",
         **context_overrides,
     )
-    return render_step(step_node, step_dir, context)
+    render_step(step_node, step_dir, context)
 
 
 def test_render_step_basic_case(tmp_path, mock_download_resource):
@@ -448,25 +448,13 @@ def test_render_step_basic_case(tmp_path, mock_download_resource):
     block = {"name": "text", "text": "hello"}
     step_node = _make_step_node(block, step_id=42)
 
-    title = _render_step_into(step_dir, step_node)
+    _render_step_into(step_dir, step_node)
 
-    assert title == "Step 42 (text)"
     html = (step_dir / "index.html").read_text()
-    assert "Step 42 (text)" in html
+    assert "Step title" in html
     assert "hello" in html
     source = json.loads((step_dir / "source.json").read_text())
     assert source == step_node["raw"]
-
-
-def test_render_step_uses_the_title_a_block_keeps_under_options(tmp_path, mock_download_resource):
-    block = {"name": "pycharm", "text": "<p>Implement it.</p>", "options": {"title": "Scope Functions"}}
-    step_node = _make_step_node(block, step_id=99)
-    step_dir = tmp_path / "step"
-
-    title = _render_step_into(step_dir, step_node)
-
-    assert title == "Scope Functions"
-    assert "Scope Functions" in (step_dir / "index.html").read_text()
 
 
 def test_render_step_dispatches_code_block_to_code_renderer(tmp_path, mock_download_resource, caplog):
