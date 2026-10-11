@@ -261,6 +261,24 @@ def test_request_refreshes_token_once_on_401_first_attempt(client_with_token, no
     assert no_sleep.call_count == 0
 
 
+def test_request_refreshes_token_on_401_after_a_retryable_failure(client_with_token, no_sleep, monkeypatch):
+    responses = [MockResponse(503), MockResponse(401), MockResponse(200)]
+    mock_request = MagicMock(side_effect=responses)
+
+    def refresh_token():
+        client_with_token._access_token = "new-token"
+
+    mock_fetch_new_token = MagicMock(side_effect=refresh_token)
+
+    monkeypatch.setattr(client_with_token.session, "request", mock_request)
+    monkeypatch.setattr(client_with_token, "_fetch_new_token", mock_fetch_new_token)
+
+    result = client_with_token._request("GET", "http://example.com")
+    assert result.status_code == 200
+    assert mock_fetch_new_token.call_count == 1
+    assert no_sleep.call_count == 1
+
+
 def test_request_raises_on_non_retryable_status(client_with_token, no_sleep, monkeypatch):
     mock_request = MagicMock(return_value=MockResponse(404))
     monkeypatch.setattr(client_with_token.session, "request", mock_request)

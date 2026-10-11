@@ -125,14 +125,16 @@ class StepikClient:
         headers["Authorization"] = f"Bearer {self._access_token}"
 
         last_error = None
+        token_refreshed = False
         for attempt in range(MAX_RETRIES):
             try:
                 response = self.session.request(method, url, headers=headers, timeout=60, **kwargs)
             except requests.RequestException as exc:
                 last_error = exc
             else:
-                if response.status_code == 401 and attempt == 0:
+                if response.status_code == 401 and not token_refreshed:
                     # Token might have just been invalidated server-side; force refresh once.
+                    token_refreshed = True
                     self._fetch_new_token()
                     headers["Authorization"] = f"Bearer {self._access_token}"
                     continue
