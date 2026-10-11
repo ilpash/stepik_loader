@@ -201,27 +201,7 @@ def test_build_course_tree_sorts_by_position(mock_client_data):
     assert [step["id"] for step in module_two["lessons"][0]["steps"]] == [10003, 10002]
 
 
-def test_build_course_tree_skips_lesson_not_found(mock_client_data):
-    # Unit 100 points at a lesson id that doesn't exist in the lessons list.
-    mock_client_data["units"][0]["lesson"] = 99999
-
-    client = MockStepikClient(mock_client_data)
-    tree = build_course_tree(client, 1)
-
-    module_one = tree["modules"][0]
-    assert module_one["lessons"] == []
-
-
-def test_build_course_tree_logs_warning_when_lesson_not_found(mock_client_data, caplog):
-    mock_client_data["units"][0]["lesson"] = 99999
-
-    client = MockStepikClient(mock_client_data)
-    build_course_tree(client, 1)
-
-    assert "could not be resolved" in caplog.text
-
-
-def test_build_course_tree_handles_unit_not_found(mock_client_data, caplog):
+def test_build_course_tree_skips_an_unresolved_unit(mock_client_data, caplog):
     # Module One's only unit id is absent from the units the API returned.
     mock_client_data["sections"][0]["units"] = [99999]
 
@@ -232,13 +212,25 @@ def test_build_course_tree_handles_unit_not_found(mock_client_data, caplog):
     assert "module 10 references unit 99999 which could not be resolved, skipping" in caplog.text
 
 
-def test_build_course_tree_logs_warning_when_step_not_found(mock_client_data, caplog):
+def test_build_course_tree_skips_an_unresolved_lesson(mock_client_data, caplog):
+    # Unit 100 points at a lesson id that doesn't exist in the lessons list.
+    mock_client_data["units"][0]["lesson"] = 99999
+
+    client = MockStepikClient(mock_client_data)
+    tree = build_course_tree(client, 1)
+
+    assert tree["modules"][0]["lessons"] == []
+    assert "unit 100 (module 10) references lesson 99999 which could not be resolved, skipping" in caplog.text
+
+
+def test_build_course_tree_skips_an_unresolved_step(mock_client_data, caplog):
     mock_client_data["lessons"][0]["steps"] = [99999]
 
     client = MockStepikClient(mock_client_data)
-    build_course_tree(client, 1)
+    tree = build_course_tree(client, 1)
 
-    assert "could not be resolved" in caplog.text
+    assert tree["modules"][0]["lessons"][0]["steps"] == []
+    assert "lesson 1000 references step 99999 which could not be resolved, skipping" in caplog.text
 
 
 def test_build_course_tree_truncates_course_slug(minimal_mock_client_data):
