@@ -120,7 +120,7 @@ def course_data():
                 "position": 2,
                 "block": {
                     "name": "pycharm",
-                    "text": "## Objects\n\nExamples accompanying the atom.",
+                    "text": "## Objects\n\nExamples accompanying the atom.\n\n```kotlin\nval atom = 42\n```",
                     "options": {
                         "title": "Exercise 1",
                         "description_format": "MD",
@@ -286,6 +286,7 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
 
     markdown_html = (course_dir / LESSON_3_STEP_2 / "index.html").read_text()
     assert "<h2>Objects</h2>" in markdown_html
+    assert '<pre><code class="language-kotlin">val atom = 42\n</code></pre>' in markdown_html
     assert "<h3>src/Task.kt</h3>" in markdown_html
     assert '<h3>test/Tests.kt <span class="hidden-file">hidden</span></h3>' in markdown_html
     assert "This file is empty." in markdown_html

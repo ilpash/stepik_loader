@@ -310,12 +310,13 @@ def test_render_pycharm_basic_case(mock_resolve):
 def test_render_pycharm_converts_a_markdown_statement_to_html(mock_resolve):
     block = {
         "name": "pycharm",
-        "text": "## Objects\n\nExamples accompanying the atom.",
+        "text": "## Objects\n\nExamples accompanying the atom.\n\n```kotlin\nfun main() {\n    println(1)\n}\n```",
         "options": {"description_format": "MD"},
     }
     html = _render_pycharm(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "<h2>Objects</h2>" in html
     assert "<p>Examples accompanying the atom.</p>" in html
+    assert '<pre><code class="language-kotlin">fun main() {\n    println(1)\n}\n</code></pre>' in html
 
 
 def test_render_pycharm_treats_a_null_description_format_as_html(mock_resolve):

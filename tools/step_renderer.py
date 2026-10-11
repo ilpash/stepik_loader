@@ -243,7 +243,7 @@ def _render_pycharm(block, resolve, skip_attachments):
     options = block.get("options", {})
     # Most statements are already HTML, but some arrive as markdown, which the format names.
     if (options.get("description_format") or "").upper() == "MD":
-        block = {**block, "text": markdown.markdown(block["text"], extensions=["tables"])}
+        block = {**block, "text": markdown.markdown(block["text"], extensions=["tables", "fenced_code"])}
     parts = [
         _render_text(block, resolve, skip_attachments),
         _render_pycharm_files(options.get("files")),
