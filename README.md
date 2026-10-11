@@ -34,7 +34,7 @@ credentials**) and put its ID/secret into `.env`.
 ```
 
 Options:
-- `--output-dir exports/` (default) — where the course folder is created.
+- `--output-dir exports` (default) — where the course folder is created.
 - `--video-quality best|360|720|1080` (default `best`).
 - `--skip-videos` / `--skip-attachments` — skip those downloads.
 - `--log-level INFO` (default).

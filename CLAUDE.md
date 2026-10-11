@@ -59,6 +59,7 @@ This loop is how the framework improves over time.
 ```
 exports/            # Exported courses -- the deliverables
 tools/              # Python scripts for deterministic execution
+tests/              # Automated tests for the tools
 workflows/          # Markdown SOPs defining what to do and how
 .env                # API keys and environment variables (the only place credentials are configured)
 stepik_token.json   # Cached Stepik OAuth2 access token (gitignored)
