@@ -9,7 +9,6 @@ log label (course/lesson/step id), and reported as a miss (None) --
 it never aborts the export.
 """
 
-import itertools
 import logging
 import mimetypes
 import re
@@ -41,17 +40,6 @@ def safe_filename(url):
     name = re.sub(r"[^A-Za-z0-9._-]", "_", name)
     title, suffix = Path(name).stem, Path(name).suffix
     return title[:MAX_FILENAME_TITLE_LEN] + suffix[:MAX_FILENAME_SUFFIX_LEN]
-
-
-def _unique_dest(dest_dir, filename):
-    dest = dest_dir / filename
-    if not dest.exists():
-        return dest
-    stem, suffix = dest.stem, dest.suffix
-    for index in itertools.count(2):
-        candidate = dest_dir / f"{stem}_{index}{suffix}"
-        if not candidate.exists():
-            return candidate
 
 
 def _name_from_content_type(filename, response):
@@ -100,7 +88,7 @@ def download_resource(url, dest_dir, log_label, access_token=None, filename_hint
                     logger.warning("[%s] failed to download %s: HTTP %s", log_label, url, response.status_code)
                     return None
                 else:
-                    dest_path = _unique_dest(dest_dir, _name_from_content_type(filename, response))
+                    dest_path = dest_dir / _name_from_content_type(filename, response)
                     _write_stream(response, dest_path)
                     logger.info("  downloaded %s", dest_path.name)
                     return dest_path.name

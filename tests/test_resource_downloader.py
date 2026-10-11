@@ -4,7 +4,7 @@ import pytest
 import requests
 
 import resource_downloader
-from resource_downloader import _unique_dest, download_resource, safe_filename
+from resource_downloader import download_resource, safe_filename
 
 
 class MockStreamResponse:
@@ -54,24 +54,6 @@ def test_safe_filename_truncates_an_unusually_long_extension_too():
     assert len(result) <= 110
 
 
-# -- _unique_dest ------------------------------------------------------------------
-
-
-def test_unique_dest_returns_plain_path_when_no_collision(tmp_path):
-    assert _unique_dest(tmp_path, "notes.txt") == tmp_path / "notes.txt"
-
-
-def test_unique_dest_appends_suffix_on_collision(tmp_path):
-    (tmp_path / "notes.txt").write_text("existing file")
-    assert _unique_dest(tmp_path, "notes.txt") == tmp_path / "notes_2.txt"
-
-
-def test_unique_dest_increments_past_multiple_collisions(tmp_path):
-    (tmp_path / "notes.txt").write_text("existing file")
-    (tmp_path / "notes_2.txt").write_text("existing file")
-    assert _unique_dest(tmp_path, "notes.txt") == tmp_path / "notes_3.txt"
-
-
 # -- download_resource ---------------------------------------------------------------
 
 
@@ -100,14 +82,13 @@ def test_download_resource_guesses_extension_from_content_type_when_hint_has_no_
     assert result.endswith(".mp4")
 
 
-def test_download_resource_keeps_guessed_extension_unique(tmp_path, mock_session_get):
+def test_download_resource_overwrites_a_file_from_an_earlier_run(tmp_path, mock_session_get):
     # The hint has no extension, so it becomes "video.mp4", which this directory already has.
     (tmp_path / "video.mp4").write_bytes(b"existing file")
     mock_session_get.return_value = MockStreamResponse(200, chunks=[b"new"], headers={"Content-Type": "video/mp4"})
     result = download_resource("http://example.com/video", tmp_path, "test-context", filename_hint="video")
-    assert result == "video_2.mp4"
-    assert (tmp_path / "video_2.mp4").read_bytes() == b"new"
-    assert (tmp_path / "video.mp4").read_bytes() == b"existing file"
+    assert result == "video.mp4"
+    assert (tmp_path / "video.mp4").read_bytes() == b"new"
 
 
 def test_download_resource_returns_none_on_non_retryable_http_error(tmp_path, mock_session_get):
