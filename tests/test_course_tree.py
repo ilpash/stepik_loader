@@ -201,6 +201,16 @@ def test_build_course_tree_sorts_by_position(mock_client_data):
     assert [step["id"] for step in module_two["lessons"][0]["steps"]] == [10003, 10002]
 
 
+def test_build_course_tree_skips_an_unresolved_section(mock_client_data, caplog):
+    mock_client_data["courses"][0]["sections"] = [10, 11, 99999]
+
+    client = MockStepikClient(mock_client_data)
+    tree = build_course_tree(client, 1)
+
+    assert [module["id"] for module in tree["modules"]] == [10, 11]
+    assert "course 1 references section 99999 which could not be resolved, skipping" in caplog.text
+
+
 def test_build_course_tree_skips_an_unresolved_unit(mock_client_data, caplog):
     # Module One's only unit id is absent from the units the API returned.
     mock_client_data["sections"][0]["units"] = [99999]

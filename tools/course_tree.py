@@ -92,8 +92,9 @@ def build_course_tree(client, course_id):
         raise ValueError(f"Course {course_id} not found or not accessible with current auth scope")
     course = courses[0]
 
-    sections = client.get_by_ids("sections", course.get("sections", []))
-    sections.sort(key=lambda section: section.get("position", 0))
+    section_ids = course.get("sections", [])
+    section_id_to_section = {section["id"]: section for section in client.get_by_ids("sections", section_ids)}
+    sections = _resolve_ids_to_items(f"course {course['id']}", "section", section_ids, section_id_to_section)
 
     all_unit_ids = [unit_id for section in sections for unit_id in section.get("units", [])]
     units = client.get_by_ids("units", all_unit_ids)
