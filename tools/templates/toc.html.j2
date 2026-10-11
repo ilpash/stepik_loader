@@ -18,7 +18,7 @@
     <h3>{{ loop.index }}. {{ lesson.title }}</h3>
     <ul class="toc-steps">
       {% for step in lesson.steps %}
-      <li><a href="{{ step.href }}">{{ loop.index }}. {{ step.title }}</a></li>
+      <li><a href="{{ module.dir_name }}/{{ lesson.dir_name }}/{{ step.dir_name }}/index.html">{{ loop.index }}. {{ step.title }}</a></li>
       {% endfor %}
     </ul>
   </div>

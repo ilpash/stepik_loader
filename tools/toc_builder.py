@@ -17,25 +17,11 @@ def build_toc(course_tree, course_dir):
     assets_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy(TEMPLATES_DIR / "style.css", assets_dir / "style.css")
 
-    modules = []
-    for module in course_tree["modules"]:
-        lessons = []
-        for lesson in module["lessons"]:
-            steps = [
-                {
-                    "title": step["title"],
-                    "href": f"{module['dir_name']}/{lesson['dir_name']}/{step['dir_name']}/index.html",
-                }
-                for step in lesson["steps"]
-            ]
-            lessons.append({"title": lesson["title"], "steps": steps})
-        modules.append({"title": module["title"], "lessons": lessons})
-
     html = get_template("toc.html.j2").render(
         course_title=course_tree["title"],
         course_id=course_tree["id"],
         export_date=datetime.now().strftime("%Y-%m-%d"),
-        modules=modules,
+        modules=course_tree["modules"],
         css_path="assets/style.css",
     )
     (course_dir / "index.html").write_text(html, encoding="utf-8")
