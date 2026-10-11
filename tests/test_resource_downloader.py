@@ -41,10 +41,17 @@ def test_safe_filename_falls_back_when_url_has_no_basename():
     assert safe_filename("https://cdn.example.com/") == "resource"
 
 
-def test_safe_filename_truncates_to_150_chars():
+def test_safe_filename_truncates_the_title_but_keeps_the_extension():
     long_name = "a" * 300 + ".png"
     result = safe_filename(f"https://cdn.example.com/{long_name}")
-    assert len(result) <= 150
+    assert len(result) <= 110
+    assert result.endswith(".png")
+
+
+def test_safe_filename_truncates_an_unusually_long_extension_too():
+    long_name = "a" * 300 + "." + "b" * 300
+    result = safe_filename(f"https://cdn.example.com/{long_name}")
+    assert len(result) <= 110
 
 
 # -- _unique_dest ------------------------------------------------------------------

@@ -24,6 +24,9 @@ logger = logging.getLogger("stepik_export")
 
 CHUNK_SIZE = 64 * 1024
 
+MAX_FILENAME_TITLE_LEN = 100
+MAX_FILENAME_SUFFIX_LEN = 10
+
 # Hosts that are allowed to receive the Stepik Authorization header.
 # Resource downloads (video/image/attachment CDNs) must never send it
 # to anything outside this set.
@@ -36,7 +39,8 @@ _download_session = requests.Session()
 def safe_filename(url):
     name = unquote(Path(urlparse(url).path).name) or "resource"
     name = re.sub(r"[^A-Za-z0-9._-]", "_", name)
-    return name[:150]
+    title, suffix = Path(name).stem, Path(name).suffix
+    return title[:MAX_FILENAME_TITLE_LEN] + suffix[:MAX_FILENAME_SUFFIX_LEN]
 
 
 def _unique_dest(dest_dir, filename):
