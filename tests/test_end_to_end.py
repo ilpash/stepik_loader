@@ -309,6 +309,18 @@ def test_main_reports_the_step_and_warning_counts(tmp_path, monkeypatch, course_
     assert "Steps exported: 9. Warnings: 1." in caplog.text
 
 
+def test_main_counts_warnings_even_when_the_console_log_level_hides_them(
+    tmp_path, monkeypatch, course_data, downloaded_urls, caplog
+):
+    # Matches a fresh process, which starts with no root handler.
+    caplog.set_level(logging.CRITICAL)
+    monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
+
+    export_course.main(["--course-id", "1", "--output-dir", str(tmp_path), "--log-level", "ERROR"])
+
+    assert export_course.warning_counter.count == 1
+
+
 def test_main_respects_skip_videos_and_skip_attachments_flags(tmp_path, monkeypatch, course_data, downloaded_urls):
     monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
 

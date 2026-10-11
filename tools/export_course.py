@@ -32,6 +32,12 @@ class WarningCounter(logging.Handler):
 
 
 logger = logging.getLogger("stepik_export")
+logger.setLevel(logging.DEBUG)
+
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(logging.Formatter("%(levelname)s %(message)s"))
+logger.addHandler(console_handler)
+
 warning_counter = WarningCounter()
 logger.addHandler(warning_counter)
 
@@ -59,7 +65,7 @@ def parse_args(argv=None):
 
 def main(argv=None):
     args = parse_args(argv)
-    logging.basicConfig(level=args.log_level, format="%(levelname)s %(message)s")
+    console_handler.setLevel(args.log_level)
     load_dotenv()
     warning_counter.count = 0
 
