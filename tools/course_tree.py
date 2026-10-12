@@ -30,7 +30,7 @@ def _resolve_ids_to_items(owner_label, kind, ids, id_to_item):
     items = []
     for item_id in ids:
         item = id_to_item.get(item_id)
-        if item is None:
+        if not item:
             logger.warning("%s references %s %s which could not be resolved, skipping", owner_label, kind, item_id)
             continue
         items.append(item)
@@ -73,7 +73,7 @@ def _build_module_node(section, unit_id_to_unit, lesson_id_to_lesson, step_id_to
     lessons = []
     for unit in module_units:
         lesson = lesson_id_to_lesson.get(unit["lesson"])
-        if lesson is None:
+        if not lesson:
             logger.warning(
                 "unit %s (module %s) references lesson %s which could not be resolved, skipping",
                 unit["id"],
