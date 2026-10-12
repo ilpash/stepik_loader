@@ -208,6 +208,20 @@ def test_fetch_new_token_retries_on_retryable_status_then_succeeds(client_withou
     assert no_sleep.call_count == 1
 
 
+def test_fetch_new_token_retries_after_a_connection_error(client_without_token, no_sleep, monkeypatch):
+    mock_post = MagicMock(
+        side_effect=[
+            requests.ConnectionError("connection refused"),
+            MockResponse(200, json_data={"access_token": "fetched-token", "expires_in": 3600}),
+        ]
+    )
+    monkeypatch.setattr(client_without_token.session, "post", mock_post)
+    client_without_token._fetch_new_token()
+    assert client_without_token._access_token == "fetched-token"
+    assert mock_post.call_count == 2
+    assert no_sleep.call_count == 1
+
+
 def test_fetch_new_token_raises_after_exhausting_retries(client_without_token, no_sleep, monkeypatch):
     def mock_post(url, **kwargs):
         return MockResponse(503)
@@ -239,6 +253,15 @@ def test_request_retries_on_retryable_status_then_succeeds(client_with_token, no
     monkeypatch.setattr(client_with_token.session, "request", mock_request)
     result = client_with_token._request("GET", "http://example.com")
     assert result.status_code == 200
+    assert no_sleep.call_count == 1
+
+
+def test_request_retries_after_a_connection_error(client_with_token, no_sleep, monkeypatch):
+    mock_request = MagicMock(side_effect=[requests.ConnectionError("connection refused"), MockResponse(200)])
+    monkeypatch.setattr(client_with_token.session, "request", mock_request)
+    result = client_with_token._request("GET", "http://example.com")
+    assert result.status_code == 200
+    assert mock_request.call_count == 2
     assert no_sleep.call_count == 1
 
 
