@@ -73,7 +73,7 @@ def download_resource(url, dest_dir, log_label, access_token=None, filename_hint
         headers["Authorization"] = f"Bearer {access_token}"
 
     # safe_filename() also sanitizes a caller-supplied hint (basename-only,
-    # whitelisted characters), so a hint can never escape dest_dir.
+    # allowed characters only), so a hint can never escape dest_dir.
     filename = safe_filename(filename_hint or url)
 
     last_error = None

@@ -3,7 +3,7 @@ Authenticated access to the Stepik REST API.
 
 Handles OAuth2 client_credentials auth (public content only), on-disk token
 caching, batched ids[] lookups, and a small hand-rolled retry/backoff loop
-for transient failures (429 / 5xx / connection errors).
+for temporary failures (429, 500, 502-504 and connection errors).
 """
 
 import itertools
