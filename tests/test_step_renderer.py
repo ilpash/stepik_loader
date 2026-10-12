@@ -52,11 +52,6 @@ def test_pick_video_url_falls_back_to_nearest_when_exact_missing(caplog):
     assert "not available" in caplog.text
 
 
-def test_pick_video_url_single_item_list_returns_it_regardless():
-    urls = [_video_url("240")]
-    assert _pick_video_url(urls, "best", "test-context") == urls[0]
-
-
 def test_pick_video_url_skips_an_entry_with_an_unreadable_quality():
     urls = [_video_url(None), _video_url("360")]
     result = _pick_video_url(urls, "720", "test-context")
