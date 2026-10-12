@@ -4,7 +4,7 @@ import pytest
 import requests
 
 import resource_downloader
-from resource_downloader import download_resource, safe_filename
+from resource_downloader import MAX_FILENAME_STEM_LEN, MAX_FILENAME_SUFFIX_LEN, download_resource, safe_filename
 
 
 class MockStreamResponse:
@@ -44,14 +44,13 @@ def test_safe_filename_falls_back_when_url_has_no_basename():
 def test_safe_filename_truncates_the_stem_but_keeps_the_extension():
     long_name = "a" * 300 + ".png"
     result = safe_filename(f"https://cdn.example.com/{long_name}")
-    assert len(result) <= 110
-    assert result.endswith(".png")
+    assert result == "a" * MAX_FILENAME_STEM_LEN + ".png"
 
 
 def test_safe_filename_truncates_an_unusually_long_extension_too():
     long_name = "a" * 300 + "." + "b" * 300
     result = safe_filename(f"https://cdn.example.com/{long_name}")
-    assert len(result) <= 110
+    assert result == "a" * MAX_FILENAME_STEM_LEN + "." + "b" * (MAX_FILENAME_SUFFIX_LEN - 1)
 
 
 # -- download_resource ---------------------------------------------------------------
@@ -79,7 +78,7 @@ def test_download_resource_omits_auth_header_for_non_stepik_host(tmp_path, mock_
 def test_download_resource_guesses_extension_from_content_type_when_hint_has_no_suffix(tmp_path, mock_session_get):
     mock_session_get.return_value = MockStreamResponse(200, chunks=[b"x"], headers={"Content-Type": "video/mp4"})
     result = download_resource("http://example.com/video", tmp_path, "test-context", filename_hint="video")
-    assert result.endswith(".mp4")
+    assert result == "video.mp4"
 
 
 def test_download_resource_overwrites_a_file_from_an_earlier_run(tmp_path, mock_session_get):
