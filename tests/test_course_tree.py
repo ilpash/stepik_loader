@@ -81,16 +81,19 @@ def test_build_course_tree_handles_single_module_lesson_and_step(minimal_mock_cl
         "modules": [
             {
                 "id": 10,
+                "position": 1,
                 "title": "Only Module",
                 "dir_name": "module_001_only-module",
                 "lessons": [
                     {
                         "id": 1000,
+                        "position": 1,
                         "title": "Only Lesson",
                         "dir_name": "lesson_001_only-lesson",
                         "steps": [
                             {
                                 "id": 10000,
+                                "position": 1,
                                 "title": "Step 10000 (text)",
                                 "dir_name": "step_001_text",
                                 "block": {"name": "text", "text": "hi"},
@@ -116,16 +119,19 @@ def test_build_course_tree_happy_path(mock_client_data):
         "modules": [
             {
                 "id": 10,
+                "position": 1,
                 "title": "Module One",
                 "dir_name": "module_001_module-one",
                 "lessons": [
                     {
                         "id": 1000,
+                        "position": 1,
                         "title": "Lesson One",
                         "dir_name": "lesson_001_lesson-one",
                         "steps": [
                             {
                                 "id": 10000,
+                                "position": 1,
                                 "title": "Step 10000 (text)",
                                 "dir_name": "step_001_text",
                                 "block": {"name": "text", "text": "hello"},
@@ -137,16 +143,19 @@ def test_build_course_tree_happy_path(mock_client_data):
             },
             {
                 "id": 11,
+                "position": 2,
                 "title": "Module Two",
                 "dir_name": "module_002_module-two",
                 "lessons": [
                     {
                         "id": 1001,
+                        "position": 1,
                         "title": "Lesson Two",
                         "dir_name": "lesson_001_lesson-two",
                         "steps": [
                             {
                                 "id": 10001,
+                                "position": 1,
                                 "title": "Step 10001 (video)",
                                 "dir_name": "step_001_video",
                                 "block": {"name": "video", "video": {"urls": []}},
@@ -156,11 +165,13 @@ def test_build_course_tree_happy_path(mock_client_data):
                     },
                     {
                         "id": 1002,
+                        "position": 2,
                         "title": "Lesson Three",
                         "dir_name": "lesson_002_lesson-three",
                         "steps": [
                             {
                                 "id": 10002,
+                                "position": 1,
                                 "title": "Step 10002 (text)",
                                 "dir_name": "step_001_text",
                                 "block": {"name": "text", "text": "step one"},
@@ -168,6 +179,7 @@ def test_build_course_tree_happy_path(mock_client_data):
                             },
                             {
                                 "id": 10003,
+                                "position": 2,
                                 "title": "Scopes",
                                 "dir_name": "step_002_pycharm",
                                 "block": {"name": "pycharm", "text": "step two", "options": {"title": "Scopes"}},
@@ -215,45 +227,46 @@ def test_build_course_tree_sorts_by_position(mock_client_data):
 
 
 def test_build_course_tree_skips_an_unresolved_section(mock_client_data, caplog):
-    mock_client_data["courses"][0]["sections"] = [10, 11, 99999]
+    # The course's first section id is absent from the sections the API returned.
+    mock_client_data["courses"][0]["sections"] = [99999, 11]
 
     client = MockStepikClient(mock_client_data)
     tree = build_course_tree(client, 1)
 
-    assert [module["id"] for module in tree["modules"]] == [10, 11]
+    assert [module["dir_name"] for module in tree["modules"]] == ["module_002_module-two"]
     assert "course 1 references section 99999 which could not be resolved, skipping" in caplog.text
 
 
 def test_build_course_tree_skips_an_unresolved_unit(mock_client_data, caplog):
-    # Module One's only unit id is absent from the units the API returned.
-    mock_client_data["sections"][0]["units"] = [99999]
+    # Module Two's first unit id is absent from the units the API returned.
+    mock_client_data["sections"][1]["units"] = [99999, 102]
 
     client = MockStepikClient(mock_client_data)
     tree = build_course_tree(client, 1)
 
-    assert tree["modules"][0]["lessons"] == []
-    assert "module 10 references unit 99999 which could not be resolved, skipping" in caplog.text
+    assert [lesson["dir_name"] for lesson in tree["modules"][1]["lessons"]] == ["lesson_002_lesson-three"]
+    assert "module 11 references unit 99999 which could not be resolved, skipping" in caplog.text
 
 
 def test_build_course_tree_skips_an_unresolved_lesson(mock_client_data, caplog):
-    # Unit 100 points at a lesson id that doesn't exist in the lessons list.
-    mock_client_data["units"][0]["lesson"] = 99999
+    # Unit 101 points at a lesson id that doesn't exist in the lessons list.
+    mock_client_data["units"][1]["lesson"] = 99999
 
     client = MockStepikClient(mock_client_data)
     tree = build_course_tree(client, 1)
 
-    assert tree["modules"][0]["lessons"] == []
-    assert "unit 100 (module 10) references lesson 99999 which could not be resolved, skipping" in caplog.text
+    assert [lesson["dir_name"] for lesson in tree["modules"][1]["lessons"]] == ["lesson_002_lesson-three"]
+    assert "unit 101 (module 11) references lesson 99999 which could not be resolved, skipping" in caplog.text
 
 
 def test_build_course_tree_skips_an_unresolved_step(mock_client_data, caplog):
-    mock_client_data["lessons"][0]["steps"] = [99999]
+    mock_client_data["lessons"][2]["steps"] = [99999, 10003]
 
     client = MockStepikClient(mock_client_data)
     tree = build_course_tree(client, 1)
 
-    assert tree["modules"][0]["lessons"][0]["steps"] == []
-    assert "lesson 1000 references step 99999 which could not be resolved, skipping" in caplog.text
+    assert [step["dir_name"] for step in tree["modules"][1]["lessons"][1]["steps"]] == ["step_002_pycharm"]
+    assert "lesson 1002 references step 99999 which could not be resolved, skipping" in caplog.text
 
 
 def test_build_course_tree_truncates_course_slug(minimal_mock_client_data):

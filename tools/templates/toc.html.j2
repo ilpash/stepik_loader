@@ -12,13 +12,13 @@
 
 {% for module in modules %}
 <section class="toc-module">
-  <h2>{{ loop.index }}. {{ module.title }}</h2>
+  <h2>{{ module.position }}. {{ module.title }}</h2>
   {% for lesson in module.lessons %}
   <div class="toc-lesson">
-    <h3>{{ loop.index }}. {{ lesson.title }}</h3>
+    <h3>{{ lesson.position }}. {{ lesson.title }}</h3>
     <ul class="toc-steps">
       {% for step in lesson.steps %}
-      <li><a href="{{ module.dir_name }}/{{ lesson.dir_name }}/{{ step.dir_name }}/index.html">{{ loop.index }}. {{ step.title }}</a></li>
+      <li><a href="{{ module.dir_name }}/{{ lesson.dir_name }}/{{ step.dir_name }}/index.html">{{ step.position }}. {{ step.title }}</a></li>
       {% endfor %}
     </ul>
   </div>

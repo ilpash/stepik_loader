@@ -18,8 +18,8 @@ def _slug(title):
     return slugify(title or "untitled", max_length=MAX_SLUG_LEN)
 
 
-def _dir_name(index, title, prefix=""):
-    return f"{prefix}{index:0{DIR_INDEX_WIDTH}d}_{_slug(title)}"
+def _dir_name(position, title, prefix=""):
+    return f"{prefix}{position:0{DIR_INDEX_WIDTH}d}_{_slug(title)}"
 
 
 def _resolve_ids_to_items(owner_label, kind, ids, id_to_item):
@@ -30,14 +30,14 @@ def _resolve_ids_to_items(owner_label, kind, ids, id_to_item):
             logger.warning("%s references %s %s which could not be resolved, skipping", owner_label, kind, item_id)
             continue
         items.append(item)
-    return sorted(items, key=lambda item: item.get("position", 0))
+    return sorted(items, key=lambda item: item["position"])
 
 
-def _build_lesson_node(lesson, index, step_id_to_step):
+def _build_lesson_node(lesson, position, step_id_to_step):
     lesson_steps = _resolve_ids_to_items(f"lesson {lesson['id']}", "step", lesson.get("steps", []), step_id_to_step)
 
     steps = []
-    for step_index, step in enumerate(lesson_steps, start=1):
+    for step in lesson_steps:
         block = step.get("block", {})
         block_type = block.get("name", "unknown")
         # a step keeps its name under options, and most types have no name at all
@@ -45,8 +45,9 @@ def _build_lesson_node(lesson, index, step_id_to_step):
         steps.append(
             {
                 "id": step["id"],
+                "position": step["position"],
                 "title": title,
-                "dir_name": _dir_name(step_index, block_type, prefix="step_"),
+                "dir_name": _dir_name(step["position"], block_type, prefix="step_"),
                 "block": block,
                 "raw": step,
             }
@@ -55,17 +56,18 @@ def _build_lesson_node(lesson, index, step_id_to_step):
     title = lesson.get("title", "")
     return {
         "id": lesson["id"],
+        "position": position,
         "title": title,
-        "dir_name": _dir_name(index, title, prefix="lesson_"),
+        "dir_name": _dir_name(position, title, prefix="lesson_"),
         "steps": steps,
     }
 
 
-def _build_module_node(section, index, unit_id_to_unit, lesson_id_to_lesson, step_id_to_step):
+def _build_module_node(section, unit_id_to_unit, lesson_id_to_lesson, step_id_to_step):
     module_units = _resolve_ids_to_items(f"module {section['id']}", "unit", section.get("units", []), unit_id_to_unit)
 
     lessons = []
-    for lesson_index, unit in enumerate(module_units, start=1):
+    for unit in module_units:
         lesson = lesson_id_to_lesson.get(unit["lesson"])
         if lesson is None:
             logger.warning(
@@ -75,13 +77,14 @@ def _build_module_node(section, index, unit_id_to_unit, lesson_id_to_lesson, ste
                 unit["lesson"],
             )
             continue
-        lessons.append(_build_lesson_node(lesson, lesson_index, step_id_to_step))
+        lessons.append(_build_lesson_node(lesson, unit["position"], step_id_to_step))
 
     title = section.get("title", "")
     return {
         "id": section["id"],
+        "position": section["position"],
         "title": title,
-        "dir_name": _dir_name(index, title, prefix="module_"),
+        "dir_name": _dir_name(section["position"], title, prefix="module_"),
         "lessons": lessons,
     }
 
@@ -113,7 +116,6 @@ def build_course_tree(client, course_id):
         "title": title,
         "dir_name": f"{course['id']}_{_slug(title)}",
         "modules": [
-            _build_module_node(section, index, unit_id_to_unit, lesson_id_to_lesson, step_id_to_step)
-            for index, section in enumerate(sections, start=1)
+            _build_module_node(section, unit_id_to_unit, lesson_id_to_lesson, step_id_to_step) for section in sections
         ],
     }
