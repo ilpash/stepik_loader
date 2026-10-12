@@ -51,9 +51,7 @@ class StepikClient:
             data = json.loads(self.token_cache_path.read_text())
         except (json.JSONDecodeError, OSError):
             return
-        if data.get("client_id") != self.client_id:
-            return
-        if data.get("expires_at", 0) > time.time() + TOKEN_EXPIRY_MARGIN_SECONDS:
+        if data.get("client_id") == self.client_id:
             self._access_token = data["access_token"]
             self._token_expires_at = data["expires_at"]
 

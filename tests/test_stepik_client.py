@@ -75,22 +75,16 @@ def test_init_reads_credentials_from_the_environment(tmp_path, monkeypatch):
 # -- _load_cached_token / _save_cached_token -----------------------------------
 
 
-def test_load_cached_token_accepts_fresh_matching_cache(client_without_token):
+def test_load_cached_token_basic_case(client_without_token):
     cache = {"client_id": "test-client-id", "access_token": "cached-token", "expires_at": time.time() + 3600}
     client_without_token.token_cache_path.write_text(json.dumps(cache))
     client_without_token._load_cached_token()
     assert client_without_token._access_token == "cached-token"
+    assert client_without_token._token_expires_at == cache["expires_at"]
 
 
 def test_load_cached_token_ignores_cache_for_different_client_id(client_without_token):
     cache = {"client_id": "other", "access_token": "cached-token", "expires_at": time.time() + 3600}
-    client_without_token.token_cache_path.write_text(json.dumps(cache))
-    client_without_token._load_cached_token()
-    assert client_without_token._access_token is None
-
-
-def test_load_cached_token_ignores_expired_cache(client_without_token):
-    cache = {"client_id": "test-client-id", "access_token": "cached-token", "expires_at": time.time() - 100}
     client_without_token.token_cache_path.write_text(json.dumps(cache))
     client_without_token._load_cached_token()
     assert client_without_token._access_token is None
