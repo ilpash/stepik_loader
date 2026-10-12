@@ -173,11 +173,8 @@ def downloaded_urls(monkeypatch):
 
     def mock_download_resource(url, dest_dir, log_label, access_token=None, filename_hint=None):
         urls.append(url)
-        dest_dir = Path(dest_dir)
-        dest_dir.mkdir(parents=True, exist_ok=True)
-        filename = filename_hint or "placeholder"
-        (dest_dir / filename).write_bytes(b"placeholder")
-        return filename
+        (Path(dest_dir) / filename_hint).write_bytes(b"placeholder")
+        return filename_hint
 
     monkeypatch.setattr(resource_downloader, "download_resource", mock_download_resource)
     return urls
