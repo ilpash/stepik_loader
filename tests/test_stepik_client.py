@@ -64,6 +64,14 @@ def test_init_reads_credentials_from_constructor_args(tmp_path):
     assert client.client_secret == "test-client-secret"
 
 
+def test_init_reads_credentials_from_the_environment(tmp_path, monkeypatch):
+    monkeypatch.setenv("STEPIK_CLIENT_ID", "test-client-id")
+    monkeypatch.setenv("STEPIK_CLIENT_SECRET", "test-client-secret")
+    client = StepikClient(token_cache_path=tmp_path / "cache.json")
+    assert client.client_id == "test-client-id"
+    assert client.client_secret == "test-client-secret"
+
+
 # -- _load_cached_token / _save_cached_token ------------------------------------
 
 
