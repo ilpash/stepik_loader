@@ -1,6 +1,6 @@
 """
-Shared retry/backoff constants for HTTP calls against Stepik's API and its
-resource CDNs, used by both stepik_client.py and resource_downloader.py.
+Shared retry settings and backoff wait for HTTP calls against Stepik's API and
+its resource CDNs, used by both stepik_client.py and resource_downloader.py.
 """
 
 import time
