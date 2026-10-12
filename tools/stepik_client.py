@@ -44,7 +44,7 @@ class StepikClient:
         self._token_expires_at = 0
         self.session = requests.Session()
 
-    # -- auth -----------------------------------------------------------
+    # -- auth ------------------------------------------------------------------
 
     def _load_cached_token(self):
         try:
@@ -116,7 +116,7 @@ class StepikClient:
         self._ensure_token()
         return self._access_token
 
-    # -- requests ---------------------------------------------------------
+    # -- requests --------------------------------------------------------------
 
     def _request(self, method, url, **kwargs):
         self._ensure_token()

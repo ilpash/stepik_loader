@@ -22,7 +22,7 @@ def mock_resolve():
     return MagicMock(return_value="local_resource")
 
 
-# -- _pick_video_url ---------------------------------------------------------
+# -- _pick_video_url -----------------------------------------------------------
 
 
 def _video_url(quality):
@@ -58,7 +58,7 @@ def test_pick_video_url_skips_an_entry_with_an_unreadable_quality():
     assert result == _video_url("360")
 
 
-# -- pure block renderers -----------------------------------------------------
+# -- pure block renderers ------------------------------------------------------
 
 
 def test_render_quiz_basic_case(mock_resolve):
@@ -360,7 +360,7 @@ def test_render_pycharm_renders_a_statement_when_the_step_has_no_files(mock_reso
     assert "not available offline" in html
 
 
-# -- _render_video --------------------------------------------------------------
+# -- _render_video -------------------------------------------------------------
 
 
 def test_render_video_links_the_online_video_when_skip_videos_true(mock_resolve):

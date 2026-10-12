@@ -9,7 +9,7 @@ import export_course
 from course_tree import CourseNotFoundError
 from stepik_client import StepikAuthError
 
-# -- parse_args ---------------------------------------------------------------
+# -- parse_args ----------------------------------------------------------------
 
 
 def test_parse_args_requires_course_id():
@@ -55,7 +55,7 @@ def test_parse_args_reads_every_option():
     assert args.log_level == "DEBUG"
 
 
-# -- main error paths ------------------------------------------------------------
+# -- main error paths ----------------------------------------------------------
 
 
 class MockClientWithToken:

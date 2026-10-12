@@ -72,7 +72,7 @@ def test_init_reads_credentials_from_the_environment(tmp_path, monkeypatch):
     assert client.client_secret == "test-client-secret"
 
 
-# -- _load_cached_token / _save_cached_token ------------------------------------
+# -- _load_cached_token / _save_cached_token -----------------------------------
 
 
 def test_load_cached_token_accepts_fresh_matching_cache(client_without_token):
@@ -115,7 +115,7 @@ def test_save_cached_token_writes_expected_json(client_without_token):
     assert data == {"client_id": "test-client-id", "access_token": "test-token", "expires_at": 12345}
 
 
-# -- _ensure_token -----------------------------------------------------------------
+# -- _ensure_token -------------------------------------------------------------
 
 
 def test_ensure_token_keeps_the_token_already_in_memory(client_with_token, monkeypatch):
@@ -174,7 +174,7 @@ def test_ensure_token_fetches_when_the_token_expires_within_the_margin(client_wi
     assert mock_fetch_new_token.call_count == 1
 
 
-# -- _fetch_new_token ------------------------------------------------------------
+# -- _fetch_new_token ----------------------------------------------------------
 
 
 def test_fetch_new_token_basic_case(client_without_token, monkeypatch):
@@ -232,7 +232,7 @@ def test_fetch_new_token_raises_after_exhausting_retries(client_without_token, n
     assert no_sleep.call_count == stepik_client.MAX_ATTEMPTS - 1
 
 
-# -- _request ---------------------------------------------------------------------
+# -- _request ------------------------------------------------------------------
 
 
 def test_request_returns_response_on_first_success(client_with_token, no_sleep, monkeypatch):
@@ -318,7 +318,7 @@ def test_request_raises_on_non_retryable_status(client_with_token, no_sleep, mon
     assert mock_request.call_count == 1
 
 
-# -- get / get_by_ids ---------------------------------------------------------------
+# -- get / get_by_ids ----------------------------------------------------------
 
 
 def test_get_returns_parsed_json(client_with_token, monkeypatch):

@@ -30,7 +30,7 @@ def mock_session_get(monkeypatch):
     return mock_get
 
 
-# -- safe_filename ---------------------------------------------------------------
+# -- safe_filename -------------------------------------------------------------
 
 
 def test_safe_filename_basic_case():
@@ -53,7 +53,7 @@ def test_safe_filename_truncates_an_unusually_long_extension_too():
     assert result == "a" * MAX_FILENAME_STEM_LEN + "." + "b" * (MAX_FILENAME_SUFFIX_LEN - 1)
 
 
-# -- download_resource ---------------------------------------------------------------
+# -- download_resource ---------------------------------------------------------
 
 
 def test_download_resource_basic_case(tmp_path, mock_session_get):
