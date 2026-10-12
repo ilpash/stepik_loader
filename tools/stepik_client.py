@@ -14,7 +14,7 @@ from pathlib import Path
 
 import requests
 
-from retry import MAX_RETRIES, RETRYABLE_STATUS_CODES, backoff_sleep
+from retry import MAX_ATTEMPTS, RETRYABLE_STATUS_CODES, backoff_sleep
 
 API_BASE = "https://stepik.org/api/"
 AUTH_URL = "https://stepik.org/oauth2/token/"
@@ -70,7 +70,7 @@ class StepikClient:
 
     def _fetch_new_token(self):
         last_error = None
-        for attempt in range(MAX_RETRIES):
+        for attempt in range(MAX_ATTEMPTS):
             try:
                 response = self.session.post(
                     AUTH_URL,
@@ -98,7 +98,7 @@ class StepikClient:
             self._save_cached_token()
             return
 
-        raise StepikAuthError(f"Failed to obtain Stepik access token after {MAX_RETRIES} attempts: {last_error}")
+        raise StepikAuthError(f"Failed to obtain Stepik access token after {MAX_ATTEMPTS} attempts: {last_error}")
 
     def _has_fresh_token(self):
         return self._access_token and self._token_expires_at > time.time() + TOKEN_EXPIRY_MARGIN_SECONDS
@@ -125,7 +125,7 @@ class StepikClient:
 
         last_error = None
         token_refreshed = False
-        for attempt in range(MAX_RETRIES):
+        for attempt in range(MAX_ATTEMPTS):
             try:
                 response = self.session.request(method, url, headers=headers, timeout=60, **kwargs)
             except requests.RequestException as exc:

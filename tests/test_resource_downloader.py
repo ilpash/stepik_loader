@@ -119,8 +119,8 @@ def test_download_resource_returns_none_after_exhausting_retries(tmp_path, mock_
     mock_session_get.return_value = MockStreamResponse(503)
     result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
     assert result is None
-    assert mock_session_get.call_count == resource_downloader.MAX_RETRIES
-    assert no_sleep.call_count == resource_downloader.MAX_RETRIES - 1
+    assert mock_session_get.call_count == resource_downloader.MAX_ATTEMPTS
+    assert no_sleep.call_count == resource_downloader.MAX_ATTEMPTS - 1
 
 
 def test_download_resource_removes_partial_file_when_stream_breaks(tmp_path, mock_session_get, no_sleep):

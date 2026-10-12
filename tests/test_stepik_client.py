@@ -207,7 +207,7 @@ def test_fetch_new_token_raises_after_exhausting_retries(client_without_token, n
     monkeypatch.setattr(client_without_token.session, "post", mock_post)
     with pytest.raises(StepikAuthError):
         client_without_token._fetch_new_token()
-    assert no_sleep.call_count == stepik_client.MAX_RETRIES - 1
+    assert no_sleep.call_count == stepik_client.MAX_ATTEMPTS - 1
 
 
 # -- _request ---------------------------------------------------------------------
@@ -239,8 +239,8 @@ def test_request_raises_after_exhausting_retries(client_with_token, no_sleep, mo
     monkeypatch.setattr(client_with_token.session, "request", mock_request)
     with pytest.raises(requests.HTTPError):
         client_with_token._request("GET", "http://example.com")
-    assert mock_request.call_count == stepik_client.MAX_RETRIES
-    assert no_sleep.call_count == stepik_client.MAX_RETRIES - 1
+    assert mock_request.call_count == stepik_client.MAX_ATTEMPTS
+    assert no_sleep.call_count == stepik_client.MAX_ATTEMPTS - 1
 
 
 def test_request_refreshes_token_once_on_401_first_attempt(client_with_token, no_sleep, monkeypatch):
