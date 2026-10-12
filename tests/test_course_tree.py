@@ -47,27 +47,23 @@ def mock_client_data():
 
 
 def test_dir_name_pads_index_and_slugifies_title():
-    assert _dir_name(3, "Hello World!") == "003_hello-world"
-
-
-def test_dir_name_applies_prefix():
-    assert _dir_name(1, "Intro", prefix="module_") == "module_001_intro"
+    assert _dir_name("module_", 3, "Hello World!") == "module_003_hello-world"
 
 
 def test_dir_name_falls_back_to_untitled_without_a_usable_title():
-    assert _dir_name(1, None) == "001_untitled"
-    assert _dir_name(1, "!!!") == "001_untitled"
+    assert _dir_name("lesson_", 1, None) == "lesson_001_untitled"
+    assert _dir_name("lesson_", 1, "!!!") == "lesson_001_untitled"
 
 
 def test_dir_name_transliterates_cyrillic_title():
     # Many Stepik course/lesson titles use Cyrillic script, and dir_name
     # must still come out as a plain ASCII, filesystem-safe slug.
-    assert _dir_name(2, "Алгоритмы и Структуры Данных") == "002_algoritmy-i-struktury-dannykh"
+    assert _dir_name("lesson_", 2, "Алгоритмы и Структуры Данных") == "lesson_002_algoritmy-i-struktury-dannykh"
 
 
 def test_dir_name_truncates_slug_to_max_length():
     long_title = "word " * 30
-    slug = _dir_name(1, long_title).split("_", 1)[1]
+    slug = _dir_name("lesson_", 1, long_title).split("_", 2)[2]
     assert len(slug) <= MAX_SLUG_LEN
 
 

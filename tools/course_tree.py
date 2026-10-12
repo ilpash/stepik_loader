@@ -18,7 +18,7 @@ def _slug(title):
     return slugify(title or "", max_length=MAX_SLUG_LEN) or "untitled"
 
 
-def _dir_name(position, title, prefix=""):
+def _dir_name(prefix, position, title):
     return f"{prefix}{position:0{DIR_INDEX_WIDTH}d}_{_slug(title)}"
 
 
@@ -47,7 +47,7 @@ def _build_lesson_node(lesson, position, step_id_to_step):
                 "id": step["id"],
                 "position": step["position"],
                 "title": title,
-                "dir_name": _dir_name(step["position"], block_type, prefix="step_"),
+                "dir_name": _dir_name("step_", step["position"], block_type),
                 "block": block,
                 "raw": step,
             }
@@ -58,7 +58,7 @@ def _build_lesson_node(lesson, position, step_id_to_step):
         "id": lesson["id"],
         "position": position,
         "title": title,
-        "dir_name": _dir_name(position, title, prefix="lesson_"),
+        "dir_name": _dir_name("lesson_", position, title),
         "steps": steps,
     }
 
@@ -84,7 +84,7 @@ def _build_module_node(section, unit_id_to_unit, lesson_id_to_lesson, step_id_to
         "id": section["id"],
         "position": section["position"],
         "title": title,
-        "dir_name": _dir_name(section["position"], title, prefix="module_"),
+        "dir_name": _dir_name("module_", section["position"], title),
         "lessons": lessons,
     }
 
