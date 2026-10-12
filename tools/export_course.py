@@ -95,51 +95,40 @@ def main(argv=None):
     course_dir = Path(args.output_dir) / tree["dir_name"]
     logger.info("Exporting '%s' to %s/", tree["title"], course_dir)
 
-    total_steps = sum(len(lesson["steps"]) for module in tree["modules"] for lesson in module["lessons"])
-    if not total_steps:
+    steps = [
+        (module, lesson, step) for module in tree["modules"] for lesson in module["lessons"] for step in lesson["steps"]
+    ]
+    if not steps:
         logger.warning("Course %s has no steps to export.", args.course_id)
-    done = 0
     skipped_step_ids = set()
 
-    for module in tree["modules"]:
-        module_dir = course_dir / module["dir_name"]
-        for lesson in module["lessons"]:
-            lesson_dir = module_dir / lesson["dir_name"]
-            for step in lesson["steps"]:
-                done += 1
-                step_dir = lesson_dir / step["dir_name"]
-                logger.info(
-                    "[%d/%d] %s > %s > step %s",
-                    done,
-                    total_steps,
-                    module["title"],
-                    lesson["title"],
-                    step["id"],
-                )
-                context = StepContext(
-                    course_id=tree["id"],
-                    course_title=tree["title"],
-                    course_dir=course_dir,
-                    module_title=module["title"],
-                    lesson_id=lesson["id"],
-                    lesson_title=lesson["title"],
-                    video_quality=args.video_quality,
-                    # Per-step property call, so token refresh could happen if it expires mid-export
-                    access_token=client.access_token,
-                    skip_videos=args.skip_videos,
-                    skip_attachments=args.skip_attachments,
-                )
-                try:
-                    render_step(step, step_dir, context)
-                except OSError as exc:
-                    if exc.errno in DISK_FULL_ERROR_CODES:
-                        logger.error("The disk is full, stopping the export: %s", exc)
-                        return 1
-                    logger.warning("[%s] could not write the step, skipping it: %s", context.log_label(step["id"]), exc)
-                    skipped_step_ids.add(step["id"])
+    for done, (module, lesson, step) in enumerate(steps, start=1):
+        step_dir = course_dir / module["dir_name"] / lesson["dir_name"] / step["dir_name"]
+        logger.info("[%d/%d] %s > %s > step %s", done, len(steps), module["title"], lesson["title"], step["id"])
+        context = StepContext(
+            course_id=tree["id"],
+            course_title=tree["title"],
+            course_dir=course_dir,
+            module_title=module["title"],
+            lesson_id=lesson["id"],
+            lesson_title=lesson["title"],
+            video_quality=args.video_quality,
+            # Per-step property call, so token refresh could happen if it expires mid-export
+            access_token=client.access_token,
+            skip_videos=args.skip_videos,
+            skip_attachments=args.skip_attachments,
+        )
+        try:
+            render_step(step, step_dir, context)
+        except OSError as exc:
+            if exc.errno in DISK_FULL_ERROR_CODES:
+                logger.error("The disk is full, stopping the export: %s", exc)
+                return 1
+            logger.warning("[%s] could not write the step, skipping it: %s", context.log_label(step["id"]), exc)
+            skipped_step_ids.add(step["id"])
 
     build_toc(tree, course_dir, skipped_step_ids)
-    logger.info("Steps exported: %d. Warnings: %d.", total_steps - len(skipped_step_ids), warning_counter.count)
+    logger.info("Steps exported: %d. Warnings: %d.", len(steps) - len(skipped_step_ids), warning_counter.count)
     logger.info("Done. Open %s in a browser.", course_dir / "index.html")
     return 0
 
