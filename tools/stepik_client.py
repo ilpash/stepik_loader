@@ -78,23 +78,20 @@ class StepikClient:
                 )
             except requests.RequestException as exc:
                 last_error = exc
-                backoff_sleep(attempt)
-                continue
-
-            if response.status_code in RETRYABLE_STATUS_CODES:
+            else:
+                if response.status_code == 200:
+                    payload = response.json()
+                    self._access_token = payload["access_token"]
+                    self._token_expires_at = time.time() + payload.get("expires_in", 3600)
+                    self._save_cached_token()
+                    return
+                if response.status_code not in RETRYABLE_STATUS_CODES:
+                    raise StepikAuthError(
+                        f"Failed to obtain Stepik access token (HTTP {response.status_code}): {response.text[:300]}"
+                    )
                 last_error = requests.HTTPError(f"HTTP {response.status_code} from {AUTH_URL}")
-                backoff_sleep(attempt)
-                continue
-            if response.status_code != 200:
-                raise StepikAuthError(
-                    f"Failed to obtain Stepik access token (HTTP {response.status_code}): {response.text[:300]}"
-                )
 
-            payload = response.json()
-            self._access_token = payload["access_token"]
-            self._token_expires_at = time.time() + payload.get("expires_in", 3600)
-            self._save_cached_token()
-            return
+            backoff_sleep(attempt)
 
         raise StepikAuthError(f"Failed to obtain Stepik access token after {MAX_ATTEMPTS} attempts: {last_error}")
 
