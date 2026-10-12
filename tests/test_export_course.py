@@ -62,15 +62,16 @@ class MockClientWithToken:
     access_token = "mock-token"
 
 
-def test_main_returns_1_when_auth_fails(monkeypatch):
+def test_main_stops_when_auth_fails(monkeypatch, caplog):
     def raise_auth_error(*args, **kwargs):
         raise StepikAuthError("STEPIK_CLIENT_ID / STEPIK_CLIENT_SECRET are not set.")
 
     monkeypatch.setattr(export_course, "StepikClient", raise_auth_error)
     assert export_course.main(["--course-id", "1"]) == 1
+    assert "STEPIK_CLIENT_ID / STEPIK_CLIENT_SECRET are not set." in caplog.text
 
 
-def test_main_returns_1_when_course_fetch_fails(monkeypatch):
+def test_main_stops_when_the_course_is_not_found(monkeypatch, caplog):
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
 
     def raise_fetch_error(client, course_id):
@@ -78,9 +79,10 @@ def test_main_returns_1_when_course_fetch_fails(monkeypatch):
 
     monkeypatch.setattr(export_course, "build_course_tree", raise_fetch_error)
     assert export_course.main(["--course-id", "1"]) == 1
+    assert "Failed to fetch course 1 (course not found or not accessible)" in caplog.text
 
 
-def test_main_returns_1_when_credentials_are_rejected_while_fetching(monkeypatch):
+def test_main_stops_when_credentials_are_rejected_while_fetching(monkeypatch, caplog):
     # StepikClient() only checks that the env vars exist; the token is fetched
     # lazily, so a rejected secret surfaces here rather than at construction.
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
@@ -90,9 +92,10 @@ def test_main_returns_1_when_credentials_are_rejected_while_fetching(monkeypatch
 
     monkeypatch.setattr(export_course, "build_course_tree", raise_auth_error)
     assert export_course.main(["--course-id", "1"]) == 1
+    assert "Failed to fetch course 1 (HTTP 401 from https://stepik.org/oauth2/token/)" in caplog.text
 
 
-def test_main_returns_1_when_stepik_cannot_be_reached(monkeypatch):
+def test_main_stops_when_stepik_cannot_be_reached(monkeypatch, caplog):
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
 
     def raise_connection_error(client, course_id):
@@ -100,6 +103,7 @@ def test_main_returns_1_when_stepik_cannot_be_reached(monkeypatch):
 
     monkeypatch.setattr(export_course, "build_course_tree", raise_connection_error)
     assert export_course.main(["--course-id", "1"]) == 1
+    assert "Failed to fetch course 1 (connection refused)" in caplog.text
 
 
 def test_main_propagates_unexpected_error_from_fetch_phase(monkeypatch):
