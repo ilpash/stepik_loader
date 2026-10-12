@@ -468,7 +468,7 @@ def test_render_step_dispatches_code_block_to_code_renderer(tmp_path, mock_downl
     _render_step_into(step_dir, step_node)
 
     html = (step_dir / "index.html").read_text()
-    # only _render_code emits this note, so its presence is what proves the dispatch
+    # Only _render_code emits this note, so its presence is what proves the dispatch
     assert "asks you to write a program" in html
     assert "Print the sum." in html
     assert "<summary>python3</summary>" in html
@@ -488,7 +488,7 @@ def test_render_step_dispatches_pycharm_block_to_pycharm_renderer(tmp_path, mock
     _render_step_into(step_dir, step_node)
 
     html = (step_dir / "index.html").read_text()
-    # only _render_pycharm emits this note, so its presence is what proves the dispatch
+    # Only _render_pycharm emits this note, so its presence is what proves the dispatch
     assert "solved in an IDE" in html
     assert "src/Task.kt" in html
     assert "raw step data" not in html

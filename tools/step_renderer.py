@@ -27,7 +27,7 @@ from template_env import get_template
 
 logger = logging.getLogger("stepik_export")
 
-# tags/attributes that may reference a downloadable resource inside step HTML
+# Tags/attributes that may reference a downloadable resource inside step HTML
 _RESOURCE_ATTRS = [("img", "src"), ("audio", "src"), ("source", "src"), ("a", "href")]
 
 STEPIK_BASE_URL = "https://stepik.org"

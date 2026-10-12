@@ -239,7 +239,7 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     course_dir = tmp_path / "1_sample-course"
     assert _exported_files(course_dir) == EXPECTED_FILES
 
-    # the table of contents links every step, and names each one however that step is named
+    # The table of contents links every step, and names each one however that step is named
     toc_html = (course_dir / "index.html").read_text()
     assert "Sample Course" in toc_html
     assert f"{LESSON_1_STEP_1}/index.html" in toc_html
@@ -260,7 +260,7 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     assert "Step 10005 (video)" in toc_html
 
     text_html = (course_dir / LESSON_1_STEP_1 / "index.html").read_text()
-    # a step sits three levels below the course root, and both links back must clear it
+    # A step sits three levels below the course root, and both links back must clear it
     assert 'href="../../../assets/style.css"' in text_html
     assert 'href="../../../index.html"' in text_html
     assert 'src="resource_1_some_picture.png"' in text_html

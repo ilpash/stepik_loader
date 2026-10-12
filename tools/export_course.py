@@ -124,7 +124,7 @@ def main(argv=None):
                     lesson_id=lesson["id"],
                     lesson_title=lesson["title"],
                     video_quality=args.video_quality,
-                    # per-step property call, so token refresh could happen if it expires mid-export
+                    # Per-step property call, so token refresh could happen if it expires mid-export
                     access_token=client.access_token,
                     skip_videos=args.skip_videos,
                     skip_attachments=args.skip_attachments,
