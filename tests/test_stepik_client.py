@@ -191,14 +191,16 @@ def test_fetch_new_token_raises_on_non_200(client_without_token, monkeypatch):
 
 
 def test_fetch_new_token_retries_on_retryable_status_then_succeeds(client_without_token, no_sleep, monkeypatch):
-    responses = [MockResponse(503), MockResponse(200, json_data={"access_token": "fetched-token", "expires_in": 3600})]
-
-    def mock_post(url, **kwargs):
-        return responses.pop(0)
-
+    mock_post = MagicMock(
+        side_effect=[
+            MockResponse(503),
+            MockResponse(200, json_data={"access_token": "fetched-token", "expires_in": 3600}),
+        ]
+    )
     monkeypatch.setattr(client_without_token.session, "post", mock_post)
     client_without_token._fetch_new_token()
     assert client_without_token._access_token == "fetched-token"
+    assert mock_post.call_count == 2
     assert no_sleep.call_count == 1
 
 
@@ -239,14 +241,11 @@ def test_request_returns_response_on_first_success(client_with_token, no_sleep, 
 
 
 def test_request_retries_on_retryable_status_then_succeeds(client_with_token, no_sleep, monkeypatch):
-    responses = [MockResponse(503), MockResponse(200)]
-
-    def mock_request(method, url, **kwargs):
-        return responses.pop(0)
-
+    mock_request = MagicMock(side_effect=[MockResponse(503), MockResponse(200)])
     monkeypatch.setattr(client_with_token.session, "request", mock_request)
     result = client_with_token._request("GET", "http://example.com")
     assert result.status_code == 200
+    assert mock_request.call_count == 2
     assert no_sleep.call_count == 1
 
 
