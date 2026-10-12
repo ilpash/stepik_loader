@@ -65,9 +65,6 @@ def download_resource(url, dest_dir, log_label, access_token=None, filename_hint
     """
     Returns the local filename, or None if the download failed (logged as a warning).
     """
-    dest_dir = Path(dest_dir)
-    dest_dir.mkdir(parents=True, exist_ok=True)
-
     headers = {}
     if access_token and urlparse(url).hostname in STEPIK_AUTH_HOSTS:
         headers["Authorization"] = f"Bearer {access_token}"
