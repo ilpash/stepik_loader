@@ -46,8 +46,6 @@ class StepikClient:
     # -- auth -----------------------------------------------------------
 
     def _load_cached_token(self):
-        if not self.token_cache_path.exists():
-            return
         try:
             data = json.loads(self.token_cache_path.read_text())
         except (json.JSONDecodeError, OSError):
