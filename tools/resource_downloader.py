@@ -83,7 +83,7 @@ def download_resource(url, dest_dir, log_label, access_token=None, filename_hint
         try:
             with _download_session.get(url, headers=headers, stream=True, timeout=60) as response:
                 if response.status_code in RETRYABLE_STATUS_CODES:
-                    last_error = RuntimeError(f"HTTP {response.status_code}")
+                    last_error = requests.HTTPError(f"HTTP {response.status_code} from {url}")
                 elif response.status_code >= 400:
                     logger.warning("[%s] failed to download %s: HTTP %s", log_label, url, response.status_code)
                     return None
