@@ -222,7 +222,7 @@ def _render_code(block, resolve, skip_attachments):
         '<p class="warning">This step asks you to write a program; submitting a solution and '
         "grading are not available offline.</p>",
     ]
-    return "".join(part for part in parts if part)
+    return "".join(parts)
 
 
 def _render_pycharm_files(files):
@@ -251,7 +251,7 @@ def _render_pycharm(block, resolve, skip_attachments):
         '<p class="warning">This step is solved in an IDE; submitting a solution and grading '
         "are not available offline.</p>",
     ]
-    return "".join(part for part in parts if part)
+    return "".join(parts)
 
 
 def _render_generic(block, log_label):
