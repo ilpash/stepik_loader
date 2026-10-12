@@ -47,8 +47,7 @@ def safe_filename(url):
 def _name_from_content_type(filename, content_type):
     if Path(filename).suffix:
         return filename
-    extension = BUILTIN_MIME_TYPES.guess_extension(content_type) if content_type else None
-    return filename + extension if extension else filename
+    return filename + (BUILTIN_MIME_TYPES.guess_extension(content_type) or "")
 
 
 def _write_stream(response, dest_path):
