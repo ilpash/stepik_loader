@@ -63,7 +63,7 @@ class MockClientWithToken:
 
 
 def test_main_stops_when_auth_fails(monkeypatch, caplog):
-    def raise_auth_error(*args, **kwargs):
+    def raise_auth_error():
         raise StepikAuthError("STEPIK_CLIENT_ID / STEPIK_CLIENT_SECRET are not set.")
 
     monkeypatch.setattr(export_course, "StepikClient", raise_auth_error)
@@ -190,7 +190,7 @@ def test_main_stops_when_the_disk_is_full(tmp_path, monkeypatch, caplog, two_ste
 
 def test_main_propagates_unexpected_error_from_render_phase(tmp_path, monkeypatch, two_step_tree):
     # Fetch failures and disk errors are handled; any other render-phase error propagates as-is.
-    def raise_render_error(*args, **kwargs):
+    def raise_render_error(step_node, step_dir, context):
         raise RuntimeError("unexpected render error")
 
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
