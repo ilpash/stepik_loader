@@ -242,16 +242,8 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     # The table of contents links every step, and names each one however that step is named
     toc_html = (course_dir / "index.html").read_text()
     assert "Sample Course" in toc_html
-    assert f"{LESSON_1_STEP_1}/index.html" in toc_html
-    assert f"{LESSON_2_STEP_1}/index.html" in toc_html
-    assert f"{LESSON_2_STEP_2}/index.html" in toc_html
-    assert f"{LESSON_2_STEP_3}/index.html" in toc_html
-    assert f"{LESSON_2_STEP_4}/index.html" in toc_html
-    assert f"{LESSON_3_STEP_1}/index.html" in toc_html
-    assert f"{LESSON_3_STEP_2}/index.html" in toc_html
-    assert f"{LESSON_3_STEP_3}/index.html" in toc_html
-    assert f"{LESSON_3_STEP_4}/index.html" in toc_html
-    assert f"{LESSON_3_STEP_5}/index.html" in toc_html
+    for step in ALL_STEPS:
+        assert f"{step}/index.html" in toc_html
     assert "Step 10000 (text)" in toc_html
     assert "Step 10001 (code)" in toc_html
     assert "Exercise 1" in toc_html
