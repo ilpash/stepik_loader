@@ -230,11 +230,14 @@ def _exported_files(course_dir):
     return {path.relative_to(course_dir).as_posix() for path in course_dir.rglob("*") if path.is_file()}
 
 
-def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_data, downloaded_urls):
+def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_data, downloaded_urls, caplog):
+    caplog.set_level(logging.INFO, logger="stepik_export")
     monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
 
     exit_code = export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
     assert exit_code == 0
+    # The table step is the only one without a dedicated renderer, so it is the one warning.
+    assert "Steps exported: 10. Warnings: 1." in caplog.text
 
     course_dir = tmp_path / "1_sample-course"
     assert _exported_files(course_dir) == EXPECTED_FILES
@@ -318,16 +321,6 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
 
     no_format_html = (course_dir / LESSON_3_STEP_5 / "index.html").read_text()
     assert "<p>Read the last one.</p>" in no_format_html
-
-
-def test_main_reports_the_step_and_warning_counts(tmp_path, monkeypatch, course_data, downloaded_urls, caplog):
-    # The table step is the only one without a dedicated renderer, so it is the one warning.
-    caplog.set_level(logging.INFO, logger="stepik_export")
-    monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
-
-    export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
-
-    assert "Steps exported: 10. Warnings: 1." in caplog.text
 
 
 def test_main_counts_warnings_even_when_the_console_log_level_hides_them(
