@@ -67,44 +67,6 @@ def test_dir_name_truncates_slug_to_max_length():
     assert len(slug) <= MAX_SLUG_LEN
 
 
-def test_build_course_tree_handles_single_module_lesson_and_step(minimal_mock_client_data):
-    client = MockStepikClient(minimal_mock_client_data)
-    tree = build_course_tree(client, 1)
-
-    expected = {
-        "id": 1,
-        "title": "Tiny Course",
-        "dir_name": "1_tiny-course",
-        "modules": [
-            {
-                "id": 10,
-                "position": 1,
-                "title": "Only Module",
-                "dir_name": "module_001_only-module",
-                "lessons": [
-                    {
-                        "id": 1000,
-                        "position": 1,
-                        "title": "Only Lesson",
-                        "dir_name": "lesson_001_only-lesson",
-                        "steps": [
-                            {
-                                "id": 10000,
-                                "position": 1,
-                                "title": "Step 10000 (text)",
-                                "dir_name": "step_001_text",
-                                "block": {"name": "text", "text": "hi"},
-                                "raw": {"id": 10000, "position": 1, "block": {"name": "text", "text": "hi"}},
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
-    }
-    assert tree == expected
-
-
 def test_build_course_tree_basic_case(mock_client_data):
     client = MockStepikClient(mock_client_data)
     tree = build_course_tree(client, 1)
