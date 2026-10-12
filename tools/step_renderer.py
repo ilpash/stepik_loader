@@ -229,8 +229,8 @@ def _render_pycharm_files(files):
         return ""
     parts = ["<h2>Files</h2>"]
     for file in files:
-        # A plain task file often omits is_visible, so only an explicit false means hidden.
         label = escape(file["name"])
+        # A plain task file often omits is_visible, so only an explicit false means hidden.
         if file.get("is_visible") is False:
             label += ' <span class="hidden-file">hidden</span>'
         parts.append(f"<h3>{label}</h3>")
