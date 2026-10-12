@@ -48,7 +48,7 @@ def sample_course_tree():
     }
 
 
-def test_build_toc_creates_assets_dir_and_copies_style_css(tmp_path, sample_course_tree):
+def test_build_toc_copies_style_css(tmp_path, sample_course_tree):
     build_toc(sample_course_tree, tmp_path, set())
 
     copied_css = (tmp_path / "assets" / "style.css").read_text()
@@ -56,7 +56,7 @@ def test_build_toc_creates_assets_dir_and_copies_style_css(tmp_path, sample_cour
     assert copied_css == original_css
 
 
-def test_build_toc_writes_index_html_with_course_title_and_modules(tmp_path, sample_course_tree):
+def test_build_toc_basic_case(tmp_path, sample_course_tree):
     build_toc(sample_course_tree, tmp_path, set())
 
     html = (tmp_path / "index.html").read_text()

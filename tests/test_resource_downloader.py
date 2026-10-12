@@ -33,7 +33,7 @@ def mock_session_get(monkeypatch):
 # -- safe_filename ---------------------------------------------------------------
 
 
-def test_safe_filename_sanitizes_and_uses_basename():
+def test_safe_filename_basic_case():
     assert safe_filename("https://cdn.example.com/path/My File!.png") == "My_File_.png"
 
 
@@ -57,7 +57,7 @@ def test_safe_filename_truncates_an_unusually_long_extension_too():
 # -- download_resource ---------------------------------------------------------------
 
 
-def test_download_resource_success_writes_file_and_returns_filename(tmp_path, mock_session_get):
+def test_download_resource_basic_case(tmp_path, mock_session_get):
     mock_session_get.return_value = MockStreamResponse(200, chunks=[b"hello"])
     result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
     assert result == "notes.txt"

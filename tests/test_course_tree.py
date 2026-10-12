@@ -46,7 +46,7 @@ def mock_client_data():
     }
 
 
-def test_dir_name_pads_index_and_slugifies_title():
+def test_dir_name_basic_case():
     assert _dir_name("module_", 3, "Hello World!") == "module_003_hello-world"
 
 
@@ -105,7 +105,7 @@ def test_build_course_tree_handles_single_module_lesson_and_step(minimal_mock_cl
     assert tree == expected
 
 
-def test_build_course_tree_happy_path(mock_client_data):
+def test_build_course_tree_basic_case(mock_client_data):
     client = MockStepikClient(mock_client_data)
     tree = build_course_tree(client, 1)
 

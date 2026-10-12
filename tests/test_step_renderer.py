@@ -395,7 +395,7 @@ def test_render_video_returns_warning_when_no_urls(mock_resolve):
     assert mock_resolve.call_count == 0
 
 
-def test_render_video_calls_resolve_with_selected_url_and_returns_video_tag(mock_resolve):
+def test_render_video_basic_case(mock_resolve):
     mock_resolve.return_value = "video.mp4"
     block = {"video": {"urls": [{"quality": "720", "url": "https://cdn.example.com/lecture.mp4"}]}}
 

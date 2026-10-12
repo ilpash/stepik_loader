@@ -322,7 +322,7 @@ def test_main_counts_warnings_even_when_the_console_log_level_hides_them(
     assert export_course.warning_counter.count == 1
 
 
-def test_main_respects_skip_videos_and_skip_attachments_flags(tmp_path, monkeypatch, course_data, downloaded_urls):
+def test_main_respects_the_skip_flags(tmp_path, monkeypatch, course_data, downloaded_urls):
     monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
 
     exit_code = export_course.main(

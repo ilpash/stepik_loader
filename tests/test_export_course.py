@@ -32,7 +32,7 @@ def test_parse_args_rejects_invalid_video_quality():
         export_course.parse_args(["--course-id", "5", "--video-quality", "480"])
 
 
-def test_parse_args_parses_flags_and_overrides():
+def test_parse_args_reads_every_option():
     args = export_course.parse_args(
         [
             "--course-id",

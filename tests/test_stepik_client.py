@@ -169,7 +169,7 @@ def test_ensure_token_fetches_when_the_token_expires_within_the_margin(client_wi
 # -- _fetch_new_token ------------------------------------------------------------
 
 
-def test_fetch_new_token_success(client_without_token, monkeypatch):
+def test_fetch_new_token_basic_case(client_without_token, monkeypatch):
     def mock_post(url, **kwargs):
         return MockResponse(200, json_data={"access_token": "fetched-token", "expires_in": 3600})
 
