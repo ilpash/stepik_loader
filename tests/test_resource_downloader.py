@@ -91,6 +91,14 @@ def test_download_resource_overwrites_a_file_from_an_earlier_run(tmp_path, mock_
     assert (tmp_path / "video.mp4").read_bytes() == b"new"
 
 
+def test_download_resource_saves_nothing_when_the_server_sends_a_web_page(tmp_path, mock_session_get, caplog):
+    mock_session_get.return_value = MockStreamResponse(200, headers={"Content-Type": "text/html; charset=utf-8"})
+    result = download_resource("https://github.com/some_user/some_repo/blob/main/solution.py", tmp_path, "test-context")
+    assert result is None
+    assert list(tmp_path.iterdir()) == []
+    assert "returned a web page" in caplog.text
+
+
 def test_download_resource_returns_none_on_non_retryable_http_error(tmp_path, mock_session_get):
     mock_session_get.return_value = MockStreamResponse(404)
     result = download_resource("http://example.com/missing.txt", tmp_path, "test-context")
