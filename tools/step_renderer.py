@@ -87,7 +87,8 @@ def _render_text(block, resolve, skip_attachments):
                 tag[attr] = url
                 continue
             resource_index += 1
-            tag[attr] = resolve(url, filename_hint=None, index=resource_index) or url
+            filename_hint = f"resource_{resource_index}_{resource_downloader.safe_filename(url)}"
+            tag[attr] = resolve(url, filename_hint) or url
     return str(soup)
 
 
@@ -135,7 +136,7 @@ def _render_video(block, resolve, log_label, quality, skip_videos):
         logger.warning("[%s] video step has no downloadable urls", log_label)
         return '<p class="warning">Video unavailable: no downloadable URL was returned by the API.</p>'
 
-    local = resolve(selected["url"], filename_hint="video.mp4", index=0)
+    local = resolve(selected["url"], "video.mp4")
     if not local:
         return '<p class="warning">Video download failed. See the export log for details.</p>'
     return f'<video controls src="{escape(local)}"></video>'
@@ -274,12 +275,11 @@ def render_step(step_node, step_dir, context):
 
     resolved = {}
 
-    def resolve(url, filename_hint, index):
+    def resolve(url, filename_hint):
         # The same URL can appear in several tags of one step, so download it once.
         if url not in resolved:
-            hint = filename_hint or f"resource_{index}_{resource_downloader.safe_filename(url)}"
             resolved[url] = resource_downloader.download_resource(
-                url, step_dir, log_label, access_token=context.access_token, filename_hint=hint
+                url, step_dir, log_label, access_token=context.access_token, filename_hint=filename_hint
             )
         return resolved[url]
 

@@ -114,7 +114,7 @@ def test_render_text_rewrites_img_src_via_resolve(mock_resolve):
     html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
 
     assert 'src="local.png"' in html
-    mock_resolve.assert_called_once_with("https://cdn.example.com/diagram.png", filename_hint=None, index=1)
+    mock_resolve.assert_called_once_with("https://cdn.example.com/diagram.png", "resource_1_diagram.png")
 
 
 def test_render_text_skips_non_http_src(mock_resolve):
@@ -140,7 +140,7 @@ def test_render_text_downloads_an_image_from_a_root_relative_url(mock_resolve):
 
     assert 'src="local_city.jpg"' in html
     mock_resolve.assert_called_once_with(
-        "https://stepik.org/media/attachments/lessons/460/city.jpg", filename_hint=None, index=1
+        "https://stepik.org/media/attachments/lessons/460/city.jpg", "resource_1_city.jpg"
     )
 
 
@@ -160,7 +160,9 @@ def test_render_text_downloads_audio_from_a_protocol_relative_url(mock_resolve):
     html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
 
     assert 'src="local_word.mp3"' in html
-    mock_resolve.assert_called_once_with("https://audio.example.com/some_recording.mp3", filename_hint=None, index=1)
+    mock_resolve.assert_called_once_with(
+        "https://audio.example.com/some_recording.mp3", "resource_1_some_recording.mp3"
+    )
 
 
 def test_render_text_adds_the_site_to_a_root_relative_page_link(mock_resolve):
@@ -189,7 +191,7 @@ def test_render_text_downloads_an_anchor_that_points_at_a_file(mock_resolve):
     html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
 
     assert 'href="local_notes.pdf"' in html
-    mock_resolve.assert_called_once_with(attachment_url, filename_hint=None, index=1)
+    mock_resolve.assert_called_once_with(attachment_url, "resource_1_notes.pdf")
 
 
 @pytest.mark.parametrize(
@@ -220,7 +222,7 @@ def test_render_text_downloads_an_image_from_an_extensionless_url(mock_resolve):
     html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
 
     assert 'src="local_image"' in html
-    mock_resolve.assert_called_once_with(image_url, filename_hint=None, index=1)
+    mock_resolve.assert_called_once_with(image_url, "resource_1_some-image-id")
 
 
 # -- _render_code --------------------------------------------------------------
@@ -283,7 +285,7 @@ def test_render_code_rewrites_images_in_the_statement(mock_resolve):
     html = _render_code(block=block, resolve=mock_resolve, skip_attachments=False)
 
     assert 'src="local.png"' in html
-    mock_resolve.assert_called_once_with("https://cdn.example.com/flowchart.png", filename_hint=None, index=1)
+    mock_resolve.assert_called_once_with("https://cdn.example.com/flowchart.png", "resource_1_flowchart.png")
 
 
 # -- _render_pycharm -----------------------------------------------------------
@@ -404,7 +406,7 @@ def test_render_video_calls_resolve_with_selected_url_and_returns_video_tag(mock
     )
 
     assert html == '<video controls src="video.mp4"></video>'
-    mock_resolve.assert_called_once_with("https://cdn.example.com/lecture.mp4", filename_hint="video.mp4", index=0)
+    mock_resolve.assert_called_once_with("https://cdn.example.com/lecture.mp4", "video.mp4")
 
 
 def test_render_video_returns_warning_when_resolve_fails(mock_resolve):
