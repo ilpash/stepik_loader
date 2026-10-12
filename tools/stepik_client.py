@@ -145,7 +145,7 @@ class StepikClient:
 
             backoff_sleep(attempt)
 
-        raise last_error or StepikAuthError(f"Request to {url} failed after {MAX_RETRIES} attempts")
+        raise last_error
 
     def get(self, resource, params=None):
         response = self._request("GET", API_BASE + resource, params=params)
