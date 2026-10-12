@@ -227,7 +227,7 @@ def _exported_files(course_dir):
     return {path.relative_to(course_dir).as_posix() for path in course_dir.rglob("*") if path.is_file()}
 
 
-def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_data, downloaded_urls, caplog):
+def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, caplog):
     caplog.set_level(logging.INFO, logger="stepik_export")
     monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
 
