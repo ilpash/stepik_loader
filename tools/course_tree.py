@@ -14,6 +14,10 @@ MAX_SLUG_LEN = 50
 DIR_INDEX_WIDTH = 3
 
 
+class CourseNotFoundError(Exception):
+    pass
+
+
 def _slug(title):
     return slugify(title or "", max_length=MAX_SLUG_LEN) or "untitled"
 
@@ -92,7 +96,7 @@ def _build_module_node(section, unit_id_to_unit, lesson_id_to_lesson, step_id_to
 def build_course_tree(client, course_id):
     courses = client.get_by_ids("courses", [course_id])
     if not courses:
-        raise ValueError(f"Course {course_id} not found or not accessible with current auth scope")
+        raise CourseNotFoundError(f"Course {course_id} not found or not accessible with current auth scope")
     course = courses[0]
 
     section_ids = course.get("sections", [])

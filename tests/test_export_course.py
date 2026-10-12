@@ -6,6 +6,7 @@ import pytest
 import requests
 
 import export_course
+from course_tree import CourseNotFoundError
 from stepik_client import StepikAuthError
 
 # -- parse_args ---------------------------------------------------------------
@@ -73,7 +74,7 @@ def test_main_returns_1_when_course_fetch_fails(monkeypatch):
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
 
     def raise_fetch_error(client, course_id):
-        raise ValueError("course not found or not accessible")
+        raise CourseNotFoundError("course not found or not accessible")
 
     monkeypatch.setattr(export_course, "build_course_tree", raise_fetch_error)
     assert export_course.main(["--course-id", "1"]) == 1
@@ -99,6 +100,17 @@ def test_main_returns_1_when_stepik_cannot_be_reached(monkeypatch):
 
     monkeypatch.setattr(export_course, "build_course_tree", raise_connection_error)
     assert export_course.main(["--course-id", "1"]) == 1
+
+
+def test_main_propagates_unexpected_error_from_fetch_phase(monkeypatch):
+    monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
+
+    def raise_unexpected_error(client, course_id):
+        raise ValueError("unexpected fetch error")
+
+    monkeypatch.setattr(export_course, "build_course_tree", raise_unexpected_error)
+    with pytest.raises(ValueError, match="unexpected fetch error"):
+        export_course.main(["--course-id", "1"])
 
 
 def test_main_warns_when_the_course_has_no_steps(tmp_path, monkeypatch, caplog):
