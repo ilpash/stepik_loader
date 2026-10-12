@@ -310,18 +310,6 @@ def test_get_builds_url_relative_to_api_base(client_with_token, monkeypatch):
     assert recorded["url"] == stepik_client.API_BASE + "some/path"
 
 
-def test_get_passes_through_an_already_absolute_url(client_with_token, monkeypatch):
-    recorded = {}
-
-    def mock_request(method, url, **kwargs):
-        recorded["url"] = url
-        return MockResponse(200, json_data={})
-
-    monkeypatch.setattr(client_with_token, "_request", mock_request)
-    client_with_token.get("https://stepik.org/media/a.txt")
-    assert recorded["url"] == "https://stepik.org/media/a.txt"
-
-
 def test_get_by_ids_batches_requests(client_with_token, monkeypatch):
     calls = []
 

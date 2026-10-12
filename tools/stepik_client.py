@@ -147,9 +147,8 @@ class StepikClient:
 
         raise last_error or StepikAuthError(f"Request to {url} failed after {MAX_RETRIES} attempts")
 
-    def get(self, path, params=None):
-        url = path if path.startswith("http") else API_BASE + path.lstrip("/")
-        response = self._request("GET", url, params=params)
+    def get(self, resource, params=None):
+        response = self._request("GET", API_BASE + resource, params=params)
         return response.json()
 
     def get_by_ids(self, resource, ids, batch_size=30):
