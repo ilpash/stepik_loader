@@ -33,7 +33,7 @@ that course under `exports/<course_id>_<slug>/`, following the
    - See README's Usage section for the full flag list, including `--log-level`.
 3. Watch the console output. It prints one line per step as it's processed, and
    `WARNING` lines for anything that failed or fell back to a generic
-   renderer — each warning is tagged with `course=... lesson=... step=...`.
+   renderer — each warning about a step is tagged with `course=... lesson=... step=...`.
    A step that can't be written to disk is skipped with a warning and listed as
    "not exported" in the table of contents. A full disk stops the export with an
    `ERROR` line; free some space and run it again.
