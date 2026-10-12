@@ -126,7 +126,7 @@ def _render_video(block, resolve, log_label, quality, skip_videos):
     urls = video.get("urls", [])
     selected = _pick_video_url(urls, quality, log_label)
     if not selected or not selected.get("url"):
-        logger.warning("[%s] video step has no downloadable urls", log_label)
+        logger.warning("[%s] video step has no downloadable URLs", log_label)
         return '<p class="warning">Video unavailable: no downloadable URL was returned by the API.</p>'
 
     if skip_videos:
@@ -261,7 +261,7 @@ def _render_generic(block, log_label):
     )
     dump = json.dumps(block, ensure_ascii=False, indent=2)
     return (
-        '<p class="warning">This step type does not have a dedicated offline renderer yet. '
+        '<p class="warning">This step type does not have a dedicated offline renderer. '
         "Showing the raw step data below.</p>"
         f"<pre><code>{escape(dump)}</code></pre>"
     )

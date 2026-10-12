@@ -52,12 +52,12 @@ def parse_args(argv=None):
         "--video-quality",
         default="best",
         choices=["best", "360", "720", "1080"],
-        help="preferred video resolution; if a step is not available in it, the closest one is used",
+        help="preferred video resolution; if a video is not available in it, the closest one is used",
     )
     parser.add_argument(
         "--skip-videos", action="store_true", help="link video steps to the online video instead of downloading it"
     )
-    parser.add_argument("--skip-attachments", action="store_true", help="leave linked files as their original url")
+    parser.add_argument("--skip-attachments", action="store_true", help="leave linked files as their original URL")
     parser.add_argument(
         "--log-level",
         default="INFO",
