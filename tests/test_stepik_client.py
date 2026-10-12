@@ -311,7 +311,7 @@ def test_request_raises_when_the_refreshed_token_is_rejected(client_with_token, 
     assert mock_request.call_count == 2
 
 
-def test_request_raises_on_non_retryable_status(client_with_token, no_sleep, monkeypatch):
+def test_request_raises_on_non_retryable_status(client_with_token, monkeypatch):
     mock_request = MagicMock(return_value=MockResponse(404))
     monkeypatch.setattr(client_with_token.session, "request", mock_request)
     with pytest.raises(requests.HTTPError):

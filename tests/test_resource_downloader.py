@@ -123,7 +123,7 @@ def test_download_resource_returns_none_after_exhausting_retries(tmp_path, mock_
     assert no_sleep.call_count == resource_downloader.MAX_ATTEMPTS - 1
 
 
-def test_download_resource_removes_partial_file_when_stream_breaks(tmp_path, mock_session_get, no_sleep):
+def test_download_resource_removes_partial_file_when_stream_breaks(tmp_path, mock_session_get):
     class BrokenStreamResponse(MockStreamResponse):
         def iter_content(self, chunk_size):
             yield b"first half"
@@ -160,7 +160,7 @@ def test_download_resource_removes_partial_file_when_interrupted(tmp_path, mock_
     assert list(tmp_path.iterdir()) == []
 
 
-def test_download_resource_returns_none_on_connection_error(tmp_path, mock_session_get, no_sleep):
+def test_download_resource_returns_none_on_connection_error(tmp_path, mock_session_get):
     mock_session_get.side_effect = requests.ConnectionError("connection refused")
     result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
     assert result is None
