@@ -58,7 +58,7 @@ def test_init_reads_credentials_from_constructor_args(tmp_path):
     client = StepikClient(
         client_id="test-client-id",
         client_secret="test-client-secret",
-        token_cache_path=tmp_path / "t.json",
+        token_cache_path=tmp_path / "cache.json",
     )
     assert client.client_id == "test-client-id"
     assert client.client_secret == "test-client-secret"

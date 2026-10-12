@@ -350,9 +350,9 @@ def test_render_pycharm_marks_a_file_the_course_hides(mock_resolve):
 
 
 def test_render_pycharm_notes_a_file_with_no_content(mock_resolve):
-    block = {"name": "pycharm", "text": "", "options": {"files": [{"name": "fizz.kt", "text": ""}]}}
+    block = {"name": "pycharm", "text": "", "options": {"files": [{"name": "src/Empty.kt", "text": ""}]}}
     html = _render_pycharm(block=block, resolve=mock_resolve, skip_attachments=False)
-    assert "<h3>fizz.kt</h3>" in html
+    assert "<h3>src/Empty.kt</h3>" in html
     assert "This file is empty." in html
     assert "<pre>" not in html
 
@@ -448,7 +448,7 @@ def _render_step_into(step_dir, step_node, **context_overrides):
 
 
 def test_render_step_basic_case(tmp_path, mock_download_resource):
-    step_dir = tmp_path / "step_01_text"
+    step_dir = tmp_path / "step"
     block = {"name": "text", "text": "hello"}
     step_node = _make_step_node(block, step_id=42)
 
