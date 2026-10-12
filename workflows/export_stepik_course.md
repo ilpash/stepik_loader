@@ -41,7 +41,7 @@ that course under `exports/<course_id>_<slug>/`, following the
    Warnings: M.` followed by the path to the root `index.html`. Open that file
    to sanity-check the export.
 5. Report to the user: take both counts from that line rather than tallying log
-   lines by hand. When `M` is not zero, read the `WARNING` lines and summarise
+   lines by hand. When `M` is not zero, read the `WARNING` lines and summarize
    what they were (failed downloads, unsupported block types, quality
    fallbacks). Do not silently skip warnings — alongside the test suite, they're
    the completeness signal for this tool.
@@ -64,7 +64,9 @@ that course under `exports/<course_id>_<slug>/`, following the
   pages keep their original URL, so they need a connection to open — mirroring
   them would save a page that is useless offline and lose the live URL.
 - Re-running an export always overwrites; there's no resume/skip-existing
-  logic in v1.
+  logic in v1. Files the new run doesn't write are left in place, so after a
+  lesson is renamed or its steps move, the old `lesson_…`/`step_…` folders
+  stay, no longer linked from the table of contents.
 
 ## What to do when something breaks
 Per CLAUDE.md's self-improvement loop: read the actual error, fix the
