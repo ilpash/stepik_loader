@@ -342,18 +342,18 @@ def test_get_builds_url_relative_to_api_base(client_with_token, monkeypatch):
 
 
 def test_get_by_ids_batches_requests(client_with_token, monkeypatch):
-    calls = []
-
-    def mock_get(resource, params=None):
-        calls.append(params)
-        batch_ids = [int(value) for _, value in params]
-        return {resource: [{"id": batch_id} for batch_id in batch_ids]}
-
+    mock_get = MagicMock(
+        side_effect=[
+            {"courses": [{"id": course_id} for course_id in range(1, 31)]},
+            {"courses": [{"id": course_id} for course_id in range(31, 61)]},
+            {"courses": [{"id": course_id} for course_id in range(61, 66)]},
+        ]
+    )
     monkeypatch.setattr(client_with_token, "get", mock_get)
-    ids = list(range(1, 66))
-    results = client_with_token.get_by_ids("courses", ids, batch_size=30)
 
-    assert [len(batch) for batch in calls] == [30, 30, 5]
+    results = client_with_token.get_by_ids("courses", list(range(1, 66)), batch_size=30)
+
+    assert [len(call.kwargs["params"]) for call in mock_get.call_args_list] == [30, 30, 5]
     assert len(results) == 65
 
 
