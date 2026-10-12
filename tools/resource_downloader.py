@@ -27,9 +27,6 @@ CHUNK_SIZE = 64 * 1024
 MAX_FILENAME_STEM_LEN = 100
 MAX_FILENAME_SUFFIX_LEN = 10
 
-# Hosts that are allowed to receive the Stepik Authorization header.
-# Resource downloads (video/image/attachment CDNs) must never send it
-# to anything outside this set.
 STEPIK_AUTH_HOSTS = {"stepik.org", "www.stepik.org"}
 
 BUILTIN_MIME_TYPES = mimetypes.MimeTypes()
