@@ -1,6 +1,6 @@
 import errno
 import logging
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, PropertyMock
 
 import pytest
 import requests
@@ -185,6 +185,22 @@ def test_main_stops_when_the_disk_is_full(tmp_path, monkeypatch, caplog, two_ste
     assert exit_code == 1
     assert mock_render_step.call_count == 1
     assert "The disk is full, stopping the export" in caplog.text
+    assert not (tmp_path / "1_course" / "index.html").exists()
+
+
+def test_main_stops_when_the_token_cannot_be_refreshed(tmp_path, monkeypatch, caplog, two_step_tree):
+    mock_access_token = PropertyMock(side_effect=["mock-token", StepikAuthError("connection refused")])
+    mock_render_step = MagicMock()
+    monkeypatch.setattr(MockClientWithToken, "access_token", mock_access_token)
+    monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
+    monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
+    monkeypatch.setattr(export_course, "render_step", mock_render_step)
+
+    exit_code = export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
+
+    assert exit_code == 1
+    assert mock_render_step.call_count == 1
+    assert "Could not refresh the Stepik access token, stopping the export: connection refused" in caplog.text
     assert not (tmp_path / "1_course" / "index.html").exists()
 
 

@@ -105,6 +105,12 @@ def main(argv=None):
     for done, (module, lesson, step) in enumerate(steps, start=1):
         step_dir = course_dir / module["dir_name"] / lesson["dir_name"] / step["dir_name"]
         logger.info("[%d/%d] %s > %s > step %s", done, len(steps), module["title"], lesson["title"], step["id"])
+        try:
+            # Read on every step, so a token that expires mid-export is refreshed
+            access_token = client.access_token
+        except (StepikAuthError, requests.RequestException) as exc:
+            logger.error("Could not refresh the Stepik access token, stopping the export: %s", exc)
+            return 1
         context = StepContext(
             course_id=tree["id"],
             course_title=tree["title"],
@@ -113,8 +119,7 @@ def main(argv=None):
             lesson_id=lesson["id"],
             lesson_title=lesson["title"],
             video_quality=args.video_quality,
-            # Read on every step, so a token that expires mid-export is refreshed
-            access_token=client.access_token,
+            access_token=access_token,
             skip_videos=args.skip_videos,
             skip_attachments=args.skip_attachments,
         )
