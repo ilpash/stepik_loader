@@ -18,7 +18,7 @@ from conftest import MockStepikClient
 def course_data():
     """
     Raw Stepik-API-shaped fixture data covering every block type, every way a
-    step can be named, and both format variants of the fields that have them.
+    step can be named, and every format variant of the fields that have them.
     Collections vary in size on purpose -- one module holds two lessons and the
     other holds one, and lesson one holds a single step while the others hold
     several -- so each loop is exercised with one entry and with many. Step
@@ -38,7 +38,7 @@ def course_data():
         "lessons": [
             {"id": 1000, "title": "Lesson One", "steps": [10000]},
             {"id": 1001, "title": "Lesson Two", "steps": [10001, 10002, 10003, 10004]},
-            {"id": 1002, "title": "Lesson Three", "steps": [10005, 10006, 10007, 10008]},
+            {"id": 1002, "title": "Lesson Three", "steps": [10005, 10006, 10007, 10008, 10009]},
         ],
         "steps": [
             # text: every resource attribute, every way a url can be written (absolute,
@@ -55,6 +55,7 @@ def course_data():
                         '<img src="data:image/png;base64,abc">'
                         '<audio src="http://cdn.example.com/some_audio.mp3"></audio>'
                         '<audio src="//audio.example.com/some_recording.mp3"></audio>'
+                        '<video><source src="http://cdn.example.com/some_clip.mp4"></video>'
                         '<a href="http://cdn.example.com/some_notes.pdf">notes</a>'
                         '<a href="/lesson/some-lesson-42/step/3">the next step</a>'
                         '<a href="https://www.youtube.com/watch?v=some_video_id">the lecture</a>'
@@ -152,6 +153,16 @@ def course_data():
                     "options": {"is_multiple_choice": False},
                 },
             },
+            # pycharm: a statement with no description format at all
+            {
+                "id": 10009,
+                "position": 5,
+                "block": {
+                    "name": "pycharm",
+                    "text": "<p>Read the last one.</p>",
+                    "options": {"title": "Exercise 3"},
+                },
+            },
         ],
     }
 
@@ -181,6 +192,7 @@ LESSON_3_STEP_1 = "module_002_module-two/lesson_001_lesson-three/step_001_video"
 LESSON_3_STEP_2 = "module_002_module-two/lesson_001_lesson-three/step_002_pycharm"
 LESSON_3_STEP_3 = "module_002_module-two/lesson_001_lesson-three/step_003_pycharm"
 LESSON_3_STEP_4 = "module_002_module-two/lesson_001_lesson-three/step_004_number"
+LESSON_3_STEP_5 = "module_002_module-two/lesson_001_lesson-three/step_005_pycharm"
 
 ALL_STEPS = [
     LESSON_1_STEP_1,
@@ -192,9 +204,10 @@ ALL_STEPS = [
     LESSON_3_STEP_2,
     LESSON_3_STEP_3,
     LESSON_3_STEP_4,
+    LESSON_3_STEP_5,
 ]
 
-ATTACHMENT_FILE = f"{LESSON_1_STEP_1}/resource_5_some_notes.pdf"
+ATTACHMENT_FILE = f"{LESSON_1_STEP_1}/resource_6_some_notes.pdf"
 VIDEO_FILE = f"{LESSON_3_STEP_1}/video.mp4"
 
 EXPECTED_FILES = {
@@ -204,6 +217,7 @@ EXPECTED_FILES = {
     f"{LESSON_1_STEP_1}/resource_2_some_diagram.png",
     f"{LESSON_1_STEP_1}/resource_3_some_audio.mp3",
     f"{LESSON_1_STEP_1}/resource_4_some_recording.mp3",
+    f"{LESSON_1_STEP_1}/resource_5_some_clip.mp4",
     f"{LESSON_2_STEP_1}/resource_1_some_photo.png",
     ATTACHMENT_FILE,
     VIDEO_FILE,
@@ -237,10 +251,12 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     assert f"{LESSON_3_STEP_2}/index.html" in toc_html
     assert f"{LESSON_3_STEP_3}/index.html" in toc_html
     assert f"{LESSON_3_STEP_4}/index.html" in toc_html
+    assert f"{LESSON_3_STEP_5}/index.html" in toc_html
     assert "Step 10000 (text)" in toc_html
     assert "Step 10001 (code)" in toc_html
     assert "Exercise 1" in toc_html
     assert "Exercise 2" in toc_html
+    assert "Exercise 3" in toc_html
     assert "Step 10005 (video)" in toc_html
 
     text_html = (course_dir / LESSON_1_STEP_1 / "index.html").read_text()
@@ -251,7 +267,8 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     assert 'src="resource_2_some_diagram.png"' in text_html
     assert 'src="resource_3_some_audio.mp3"' in text_html
     assert 'src="resource_4_some_recording.mp3"' in text_html
-    assert 'href="resource_5_some_notes.pdf"' in text_html
+    assert 'src="resource_5_some_clip.mp4"' in text_html
+    assert 'href="resource_6_some_notes.pdf"' in text_html
     assert 'src="data:image/png;base64,abc"' in text_html
     assert 'href="https://www.youtube.com/watch?v=some_video_id"' in text_html
     assert 'href="https://stepik.org/lesson/some-lesson-42/step/3"' in text_html
@@ -299,6 +316,9 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     number_html = (course_dir / LESSON_3_STEP_4 / "index.html").read_text()
     assert "expects a typed answer" in number_html
 
+    no_format_html = (course_dir / LESSON_3_STEP_5 / "index.html").read_text()
+    assert "<p>Read the last one.</p>" in no_format_html
+
 
 def test_main_reports_the_step_and_warning_counts(tmp_path, monkeypatch, course_data, downloaded_urls, caplog):
     # The table step is the only one without a dedicated renderer, so it is the one warning.
@@ -307,7 +327,7 @@ def test_main_reports_the_step_and_warning_counts(tmp_path, monkeypatch, course_
 
     export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
 
-    assert "Steps exported: 9. Warnings: 1." in caplog.text
+    assert "Steps exported: 10. Warnings: 1." in caplog.text
 
 
 def test_main_counts_warnings_even_when_the_console_log_level_hides_them(
@@ -355,5 +375,6 @@ def test_main_respects_the_skip_flags(tmp_path, monkeypatch, course_data, downlo
         "https://stepik.org/media/attachments/lessons/460/some_diagram.png",
         "http://cdn.example.com/some_audio.mp3",
         "https://audio.example.com/some_recording.mp3",
+        "http://cdn.example.com/some_clip.mp4",
         "http://cdn.example.com/some_photo.png",
     ]
