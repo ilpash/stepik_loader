@@ -33,12 +33,8 @@ def client_without_token(tmp_path):
 
 
 @pytest.fixture
-def client_with_token(tmp_path):
-    client = StepikClient(
-        client_id="test-client-id",
-        client_secret="test-client-secret",
-        token_cache_path=tmp_path / "cache.json",
-    )
+def client_with_token(client_without_token):
+    client = client_without_token
     client._access_token = "test-token"
     client._token_expires_at = time.time() + 3600
     return client
