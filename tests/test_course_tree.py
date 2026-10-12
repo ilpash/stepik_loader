@@ -54,8 +54,9 @@ def test_dir_name_applies_prefix():
     assert _dir_name(1, "Intro", prefix="module_") == "module_001_intro"
 
 
-def test_dir_name_falls_back_to_untitled_when_title_missing():
+def test_dir_name_falls_back_to_untitled_without_a_usable_title():
     assert _dir_name(1, None) == "001_untitled"
+    assert _dir_name(1, "!!!") == "001_untitled"
 
 
 def test_dir_name_transliterates_cyrillic_title():

@@ -15,7 +15,7 @@ DIR_INDEX_WIDTH = 3
 
 
 def _slug(title):
-    return slugify(title or "untitled", max_length=MAX_SLUG_LEN)
+    return slugify(title or "", max_length=MAX_SLUG_LEN) or "untitled"
 
 
 def _dir_name(position, title, prefix=""):
