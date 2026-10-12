@@ -38,9 +38,10 @@ def test_pick_video_url_best_picks_highest_quality():
     assert _pick_video_url(urls, "best", "test-context") == _video_url("1080")
 
 
-def test_pick_video_url_exact_string_match():
+def test_pick_video_url_exact_match(caplog):
     urls = [_video_url("360"), _video_url("720"), _video_url("1080")]
     assert _pick_video_url(urls, "720", "test-context") == _video_url("720")
+    assert "not available" not in caplog.text
 
 
 def test_pick_video_url_falls_back_to_nearest_when_exact_missing(caplog):

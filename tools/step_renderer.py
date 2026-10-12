@@ -105,10 +105,6 @@ def _pick_video_url(urls, requested, log_label):
     if requested == "best":
         return max(urls, key=quality_to_int)
 
-    for url_entry in urls:
-        if str(url_entry.get("quality")) == requested:
-            return url_entry
-
     target = int(requested)
 
     def distance_from_target(url_entry):
@@ -116,12 +112,13 @@ def _pick_video_url(urls, requested, log_label):
         return abs(quality - target) if quality >= 0 else math.inf
 
     closest = min(urls, key=distance_from_target)
-    logger.warning(
-        "[%s] requested video quality %s not available, using %s instead",
-        log_label,
-        requested,
-        closest.get("quality"),
-    )
+    if quality_to_int(closest) != target:
+        logger.warning(
+            "[%s] requested video quality %s not available, using %s instead",
+            log_label,
+            requested,
+            closest.get("quality"),
+        )
     return closest
 
 
