@@ -323,7 +323,7 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
 def test_main_counts_warnings_even_when_the_console_log_level_hides_them(
     tmp_path, monkeypatch, course_data, downloaded_urls, caplog
 ):
-    # Matches a fresh process, which starts with no root handler.
+    # Raise the root level: the warnings are then counted only if the stepik_export logger sets its own level.
     caplog.set_level(logging.CRITICAL)
     monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
 
