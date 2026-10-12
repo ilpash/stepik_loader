@@ -25,12 +25,12 @@ def mock_resolve():
 # -- _pick_video_url ---------------------------------------------------------
 
 
-def test_pick_video_url_returns_none_for_empty_list():
-    assert _pick_video_url([], "best", "test-context") is None
-
-
 def _video_url(quality):
     return {"quality": quality, "url": f"https://cdn.example.com/lecture-{quality}.mp4"}
+
+
+def test_pick_video_url_returns_none_for_empty_list():
+    assert _pick_video_url([], "best", "test-context") is None
 
 
 def test_pick_video_url_best_picks_highest_quality():
