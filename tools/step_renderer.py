@@ -13,7 +13,6 @@ links to web pages keep the URL the course author wrote.
 import json
 import logging
 import math
-import mimetypes
 import os
 from dataclasses import dataclass
 from html import escape
@@ -60,7 +59,7 @@ def _is_downloadable_file(url):
     # web page to keep as a link, and the media type of its path tells the two apart.
     # img/audio/source always point at media and never reach this check, so an image
     # still downloads when Stepik serves it from an extensionless URL.
-    guessed_type, _ = mimetypes.guess_type(urlparse(url).path)
+    guessed_type, _ = resource_downloader.BUILTIN_MIME_TYPES.guess_type(urlparse(url).path)
     return bool(guessed_type and guessed_type != "text/html")
 
 

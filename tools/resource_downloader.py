@@ -32,6 +32,8 @@ MAX_FILENAME_SUFFIX_LEN = 10
 # to anything outside this set.
 STEPIK_AUTH_HOSTS = {"stepik.org", "www.stepik.org"}
 
+BUILTIN_MIME_TYPES = mimetypes.MimeTypes()
+
 # This session never has a default Authorization header, unlike StepikClient's.
 _download_session = requests.Session()
 
@@ -46,7 +48,7 @@ def safe_filename(url):
 def _name_from_content_type(filename, content_type):
     if Path(filename).suffix:
         return filename
-    extension = mimetypes.guess_extension(content_type) if content_type else None
+    extension = BUILTIN_MIME_TYPES.guess_extension(content_type) if content_type else None
     return filename + extension if extension else filename
 
 
