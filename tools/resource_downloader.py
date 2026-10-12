@@ -56,7 +56,7 @@ def _write_stream(response, dest_path):
             for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
                 if chunk:
                     destination.write(chunk)
-    except OSError:
+    except BaseException:
         # Don't leave a truncated file behind for this attempt.
         dest_path.unlink(missing_ok=True)
         raise
