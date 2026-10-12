@@ -6,6 +6,7 @@ caching, batched ids[] lookups, and a small hand-rolled retry/backoff loop
 for transient failures (429 / 5xx / connection errors).
 """
 
+import itertools
 import json
 import os
 import time
@@ -154,10 +155,8 @@ class StepikClient:
         Batches the ids to keep each query string small. The order of the
         returned objects is not guaranteed.
         """
-        ids = list(ids)
         results = []
-        for i in range(0, len(ids), batch_size):
-            batch = ids[i : i + batch_size]
+        for batch in itertools.batched(ids, batch_size):
             params = [("ids[]", str(id_)) for id_ in batch]
             data = self.get(resource, params=params)
             results.extend(data.get(resource, []))
