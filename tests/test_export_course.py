@@ -1,3 +1,7 @@
+import errno
+import logging
+from unittest.mock import MagicMock
+
 import pytest
 import requests
 
@@ -108,37 +112,74 @@ def test_main_warns_when_the_course_has_no_steps(tmp_path, monkeypatch, caplog):
     assert "has no steps to export" in caplog.text
 
 
-def test_main_propagates_unexpected_error_from_render_phase(tmp_path, monkeypatch):
-    # Only fetch failures are caught and turned into exit code 1; render-phase errors propagate as-is.
-    tree = {
+@pytest.fixture
+def two_step_tree():
+    return {
         "id": 1,
         "title": "Course",
         "dir_name": "1_course",
         "modules": [
             {
-                "dir_name": "module_001_module-one",
+                "id": 10,
+                "position": 1,
                 "title": "Module",
+                "dir_name": "module_001_module",
                 "lessons": [
                     {
                         "id": 1000,
-                        "dir_name": "lesson_001_lesson-one",
+                        "position": 1,
                         "title": "Lesson",
-                        "steps": [{"id": 10000, "dir_name": "step_001_text"}],
+                        "dir_name": "lesson_001_lesson",
+                        "steps": [
+                            {"id": 10000, "position": 1, "title": "First step", "dir_name": "step_001_text"},
+                            {"id": 10001, "position": 2, "title": "Second step", "dir_name": "step_002_text"},
+                        ],
                     }
                 ],
             }
         ],
     }
 
-    def mock_build_course_tree(client, course_id):
-        return tree
 
+def test_main_skips_a_step_it_cannot_write(tmp_path, monkeypatch, caplog, two_step_tree):
+    caplog.set_level(logging.INFO, logger="stepik_export")
+    mock_render_step = MagicMock(side_effect=[OSError(errno.EACCES, "Permission denied"), None])
+    monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
+    monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
+    monkeypatch.setattr(export_course, "render_step", mock_render_step)
+
+    exit_code = export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
+
+    assert exit_code == 0
+    assert mock_render_step.call_count == 2
+    assert "could not write the step, skipping it" in caplog.text
+    assert "Steps exported: 1. Warnings: 1." in caplog.text
+    toc_html = (tmp_path / "1_course" / "index.html").read_text()
+    assert "1. First step (not exported)" in toc_html
+
+
+def test_main_stops_when_the_disk_is_full(tmp_path, monkeypatch, caplog, two_step_tree):
+    mock_render_step = MagicMock(side_effect=OSError(errno.ENOSPC, "No space left on device"))
+    monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
+    monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
+    monkeypatch.setattr(export_course, "render_step", mock_render_step)
+
+    exit_code = export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
+
+    assert exit_code == 1
+    assert mock_render_step.call_count == 1
+    assert "The disk is full, stopping the export" in caplog.text
+    assert not (tmp_path / "1_course" / "index.html").exists()
+
+
+def test_main_propagates_unexpected_error_from_render_phase(tmp_path, monkeypatch, two_step_tree):
+    # Fetch failures and disk errors are handled; any other render-phase error propagates as-is.
     def raise_render_error(*args, **kwargs):
-        raise RuntimeError("disk write failed")
+        raise RuntimeError("unexpected render error")
 
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
-    monkeypatch.setattr(export_course, "build_course_tree", mock_build_course_tree)
+    monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
     monkeypatch.setattr(export_course, "render_step", raise_render_error)
 
-    with pytest.raises(RuntimeError, match="disk write failed"):
+    with pytest.raises(RuntimeError, match="unexpected render error"):
         export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])

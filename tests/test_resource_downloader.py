@@ -127,17 +127,16 @@ def test_download_resource_removes_partial_file_when_stream_breaks(tmp_path, moc
     assert list(tmp_path.iterdir()) == []
 
 
-def test_download_resource_removes_partial_file_when_the_disk_write_fails(tmp_path, mock_session_get, no_sleep):
-    # A failed write is reported as a miss like any other, so one unwritable file
-    # can't take the whole export down with it.
+def test_download_resource_raises_on_the_first_failed_disk_write(tmp_path, mock_session_get):
     class UnwritableStreamResponse(MockStreamResponse):
         def iter_content(self, chunk_size):
             yield b"first half"
             raise OSError("no space left on device")
 
     mock_session_get.return_value = UnwritableStreamResponse(200)
-    result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
-    assert result is None
+    with pytest.raises(OSError, match="no space left on device"):
+        download_resource("http://example.com/notes.txt", tmp_path, "test-context")
+    assert mock_session_get.call_count == 1
     assert list(tmp_path.iterdir()) == []
 
 

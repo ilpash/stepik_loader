@@ -49,7 +49,7 @@ def sample_course_tree():
 
 
 def test_build_toc_creates_assets_dir_and_copies_style_css(tmp_path, sample_course_tree):
-    build_toc(sample_course_tree, tmp_path)
+    build_toc(sample_course_tree, tmp_path, set())
 
     copied_css = (tmp_path / "assets" / "style.css").read_text()
     original_css = (TEMPLATES_DIR / "style.css").read_text()
@@ -57,7 +57,7 @@ def test_build_toc_creates_assets_dir_and_copies_style_css(tmp_path, sample_cour
 
 
 def test_build_toc_writes_index_html_with_course_title_and_modules(tmp_path, sample_course_tree):
-    build_toc(sample_course_tree, tmp_path)
+    build_toc(sample_course_tree, tmp_path, set())
 
     html = (tmp_path / "index.html").read_text()
     assert "Sample Course" in html
@@ -73,3 +73,11 @@ def test_build_toc_writes_index_html_with_course_title_and_modules(tmp_path, sam
         href = f"{module['dir_name']}/{lesson['dir_name']}/{step['dir_name']}/index.html"
         assert href in html
         assert step["title"] in html
+
+
+def test_build_toc_lists_a_skipped_step_without_a_link(tmp_path, sample_course_tree):
+    build_toc(sample_course_tree, tmp_path, {10001})
+
+    html = (tmp_path / "index.html").read_text()
+    assert "3. Third Step (not exported)" in html
+    assert "step_003_text" not in html

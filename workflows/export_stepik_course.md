@@ -34,6 +34,9 @@ that course under `exports/<course_id>_<slug>/`, following the
 3. Watch the console output. It prints one line per step as it's processed, and
    `WARNING` lines for anything that failed or fell back to a generic
    renderer — each warning is tagged with `course=... lesson=... step=...`.
+   A step that can't be written to disk is skipped with a warning and listed as
+   "not exported" in the table of contents. A full disk stops the export with an
+   `ERROR` line; free some space and run it again.
 4. When it finishes, at the default `--log-level` it prints `Steps exported: N.
    Warnings: M.` followed by the path to the root `index.html`. Open that file
    to sanity-check the export.

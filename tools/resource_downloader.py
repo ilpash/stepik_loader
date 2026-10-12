@@ -4,9 +4,9 @@ step's own directory. Uses a session completely separate from the Stepik API
 client, and only ever attaches the Stepik Authorization header when the
 resource host is actually stepik.org -- third-party CDNs never see it.
 
-A single resource failure is caught, logged as a warning tagged with the
-log label (course/lesson/step id), and reported as a miss (None) --
-it never aborts the export.
+A failed download is caught, logged as a warning tagged with the log label
+(course/lesson/step id), and reported as a miss (None). An error writing the
+file to disk is raised to the caller instead.
 """
 
 import logging
@@ -56,7 +56,7 @@ def _write_stream(response, dest_path):
             for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
                 if chunk:
                     destination.write(chunk)
-    except (requests.RequestException, OSError):
+    except OSError:
         # Don't leave a truncated file behind for this attempt.
         dest_path.unlink(missing_ok=True)
         raise
@@ -92,7 +92,7 @@ def download_resource(url, dest_dir, log_label, access_token=None, filename_hint
                     _write_stream(response, dest_path)
                     logger.info("  downloaded %s", dest_path.name)
                     return dest_path.name
-        except (requests.RequestException, OSError) as exc:
+        except requests.RequestException as exc:
             last_error = exc
 
         backoff_sleep(attempt)

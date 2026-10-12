@@ -11,7 +11,7 @@ from pathlib import Path
 from template_env import TEMPLATES_DIR, get_template
 
 
-def build_toc(course_tree, course_dir):
+def build_toc(course_tree, course_dir, skipped_step_ids):
     course_dir = Path(course_dir)
     assets_dir = course_dir / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
@@ -22,6 +22,7 @@ def build_toc(course_tree, course_dir):
         course_id=course_tree["id"],
         export_date=datetime.now().strftime("%Y-%m-%d"),
         modules=course_tree["modules"],
+        skipped_step_ids=skipped_step_ids,
         css_path="assets/style.css",
     )
     (course_dir / "index.html").write_text(html, encoding="utf-8")

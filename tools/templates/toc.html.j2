@@ -18,7 +18,11 @@
     <h3>{{ lesson.position }}. {{ lesson.title }}</h3>
     <ul class="toc-steps">
       {% for step in lesson.steps %}
+      {% if step.id in skipped_step_ids %}
+      <li>{{ step.position }}. {{ step.title }} (not exported)</li>
+      {% else %}
       <li><a href="{{ module.dir_name }}/{{ lesson.dir_name }}/{{ step.dir_name }}/index.html">{{ step.position }}. {{ step.title }}</a></li>
+      {% endif %}
       {% endfor %}
     </ul>
   </div>

@@ -9,6 +9,7 @@ Usage:
 """
 
 import argparse
+import errno
 import logging
 import sys
 from pathlib import Path
@@ -20,6 +21,8 @@ from course_tree import build_course_tree
 from step_renderer import StepContext, render_step
 from stepik_client import StepikAuthError, StepikClient
 from toc_builder import build_toc
+
+DISK_FULL_ERROR_CODES = {errno.ENOSPC, errno.EDQUOT}
 
 
 class WarningCounter(logging.Handler):
@@ -95,6 +98,7 @@ def main(argv=None):
     if not total_steps:
         logger.warning("Course %s has no steps to export.", args.course_id)
     done = 0
+    skipped_step_ids = set()
 
     for module in tree["modules"]:
         module_dir = course_dir / module["dir_name"]
@@ -124,10 +128,17 @@ def main(argv=None):
                     skip_videos=args.skip_videos,
                     skip_attachments=args.skip_attachments,
                 )
-                render_step(step, step_dir, context)
+                try:
+                    render_step(step, step_dir, context)
+                except OSError as exc:
+                    if exc.errno in DISK_FULL_ERROR_CODES:
+                        logger.error("The disk is full, stopping the export: %s", exc)
+                        return 1
+                    logger.warning("[%s] could not write the step, skipping it: %s", context.log_label(step["id"]), exc)
+                    skipped_step_ids.add(step["id"])
 
-    build_toc(tree, course_dir)
-    logger.info("Steps exported: %d. Warnings: %d.", total_steps, warning_counter.count)
+    build_toc(tree, course_dir, skipped_step_ids)
+    logger.info("Steps exported: %d. Warnings: %d.", total_steps - len(skipped_step_ids), warning_counter.count)
     logger.info("Done. Open %s in a browser.", course_dir / "index.html")
     return 0
 
