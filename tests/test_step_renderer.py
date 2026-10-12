@@ -114,9 +114,9 @@ def test_render_text_rewrites_img_src_via_resolve(mock_resolve):
 
 
 def test_render_text_skips_non_http_src(mock_resolve):
-    block = {"text": '<img src="data:image/png;base64,abc">'}
+    block = {"text": '<img src="data:image/png;base64,some_image_data">'}
     html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
-    assert "data:image/png;base64,abc" in html
+    assert "data:image/png;base64,some_image_data" in html
     assert mock_resolve.call_count == 0
 
 

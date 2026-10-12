@@ -52,7 +52,7 @@ def course_data():
                     "text": (
                         '<img src="http://cdn.example.com/some_picture.png">'
                         '<img src="/media/attachments/lessons/460/some_diagram.png">'
-                        '<img src="data:image/png;base64,abc">'
+                        '<img src="data:image/png;base64,some_image_data">'
                         '<audio src="http://cdn.example.com/some_audio.mp3"></audio>'
                         '<audio src="//audio.example.com/some_recording.mp3"></audio>'
                         '<video><source src="http://cdn.example.com/some_clip.mp4"></video>'
@@ -269,7 +269,7 @@ def test_main_exports_full_course_tree_to_disk(tmp_path, monkeypatch, course_dat
     assert 'src="resource_4_some_recording.mp3"' in text_html
     assert 'src="resource_5_some_clip.mp4"' in text_html
     assert 'href="resource_6_some_notes.pdf"' in text_html
-    assert 'src="data:image/png;base64,abc"' in text_html
+    assert 'src="data:image/png;base64,some_image_data"' in text_html
     assert 'href="https://www.youtube.com/watch?v=some_video_id"' in text_html
     assert 'href="https://stepik.org/lesson/some-lesson-42/step/3"' in text_html
 

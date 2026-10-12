@@ -64,7 +64,7 @@ class MockClientWithToken:
 
 def test_main_returns_1_when_auth_fails(monkeypatch):
     def raise_auth_error(*args, **kwargs):
-        raise StepikAuthError("no creds")
+        raise StepikAuthError("STEPIK_CLIENT_ID / STEPIK_CLIENT_SECRET are not set.")
 
     monkeypatch.setattr(export_course, "StepikClient", raise_auth_error)
     assert export_course.main(["--course-id", "1"]) == 1

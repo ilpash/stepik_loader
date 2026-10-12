@@ -76,7 +76,7 @@ def test_download_resource_omits_auth_header_for_non_stepik_host(tmp_path, mock_
 
 
 def test_download_resource_guesses_extension_from_content_type_when_hint_has_no_suffix(tmp_path, mock_session_get):
-    mock_session_get.return_value = MockStreamResponse(200, chunks=[b"x"], headers={"Content-Type": "video/mp4"})
+    mock_session_get.return_value = MockStreamResponse(200, chunks=[b"video"], headers={"Content-Type": "video/mp4"})
     result = download_resource("http://example.com/video", tmp_path, "test-context", filename_hint="video")
     assert result == "video.mp4"
 
