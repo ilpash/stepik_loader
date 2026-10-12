@@ -26,9 +26,9 @@ The code follows the WAT pattern described in [CLAUDE.md](CLAUDE.md):
   `tools/step_renderer.py` and update the README's "Scope" section. A quiz-like
   type that only needs its question plus a note about what can't be shown
   offline just needs an entry in `_TYPE_TO_QUIZ_NOTE`.
-- If you touch retry/backoff or auth logic in `tools/stepik_client.py`, note
-  any new rate-limit or API quirks you discover — future contributors will
-  hit the same thing.
+- If you touch retry/backoff logic in `tools/retry.py` or auth logic in
+  `tools/stepik_client.py`, note any new rate-limit or API quirks you discover —
+  future contributors will hit the same thing.
 
 ## Testing
 
