@@ -1,7 +1,7 @@
 """
-One full-pipeline smoke test: export_course.main() end to end, with the
-Stepik API and all network downloads mocked, proving the whole tree-build ->
-render -> TOC pipeline actually produces a correct offline folder on disk.
+End-to-end tests of export_course.main(), with the Stepik API and all network
+downloads mocked: one long basic-case export of a course that covers every
+renderer, plus tests for the export options.
 """
 
 import logging
