@@ -1,7 +1,7 @@
 import pytest
 
 from conftest import MockStepikClient
-from course_tree import MAX_SLUG_LEN, CourseNotFoundError, _dir_name, build_course_tree
+from course_tree import CourseNotFoundError, _dir_name, build_course_tree
 
 
 @pytest.fixture
@@ -62,9 +62,7 @@ def test_dir_name_transliterates_cyrillic_title():
 
 
 def test_dir_name_truncates_slug_to_max_length():
-    long_title = "word " * 30
-    slug = _dir_name("lesson_", 1, long_title).split("_", 2)[2]
-    assert len(slug) <= MAX_SLUG_LEN
+    assert _dir_name("lesson_", 1, "word " * 30) == "lesson_001_word-word-word-word-word-word-word-word-word-word"
 
 
 def test_build_course_tree_basic_case(mock_client_data):
@@ -234,8 +232,7 @@ def test_build_course_tree_truncates_course_slug(minimal_mock_client_data):
     client = MockStepikClient(minimal_mock_client_data)
     tree = build_course_tree(client, 1)
 
-    slug = tree["dir_name"].split("_", 1)[1]
-    assert len(slug) <= MAX_SLUG_LEN
+    assert tree["dir_name"] == "1_word-word-word-word-word-word-word-word-word-word"
 
 
 def test_build_course_tree_keeps_sort_order_for_a_large_lesson(minimal_mock_client_data):
