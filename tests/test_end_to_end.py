@@ -348,6 +348,7 @@ def test_main_respects_skip_videos_and_skip_attachments_flags(tmp_path, monkeypa
     assert 'href="https://stepik.org/lesson/some-lesson-42/step/3"' in text_html
 
     video_html = (course_dir / LESSON_3_STEP_1 / "index.html").read_text()
+    assert '<video controls src="http://cdn.example.com/vid-1080.mp4"></video>' in video_html
     assert "Video download skipped" in video_html
     assert downloaded_urls == [
         "http://cdn.example.com/some_picture.png",

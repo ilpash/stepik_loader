@@ -368,15 +368,16 @@ def test_render_pycharm_renders_a_statement_when_the_step_has_no_files(mock_reso
 # -- _render_video --------------------------------------------------------------
 
 
-def test_render_video_returns_warning_html_when_skip_videos_true(mock_resolve):
+def test_render_video_links_the_online_video_when_skip_videos_true(mock_resolve):
     html = _render_video(
-        block={"video": {"urls": [{"quality": "720", "url": "x"}]}},
+        block={"video": {"urls": [{"quality": "720", "url": "https://cdn.example.com/lecture.mp4"}]}},
         resolve=mock_resolve,
         log_label="test-context",
         quality="best",
         skip_videos=True,
     )
-    assert "skipped" in html
+    assert '<video controls src="https://cdn.example.com/lecture.mp4"></video>' in html
+    assert "Video download skipped" in html
     assert mock_resolve.call_count == 0
 
 

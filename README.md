@@ -36,7 +36,7 @@ credentials**) and put its ID/secret into `.env`.
 Options:
 - `--output-dir exports` (default) — where the course folder is created.
 - `--video-quality best|360|720|1080` (default `best`).
-- `--skip-videos` / `--skip-attachments` — skip those downloads.
+- `--skip-videos` / `--skip-attachments` — skip those downloads and keep the online links instead.
 - `--log-level INFO` (default).
 
 The result is `exports/<course_id>_<slug>/` — a fully self-contained folder.
