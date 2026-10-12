@@ -406,7 +406,7 @@ def test_render_video_basic_case(mock_resolve):
     mock_resolve.assert_called_once_with("https://cdn.example.com/lecture.mp4", "video.mp4")
 
 
-def test_render_video_returns_warning_when_resolve_fails(mock_resolve):
+def test_render_video_links_the_online_video_when_the_download_fails(mock_resolve):
     mock_resolve.return_value = None
     block = {"video": {"urls": [{"quality": "720", "url": "https://cdn.example.com/lecture.mp4"}]}}
 
@@ -417,7 +417,8 @@ def test_render_video_returns_warning_when_resolve_fails(mock_resolve):
         quality="best",
         skip_videos=False,
     )
-    assert "download failed" in html.lower()
+    assert '<video controls src="https://cdn.example.com/lecture.mp4"></video>' in html
+    assert "Video download failed" in html
 
 
 # -- render_step (integration of the above via the real resolve() closure) -----

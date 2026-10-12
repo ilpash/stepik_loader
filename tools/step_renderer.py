@@ -137,7 +137,11 @@ def _render_video(block, resolve, log_label, quality, skip_videos):
 
     local = resolve(selected["url"], "video.mp4")
     if not local:
-        return '<p class="warning">Video download failed. See the export log for details.</p>'
+        return (
+            f'<video controls src="{escape(selected["url"])}"></video>'
+            '<p class="warning">Video download failed, so it plays only when you are online. '
+            "See the export log for details.</p>"
+        )
     return f'<video controls src="{escape(local)}"></video>'
 
 
