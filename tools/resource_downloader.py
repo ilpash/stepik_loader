@@ -70,9 +70,8 @@ def download_resource(url, dest_dir, log_label, access_token=None, filename_hint
     dest_dir = Path(dest_dir)
     dest_dir.mkdir(parents=True, exist_ok=True)
 
-    host = urlparse(url).hostname or ""
     headers = {}
-    if access_token and host in STEPIK_AUTH_HOSTS:
+    if access_token and urlparse(url).hostname in STEPIK_AUTH_HOSTS:
         headers["Authorization"] = f"Bearer {access_token}"
 
     # safe_filename() also sanitizes a caller-supplied hint (basename-only,
