@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+import export_course
 import resource_downloader
 
 
@@ -11,6 +12,11 @@ def no_sleep(monkeypatch):
     mock_sleep = MagicMock()
     monkeypatch.setattr(time, "sleep", mock_sleep)
     return mock_sleep
+
+
+@pytest.fixture(autouse=True)
+def no_dotenv(monkeypatch):
+    monkeypatch.setattr(export_course, "load_dotenv", MagicMock())
 
 
 @pytest.fixture
