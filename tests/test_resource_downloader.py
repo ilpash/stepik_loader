@@ -102,6 +102,7 @@ def test_download_resource_returns_none_on_non_retryable_http_error(tmp_path, mo
     mock_session_get.return_value = MockStreamResponse(404)
     result = download_resource("http://example.com/missing.txt", tmp_path, "test-context")
     assert result is None
+    assert mock_session_get.call_count == 1
     assert list(tmp_path.iterdir()) == []
 
 
