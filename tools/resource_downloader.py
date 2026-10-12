@@ -34,7 +34,6 @@ STEPIK_AUTH_HOSTS = {"stepik.org", "www.stepik.org"}
 
 BUILTIN_MIME_TYPES = mimetypes.MimeTypes()
 
-# This session never has a default Authorization header, unlike StepikClient's.
 _download_session = requests.Session()
 
 
