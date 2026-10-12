@@ -82,7 +82,7 @@ class StepikClient:
                 continue
 
             if response.status_code in RETRYABLE_STATUS_CODES:
-                last_error = StepikAuthError(f"HTTP {response.status_code} from {AUTH_URL}")
+                last_error = requests.HTTPError(f"HTTP {response.status_code} from {AUTH_URL}")
                 backoff_sleep(attempt)
                 continue
             if response.status_code != 200:
