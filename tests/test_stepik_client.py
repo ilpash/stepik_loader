@@ -326,24 +326,12 @@ def test_request_raises_on_non_retryable_status(client_with_token, no_sleep, mon
 # -- get / get_by_ids ----------------------------------------------------------
 
 
-def test_get_returns_parsed_json(client_with_token, monkeypatch):
-    def mock_request(method, url, **kwargs):
-        return MockResponse(200, json_data={"sample_key": "sample_value"})
-
+def test_get_basic_case(client_with_token, monkeypatch):
+    mock_request = MagicMock(return_value=MockResponse(200, json_data={"sample_key": "sample_value"}))
     monkeypatch.setattr(client_with_token, "_request", mock_request)
-    assert client_with_token.get("some/path") == {"sample_key": "sample_value"}
 
-
-def test_get_builds_url_relative_to_api_base(client_with_token, monkeypatch):
-    recorded = {}
-
-    def mock_request(method, url, **kwargs):
-        recorded["url"] = url
-        return MockResponse(200, json_data={})
-
-    monkeypatch.setattr(client_with_token, "_request", mock_request)
-    client_with_token.get("some/path")
-    assert recorded["url"] == stepik_client.API_BASE + "some/path"
+    assert client_with_token.get("some/path", params=[("ids[]", "1")]) == {"sample_key": "sample_value"}
+    mock_request.assert_called_once_with("GET", stepik_client.API_BASE + "some/path", params=[("ids[]", "1")])
 
 
 def test_get_by_ids_batches_requests(client_with_token, monkeypatch):
