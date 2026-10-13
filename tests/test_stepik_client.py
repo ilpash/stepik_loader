@@ -278,6 +278,7 @@ def test_request_refreshes_token_once_on_401_first_attempt(client_with_token, no
     result = client_with_token._request("GET", "http://example.com")
     assert result.status_code == 200
     assert mock_fetch_new_token.call_count == 1
+    assert mock_request.call_args.kwargs["headers"]["Authorization"] == "Bearer new-token"
     assert no_sleep.call_count == 0
 
 
@@ -296,6 +297,7 @@ def test_request_refreshes_token_on_401_after_a_retryable_failure(client_with_to
     result = client_with_token._request("GET", "http://example.com")
     assert result.status_code == 200
     assert mock_fetch_new_token.call_count == 1
+    assert mock_request.call_args.kwargs["headers"]["Authorization"] == "Bearer new-token"
     assert no_sleep.call_count == 1
 
 
