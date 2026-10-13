@@ -74,10 +74,10 @@ def test_main_stops_when_auth_fails(monkeypatch, caplog):
 def test_main_stops_when_the_course_is_not_found(monkeypatch, caplog):
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
 
-    def raise_fetch_error(client, course_id):
+    def raise_not_found_error(client, course_id):
         raise CourseNotFoundError("course not found or not accessible")
 
-    monkeypatch.setattr(export_course, "build_course_tree", raise_fetch_error)
+    monkeypatch.setattr(export_course, "build_course_tree", raise_not_found_error)
     assert export_course.main(["--course-id", "1"]) == 1
     assert "Failed to fetch course 1 (course not found or not accessible)" in caplog.text
 
