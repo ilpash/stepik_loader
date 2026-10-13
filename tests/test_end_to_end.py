@@ -321,6 +321,7 @@ def test_main_counts_warnings_even_when_the_console_log_level_hides_them(
 
     export_course.main(["--course-id", "1", "--output-dir", str(tmp_path), "--log-level", "ERROR"])
 
+    assert export_course.console_handler.level == logging.ERROR
     assert export_course.warning_counter.count == 1
 
 
