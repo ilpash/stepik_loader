@@ -58,26 +58,38 @@ def test_safe_filename_truncates_an_unusually_long_extension_too():
 
 def test_download_resource_basic_case(tmp_path, mock_session_get):
     mock_session_get.return_value = MockStreamResponse(200, chunks=[b"hello"])
-    result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
+    result = download_resource(
+        "http://example.com/notes.txt", tmp_path, "test-context", access_token="test-token", filename_hint="notes.txt"
+    )
     assert result == "notes.txt"
     assert (tmp_path / "notes.txt").read_bytes() == b"hello"
 
 
 def test_download_resource_attaches_auth_header_for_stepik_host(tmp_path, mock_session_get):
     mock_session_get.return_value = MockStreamResponse(200)
-    download_resource("https://stepik.org/media/notes.txt", tmp_path, "test-context", access_token="test-token")
+    download_resource(
+        "https://stepik.org/media/notes.txt",
+        tmp_path,
+        "test-context",
+        access_token="test-token",
+        filename_hint="notes.txt",
+    )
     assert mock_session_get.call_args.kwargs["headers"].get("Authorization") == "Bearer test-token"
 
 
 def test_download_resource_omits_auth_header_for_non_stepik_host(tmp_path, mock_session_get):
     mock_session_get.return_value = MockStreamResponse(200)
-    download_resource("https://example.com/notes.txt", tmp_path, "test-context", access_token="test-token")
+    download_resource(
+        "https://example.com/notes.txt", tmp_path, "test-context", access_token="test-token", filename_hint="notes.txt"
+    )
     assert "Authorization" not in mock_session_get.call_args.kwargs["headers"]
 
 
 def test_download_resource_guesses_extension_from_content_type_when_hint_has_no_suffix(tmp_path, mock_session_get):
     mock_session_get.return_value = MockStreamResponse(200, chunks=[b"video"], headers={"Content-Type": "video/mp4"})
-    result = download_resource("http://example.com/video", tmp_path, "test-context", filename_hint="video")
+    result = download_resource(
+        "http://example.com/video", tmp_path, "test-context", access_token="test-token", filename_hint="video"
+    )
     assert result == "video.mp4"
 
 
@@ -85,14 +97,22 @@ def test_download_resource_overwrites_a_file_from_an_earlier_run(tmp_path, mock_
     # The hint has no extension, so it becomes "video.mp4", which this directory already has.
     (tmp_path / "video.mp4").write_bytes(b"existing file")
     mock_session_get.return_value = MockStreamResponse(200, chunks=[b"new"], headers={"Content-Type": "video/mp4"})
-    result = download_resource("http://example.com/video", tmp_path, "test-context", filename_hint="video")
+    result = download_resource(
+        "http://example.com/video", tmp_path, "test-context", access_token="test-token", filename_hint="video"
+    )
     assert result == "video.mp4"
     assert (tmp_path / "video.mp4").read_bytes() == b"new"
 
 
 def test_download_resource_saves_nothing_when_the_server_sends_a_web_page(tmp_path, mock_session_get, caplog):
     mock_session_get.return_value = MockStreamResponse(200, headers={"Content-Type": "text/html; charset=utf-8"})
-    result = download_resource("https://github.com/some_user/some_repo/blob/main/solution.py", tmp_path, "test-context")
+    result = download_resource(
+        "https://github.com/some_user/some_repo/blob/main/solution.py",
+        tmp_path,
+        "test-context",
+        access_token="test-token",
+        filename_hint="solution.py",
+    )
     assert result is None
     assert list(tmp_path.iterdir()) == []
     assert "returned a web page" in caplog.text
@@ -100,7 +120,13 @@ def test_download_resource_saves_nothing_when_the_server_sends_a_web_page(tmp_pa
 
 def test_download_resource_returns_none_on_non_retryable_http_error(tmp_path, mock_session_get, caplog):
     mock_session_get.return_value = MockStreamResponse(404)
-    result = download_resource("http://example.com/missing.txt", tmp_path, "test-context")
+    result = download_resource(
+        "http://example.com/missing.txt",
+        tmp_path,
+        "test-context",
+        access_token="test-token",
+        filename_hint="missing.txt",
+    )
     assert result is None
     assert mock_session_get.call_count == 1
     assert list(tmp_path.iterdir()) == []
@@ -109,7 +135,9 @@ def test_download_resource_returns_none_on_non_retryable_http_error(tmp_path, mo
 
 def test_download_resource_retries_on_retryable_status_then_succeeds(tmp_path, mock_session_get, no_sleep):
     mock_session_get.side_effect = [MockStreamResponse(503), MockStreamResponse(200, chunks=[b"ok"])]
-    result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
+    result = download_resource(
+        "http://example.com/notes.txt", tmp_path, "test-context", access_token="test-token", filename_hint="notes.txt"
+    )
     assert mock_session_get.call_count == 2
     assert result == "notes.txt"
     assert (tmp_path / "notes.txt").read_bytes() == b"ok"
@@ -118,7 +146,9 @@ def test_download_resource_retries_on_retryable_status_then_succeeds(tmp_path, m
 
 def test_download_resource_returns_none_after_exhausting_retries(tmp_path, mock_session_get, no_sleep, caplog):
     mock_session_get.return_value = MockStreamResponse(503)
-    result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
+    result = download_resource(
+        "http://example.com/notes.txt", tmp_path, "test-context", access_token="test-token", filename_hint="notes.txt"
+    )
     assert result is None
     assert mock_session_get.call_count == resource_downloader.MAX_ATTEMPTS
     assert no_sleep.call_count == resource_downloader.MAX_ATTEMPTS - 1
@@ -135,7 +165,9 @@ def test_download_resource_removes_partial_file_when_stream_breaks(tmp_path, moc
             raise requests.ConnectionError("stream dropped")
 
     mock_session_get.return_value = BrokenStreamResponse(200)
-    result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
+    result = download_resource(
+        "http://example.com/notes.txt", tmp_path, "test-context", access_token="test-token", filename_hint="notes.txt"
+    )
     assert result is None
     assert list(tmp_path.iterdir()) == []
 
@@ -148,7 +180,13 @@ def test_download_resource_raises_on_the_first_failed_disk_write(tmp_path, mock_
 
     mock_session_get.return_value = UnwritableStreamResponse(200)
     with pytest.raises(OSError, match="no space left on device"):
-        download_resource("http://example.com/notes.txt", tmp_path, "test-context")
+        download_resource(
+            "http://example.com/notes.txt",
+            tmp_path,
+            "test-context",
+            access_token="test-token",
+            filename_hint="notes.txt",
+        )
     assert mock_session_get.call_count == 1
     assert list(tmp_path.iterdir()) == []
 
@@ -161,11 +199,19 @@ def test_download_resource_removes_partial_file_when_interrupted(tmp_path, mock_
 
     mock_session_get.return_value = InterruptedStreamResponse(200)
     with pytest.raises(KeyboardInterrupt):
-        download_resource("http://example.com/notes.txt", tmp_path, "test-context")
+        download_resource(
+            "http://example.com/notes.txt",
+            tmp_path,
+            "test-context",
+            access_token="test-token",
+            filename_hint="notes.txt",
+        )
     assert list(tmp_path.iterdir()) == []
 
 
 def test_download_resource_returns_none_on_connection_error(tmp_path, mock_session_get):
     mock_session_get.side_effect = requests.ConnectionError("connection refused")
-    result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
+    result = download_resource(
+        "http://example.com/notes.txt", tmp_path, "test-context", access_token="test-token", filename_hint="notes.txt"
+    )
     assert result is None

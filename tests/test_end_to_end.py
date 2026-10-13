@@ -171,7 +171,7 @@ def course_data():
 def downloaded_urls(monkeypatch):
     urls = []
 
-    def mock_download_resource(url, dest_dir, log_label, access_token=None, filename_hint=None):
+    def mock_download_resource(url, dest_dir, log_label, access_token, filename_hint):
         urls.append(url)
         (Path(dest_dir) / filename_hint).write_bytes(b"placeholder")
         return filename_hint

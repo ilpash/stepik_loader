@@ -58,17 +58,17 @@ def _write_stream(response, dest_path):
         raise
 
 
-def download_resource(url, dest_dir, log_label, access_token=None, filename_hint=None):
+def download_resource(url, dest_dir, log_label, access_token, filename_hint):
     """
     Returns the local filename, or None if the download failed (logged as a warning).
     """
     headers = {}
-    if access_token and urlparse(url).hostname in STEPIK_AUTH_HOSTS:
+    if urlparse(url).hostname in STEPIK_AUTH_HOSTS:
         headers["Authorization"] = f"Bearer {access_token}"
 
     # safe_filename() also sanitizes a caller-supplied hint (basename-only,
     # allowed characters only), so a hint can never escape dest_dir.
-    filename = safe_filename(filename_hint or url)
+    filename = safe_filename(filename_hint)
 
     last_error = None
     for attempt in range(MAX_ATTEMPTS):
