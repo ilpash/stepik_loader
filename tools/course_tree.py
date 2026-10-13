@@ -19,7 +19,7 @@ class CourseNotFoundError(Exception):
 
 
 def _slug(title):
-    return slugify(title or "", max_length=MAX_SLUG_LEN) or "untitled"
+    return slugify(title, max_length=MAX_SLUG_LEN) or "untitled"
 
 
 def _dir_name(prefix, position, title):

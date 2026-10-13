@@ -51,7 +51,7 @@ def test_dir_name_basic_case():
 
 
 def test_dir_name_falls_back_to_untitled_without_a_usable_title():
-    assert _dir_name("lesson_", 1, None) == "lesson_001_untitled"
+    assert _dir_name("lesson_", 1, "") == "lesson_001_untitled"
     assert _dir_name("lesson_", 1, "!!!") == "lesson_001_untitled"
 
 
