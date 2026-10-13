@@ -191,22 +191,26 @@ def test_download_resource_raises_on_the_first_failed_disk_write(tmp_path, mock_
     assert list(tmp_path.iterdir()) == []
 
 
-def test_download_resource_removes_partial_file_when_interrupted(tmp_path, mock_session_get):
+def test_download_resource_removes_only_the_partial_file_when_interrupted(tmp_path, mock_session_get):
     class InterruptedStreamResponse(MockStreamResponse):
         def iter_content(self, chunk_size):
             yield b"first half"
             raise KeyboardInterrupt
 
-    mock_session_get.return_value = InterruptedStreamResponse(200)
+    mock_session_get.side_effect = [MockStreamResponse(200, chunks=[b"whole file"]), InterruptedStreamResponse(200)]
+    download_resource(
+        "http://example.com/first.txt", tmp_path, "test-context", access_token="test-token", filename_hint="first.txt"
+    )
     with pytest.raises(KeyboardInterrupt):
         download_resource(
-            "http://example.com/notes.txt",
+            "http://example.com/second.txt",
             tmp_path,
             "test-context",
             access_token="test-token",
-            filename_hint="notes.txt",
+            filename_hint="second.txt",
         )
-    assert list(tmp_path.iterdir()) == []
+    assert list(tmp_path.iterdir()) == [tmp_path / "first.txt"]
+    assert (tmp_path / "first.txt").read_bytes() == b"whole file"
 
 
 def test_download_resource_returns_none_on_connection_error(tmp_path, mock_session_get):
