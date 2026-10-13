@@ -179,7 +179,7 @@ def test_fetch_new_token_basic_case(client_without_token, monkeypatch):
     assert client_without_token.token_cache_path.exists()
 
 
-def test_fetch_new_token_raises_on_non_200(client_without_token, monkeypatch):
+def test_fetch_new_token_raises_on_non_retryable_status(client_without_token, monkeypatch):
     def mock_post(url, **kwargs):
         return MockResponse(403, text="shown " * 50 + "cut " * 100)
 
