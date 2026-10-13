@@ -130,19 +130,13 @@ def _render_video(block, resolve, log_label, quality, skip_videos):
         return '<p class="warning">Video unavailable: no downloadable URL was returned by the API.</p>'
 
     if skip_videos:
-        return (
-            f'<video controls src="{escape(selected["url"])}"></video>'
-            '<p class="warning">Video download skipped (--skip-videos), so it plays only when you are online.</p>'
-        )
-
-    local = resolve(selected["url"], "video.mp4")
-    if not local:
-        return (
-            f'<video controls src="{escape(selected["url"])}"></video>'
-            '<p class="warning">Video download failed, so it plays only when you are online. '
-            "See the export log for details.</p>"
-        )
-    return f'<video controls src="{escape(local)}"></video>'
+        note = "Video download skipped (--skip-videos), so it plays only when you are online."
+    else:
+        local = resolve(selected["url"], "video.mp4")
+        if local:
+            return f'<video controls src="{escape(local)}"></video>'
+        note = "Video download failed, so it plays only when you are online. See the export log for details."
+    return f'<video controls src="{escape(selected["url"])}"></video><p class="warning">{note}</p>'
 
 
 # Quiz steps keep their question text. Some also lose the items you would work with,
