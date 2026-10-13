@@ -94,6 +94,11 @@ def main(argv=None):
 
     course_dir = Path(args.output_dir) / tree["dir_name"]
     logger.info("Exporting '%s' to %s/", tree["title"], course_dir)
+    try:
+        course_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        logger.error("Could not create the export folder, stopping the export: %s", exc)
+        return 1
 
     steps = [
         (module, lesson, step) for module in tree["modules"] for lesson in module["lessons"] for step in lesson["steps"]
@@ -132,7 +137,11 @@ def main(argv=None):
             logger.warning("[%s] could not write the step, skipping it: %s", context.log_label(step["id"]), exc)
             skipped_step_ids.add(step["id"])
 
-    build_toc(tree, course_dir, skipped_step_ids)
+    try:
+        build_toc(tree, course_dir, skipped_step_ids)
+    except OSError as exc:
+        logger.error("Could not write the table of contents, stopping the export: %s", exc)
+        return 1
     logger.info("Steps exported: %d. Warnings: %d.", len(steps) - len(skipped_step_ids), warning_counter.count)
     logger.info("Done. Open %s in a browser.", course_dir / "index.html")
     return 0

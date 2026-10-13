@@ -188,6 +188,35 @@ def test_main_stops_when_the_disk_is_full(tmp_path, monkeypatch, caplog, two_ste
     assert not (tmp_path / "1_course" / "index.html").exists()
 
 
+def test_main_stops_when_the_export_folder_cannot_be_created(tmp_path, monkeypatch, caplog, two_step_tree):
+    not_a_folder = tmp_path / "not_a_folder.txt"
+    not_a_folder.write_text("")
+    mock_render_step = MagicMock()
+    monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
+    monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
+    monkeypatch.setattr(export_course, "render_step", mock_render_step)
+
+    exit_code = export_course.main(["--course-id", "1", "--output-dir", str(not_a_folder)])
+
+    assert exit_code == 1
+    assert mock_render_step.call_count == 0
+    assert "Could not create the export folder, stopping the export" in caplog.text
+
+
+def test_main_stops_when_the_table_of_contents_cannot_be_written(tmp_path, monkeypatch, caplog, two_step_tree):
+    mock_build_toc = MagicMock(side_effect=OSError(errno.ENOSPC, "No space left on device"))
+    monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
+    monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
+    monkeypatch.setattr(export_course, "render_step", MagicMock())
+    monkeypatch.setattr(export_course, "build_toc", mock_build_toc)
+
+    exit_code = export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
+
+    assert exit_code == 1
+    assert mock_build_toc.call_count == 1
+    assert "Could not write the table of contents, stopping the export" in caplog.text
+
+
 def test_main_stops_when_the_token_cannot_be_refreshed(tmp_path, monkeypatch, caplog, two_step_tree):
     mock_access_token = PropertyMock(side_effect=["mock-token", StepikAuthError("connection refused")])
     mock_render_step = MagicMock()

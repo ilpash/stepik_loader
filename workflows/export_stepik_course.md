@@ -36,7 +36,9 @@ that course under `exports/<course_id>_<slug>/`, following the
    renderer — each warning about a step is tagged with `course=... lesson=... step=...`.
    A step that can't be written to disk is skipped with a warning and listed as
    "not exported" in the table of contents. A full disk stops the export with an
-   `ERROR` line; free some space and run it again.
+   `ERROR` line; free some space and run it again. An export folder that can't be
+   created, or a table of contents that can't be written, also stops it with an
+   `ERROR` line.
 4. When it finishes, at the default `--log-level` it prints `Steps exported: N.
    Warnings: M.` followed by the path to the root `index.html`. Open that file
    to sanity-check the export.
