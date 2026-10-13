@@ -38,6 +38,6 @@ class MockStepikClient:
         self._data = data
         self.get_by_ids_calls = []
 
-    def get_by_ids(self, resource, ids, batch_size=30):
+    def get_by_ids(self, resource, ids):
         self.get_by_ids_calls.append((resource, list(ids)))
         return self._data[resource]

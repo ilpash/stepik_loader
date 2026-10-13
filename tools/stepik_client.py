@@ -24,6 +24,8 @@ DEFAULT_TOKEN_CACHE = Path(__file__).resolve().parent.parent / "stepik_token.jso
 # A token this close to expiring counts as expired already.
 TOKEN_EXPIRY_MARGIN_SECONDS = 30
 
+IDS_BATCH_SIZE = 30
+
 
 class StepikAuthError(RuntimeError):
     pass
@@ -145,13 +147,13 @@ class StepikClient:
         response = self._request("GET", API_BASE + resource, params=params)
         return response.json()
 
-    def get_by_ids(self, resource, ids, batch_size=30):
+    def get_by_ids(self, resource, ids):
         """
         Batches the ids to keep each query string small. The order of the
         returned objects is not guaranteed.
         """
         results = []
-        for batch in itertools.batched(ids, batch_size):
+        for batch in itertools.batched(ids, IDS_BATCH_SIZE):
             params = [("ids[]", str(id_)) for id_ in batch]
             data = self.get(resource, params=params)
             results.extend(data.get(resource, []))
