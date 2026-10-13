@@ -376,7 +376,7 @@ def test_render_video_links_the_online_video_when_skip_videos_true(mock_resolve)
     assert mock_resolve.call_count == 0
 
 
-def test_render_video_returns_warning_when_no_urls(mock_resolve):
+def test_render_video_returns_warning_when_no_urls(mock_resolve, caplog):
     # urls=[] makes _pick_video_url return None, so _render_video returns
     # its "unavailable" warning before ever downloading anything.
     html = _render_video(
@@ -388,6 +388,7 @@ def test_render_video_returns_warning_when_no_urls(mock_resolve):
     )
     assert "unavailable" in html.lower()
     assert mock_resolve.call_count == 0
+    assert "[test-context] video step has no downloadable URLs" in caplog.text
 
 
 def test_render_video_basic_case(mock_resolve):

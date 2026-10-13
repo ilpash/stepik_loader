@@ -98,12 +98,13 @@ def test_download_resource_saves_nothing_when_the_server_sends_a_web_page(tmp_pa
     assert "returned a web page" in caplog.text
 
 
-def test_download_resource_returns_none_on_non_retryable_http_error(tmp_path, mock_session_get):
+def test_download_resource_returns_none_on_non_retryable_http_error(tmp_path, mock_session_get, caplog):
     mock_session_get.return_value = MockStreamResponse(404)
     result = download_resource("http://example.com/missing.txt", tmp_path, "test-context")
     assert result is None
     assert mock_session_get.call_count == 1
     assert list(tmp_path.iterdir()) == []
+    assert "failed to download http://example.com/missing.txt: HTTP 404" in caplog.text
 
 
 def test_download_resource_retries_on_retryable_status_then_succeeds(tmp_path, mock_session_get, no_sleep):
@@ -115,12 +116,16 @@ def test_download_resource_retries_on_retryable_status_then_succeeds(tmp_path, m
     assert no_sleep.call_count == 1
 
 
-def test_download_resource_returns_none_after_exhausting_retries(tmp_path, mock_session_get, no_sleep):
+def test_download_resource_returns_none_after_exhausting_retries(tmp_path, mock_session_get, no_sleep, caplog):
     mock_session_get.return_value = MockStreamResponse(503)
     result = download_resource("http://example.com/notes.txt", tmp_path, "test-context")
     assert result is None
     assert mock_session_get.call_count == resource_downloader.MAX_ATTEMPTS
     assert no_sleep.call_count == resource_downloader.MAX_ATTEMPTS - 1
+    assert (
+        f"failed to download http://example.com/notes.txt after {resource_downloader.MAX_ATTEMPTS} attempts"
+        in caplog.text
+    )
 
 
 def test_download_resource_removes_partial_file_when_stream_breaks(tmp_path, mock_session_get):
