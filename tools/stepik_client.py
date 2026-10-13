@@ -14,7 +14,7 @@ from pathlib import Path
 
 import requests
 
-from retry import MAX_ATTEMPTS, RETRYABLE_STATUS_CODES, backoff_sleep
+from retry import MAX_ATTEMPTS, RETRYABLE_STATUS_CODES, TIMEOUT_SECONDS, backoff_sleep
 
 API_BASE = "https://stepik.org/api/"
 AUTH_URL = "https://stepik.org/oauth2/token/"
@@ -76,7 +76,7 @@ class StepikClient:
                     AUTH_URL,
                     data={"grant_type": "client_credentials"},
                     auth=(self.client_id, self.client_secret),
-                    timeout=30,
+                    timeout=TIMEOUT_SECONDS,
                 )
             except requests.RequestException as exc:
                 last_error = exc
@@ -124,7 +124,7 @@ class StepikClient:
         token_refreshed = False
         for attempt in range(MAX_ATTEMPTS):
             try:
-                response = self.session.request(method, url, headers=headers, timeout=60, **kwargs)
+                response = self.session.request(method, url, headers=headers, timeout=TIMEOUT_SECONDS, **kwargs)
             except requests.RequestException as exc:
                 last_error = exc
             else:

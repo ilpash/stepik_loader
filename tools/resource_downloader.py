@@ -18,7 +18,7 @@ from urllib.parse import unquote, urlparse
 
 import requests
 
-from retry import MAX_ATTEMPTS, RETRYABLE_STATUS_CODES, backoff_sleep
+from retry import MAX_ATTEMPTS, RETRYABLE_STATUS_CODES, TIMEOUT_SECONDS, backoff_sleep
 
 logger = logging.getLogger("stepik_export")
 
@@ -73,7 +73,7 @@ def download_resource(url, dest_dir, log_label, access_token, filename_hint):
     last_error = None
     for attempt in range(MAX_ATTEMPTS):
         try:
-            with _download_session.get(url, headers=headers, stream=True, timeout=60) as response:
+            with _download_session.get(url, headers=headers, stream=True, timeout=TIMEOUT_SECONDS) as response:
                 if response.status_code in RETRYABLE_STATUS_CODES:
                     last_error = requests.HTTPError(f"HTTP {response.status_code} from {url}")
                 elif response.status_code >= 400:
