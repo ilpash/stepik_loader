@@ -98,7 +98,7 @@ class StepikClient:
         raise StepikAuthError(f"Failed to obtain Stepik access token after {MAX_ATTEMPTS} attempts: {last_error}")
 
     def _has_fresh_token(self):
-        return self._access_token and self._token_expires_at > time.time() + TOKEN_EXPIRY_MARGIN_SECONDS
+        return bool(self._access_token and self._token_expires_at > time.time() + TOKEN_EXPIRY_MARGIN_SECONDS)
 
     def _ensure_token(self):
         if self._has_fresh_token():
