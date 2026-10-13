@@ -88,11 +88,11 @@ def test_main_stops_when_credentials_are_rejected_while_fetching(monkeypatch, ca
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
 
     def raise_auth_error(client, course_id):
-        raise StepikAuthError("HTTP 401 from https://stepik.org/oauth2/token/")
+        raise StepikAuthError("Failed to obtain Stepik access token (HTTP 401): invalid_client")
 
     monkeypatch.setattr(export_course, "build_course_tree", raise_auth_error)
     assert export_course.main(["--course-id", "1"]) == 1
-    assert "Failed to fetch course 1 (HTTP 401 from https://stepik.org/oauth2/token/)" in caplog.text
+    assert "Failed to fetch course 1 (Failed to obtain Stepik access token (HTTP 401): invalid_client)" in caplog.text
 
 
 def test_main_stops_when_stepik_cannot_be_reached(monkeypatch, caplog):
