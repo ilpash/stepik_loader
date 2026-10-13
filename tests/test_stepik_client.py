@@ -267,8 +267,7 @@ def test_request_raises_after_exhausting_retries(client_with_token, no_sleep, mo
 
 
 def test_request_refreshes_token_once_on_401_first_attempt(client_with_token, no_sleep, monkeypatch):
-    responses = [MockResponse(401), MockResponse(200)]
-    mock_request = MagicMock(side_effect=responses)
+    mock_request = MagicMock(side_effect=[MockResponse(401), MockResponse(200)])
 
     def refresh_token():
         client_with_token._access_token = "new-token"
@@ -286,8 +285,7 @@ def test_request_refreshes_token_once_on_401_first_attempt(client_with_token, no
 
 
 def test_request_refreshes_token_on_401_after_a_retryable_failure(client_with_token, no_sleep, monkeypatch):
-    responses = [MockResponse(503), MockResponse(401), MockResponse(200)]
-    mock_request = MagicMock(side_effect=responses)
+    mock_request = MagicMock(side_effect=[MockResponse(503), MockResponse(401), MockResponse(200)])
 
     def refresh_token():
         client_with_token._access_token = "new-token"
