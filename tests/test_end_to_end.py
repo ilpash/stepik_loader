@@ -5,7 +5,6 @@ renderer, plus tests for the export options.
 """
 
 import logging
-from pathlib import Path
 
 import pytest
 
@@ -173,7 +172,7 @@ def downloaded_urls(monkeypatch):
 
     def mock_download_resource(url, dest_dir, log_label, access_token, filename_hint):
         urls.append(url)
-        (Path(dest_dir) / filename_hint).write_bytes(b"placeholder")
+        (dest_dir / filename_hint).write_bytes(b"placeholder")
         return filename_hint
 
     monkeypatch.setattr(resource_downloader, "download_resource", mock_download_resource)
