@@ -62,7 +62,8 @@ def test_dir_name_transliterates_cyrillic_title():
 
 
 def test_dir_name_truncates_slug_to_max_length():
-    assert _dir_name("lesson_", 1, "word " * 30) == "lesson_001_word-word-word-word-word-word-word-word-word-word"
+    # Cut at MAX_SLUG_LEN = 50 characters, right after the tenth "word-", and slugify drops that last "-".
+    assert _dir_name("lesson_", 1, "word " * 30) == "lesson_001_" + "word-" * 9 + "word"
 
 
 def test_build_course_tree_basic_case(mock_client_data):
@@ -236,7 +237,8 @@ def test_build_course_tree_truncates_course_slug(minimal_mock_client_data):
     client = MockStepikClient(minimal_mock_client_data)
     tree = build_course_tree(client, 1)
 
-    assert tree["dir_name"] == "1_word-word-word-word-word-word-word-word-word-word"
+    # Cut at MAX_SLUG_LEN = 50 characters, right after the tenth "word-", and slugify drops that last "-".
+    assert tree["dir_name"] == "1_" + "word-" * 9 + "word"
 
 
 def test_build_course_tree_keeps_sort_order_for_a_large_lesson(minimal_mock_client_data):
