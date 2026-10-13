@@ -172,8 +172,10 @@ def test_fetch_new_token_basic_case(client_without_token, monkeypatch):
         return MockResponse(200, json_data={"access_token": "fetched-token", "expires_in": 3600})
 
     monkeypatch.setattr(client_without_token.session, "post", mock_post)
+    before = time.time()
     client_without_token._fetch_new_token()
     assert client_without_token._access_token == "fetched-token"
+    assert before + 3600 <= client_without_token._token_expires_at <= time.time() + 3600
     assert client_without_token.token_cache_path.exists()
 
 
