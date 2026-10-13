@@ -48,14 +48,6 @@ def sample_course_tree():
     }
 
 
-def test_build_toc_copies_style_css(tmp_path, sample_course_tree):
-    build_toc(sample_course_tree, tmp_path, set())
-
-    copied_css = (tmp_path / "assets" / "style.css").read_text()
-    original_css = (TEMPLATES_DIR / "style.css").read_text()
-    assert copied_css == original_css
-
-
 def test_build_toc_basic_case(tmp_path, sample_course_tree):
     build_toc(sample_course_tree, tmp_path, set())
 
@@ -73,6 +65,10 @@ def test_build_toc_basic_case(tmp_path, sample_course_tree):
         href = f"{module['dir_name']}/{lesson['dir_name']}/{step['dir_name']}/index.html"
         assert href in html
         assert step["title"] in html
+
+    copied_css = (tmp_path / "assets" / "style.css").read_text()
+    original_css = (TEMPLATES_DIR / "style.css").read_text()
+    assert copied_css == original_css
 
 
 def test_build_toc_lists_a_skipped_step_without_a_link(tmp_path, sample_course_tree):
