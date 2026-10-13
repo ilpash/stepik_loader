@@ -181,11 +181,12 @@ def test_fetch_new_token_basic_case(client_without_token, monkeypatch):
 
 def test_fetch_new_token_raises_on_non_200(client_without_token, monkeypatch):
     def mock_post(url, **kwargs):
-        return MockResponse(403, text="denied")
+        return MockResponse(403, text="shown " * 50 + "cut " * 100)
 
     monkeypatch.setattr(client_without_token.session, "post", mock_post)
-    with pytest.raises(StepikAuthError):
+    with pytest.raises(StepikAuthError) as exc_info:
         client_without_token._fetch_new_token()
+    assert str(exc_info.value) == "Failed to obtain Stepik access token (HTTP 403): " + "shown " * 50
 
 
 def test_fetch_new_token_retries_on_retryable_status_then_succeeds(client_without_token, no_sleep, monkeypatch):
@@ -262,7 +263,7 @@ def test_request_raises_after_exhausting_retries(client_with_token, no_sleep, mo
     with pytest.raises(requests.HTTPError):
         client_with_token._request("GET", "http://example.com")
     assert mock_request.call_count == stepik_client.MAX_ATTEMPTS
-    assert no_sleep.call_count == stepik_client.MAX_ATTEMPTS - 1
+    assert no_sleep.call_args_list == [call(1), call(2), call(4), call(8)]
 
 
 def test_request_refreshes_token_once_on_401_first_attempt(client_with_token, no_sleep, monkeypatch):

@@ -168,7 +168,7 @@ def test_main_skips_a_step_it_cannot_write(tmp_path, monkeypatch, caplog, two_st
 
     assert exit_code == 0
     assert mock_render_step.call_count == 2
-    assert "could not write the step, skipping it" in caplog.text
+    assert "[course=1 lesson=1000 step=10000] could not write the step, skipping it" in caplog.text
     assert "Steps exported: 1. Warnings: 1." in caplog.text
     toc_html = (tmp_path / "1_course" / "index.html").read_text()
     assert "1. First step (not exported)" in toc_html

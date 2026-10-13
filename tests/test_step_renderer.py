@@ -243,6 +243,7 @@ def test_render_code_basic_case(mock_resolve):
     assert "Default limits: 5 s, 256 MB." in html
     assert "<summary>python3 — 1 s, 128 MB</summary>" in html
     assert "<summary>c++ — 2 s, 256 MB</summary>" in html
+    assert html.index("<summary>c++") < html.index("<summary>python3")
     # The C++ template's <iostream> becomes the entities &lt;iostream&gt;, so a
     # browser prints it as text instead of parsing it as a tag.
     assert "&lt;iostream&gt;" in html
@@ -364,14 +365,15 @@ def test_render_pycharm_renders_a_statement_when_the_step_has_no_files(mock_reso
 
 
 def test_render_video_links_the_online_video_when_skip_videos_true(mock_resolve):
+    video_url = "https://cdn.example.com/lecture.mp4?expires=some_time&signature=some_signature"
     html = _render_video(
-        block={"video": {"urls": [{"quality": "720", "url": "https://cdn.example.com/lecture.mp4"}]}},
+        block={"video": {"urls": [{"quality": "720", "url": video_url}]}},
         resolve=mock_resolve,
         log_label="test-context",
         quality="best",
         skip_videos=True,
     )
-    assert '<video controls src="https://cdn.example.com/lecture.mp4"></video>' in html
+    assert 'src="https://cdn.example.com/lecture.mp4?expires=some_time&amp;signature=some_signature"' in html
     assert "Video download skipped" in html
     assert mock_resolve.call_count == 0
 
