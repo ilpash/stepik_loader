@@ -23,9 +23,12 @@ The code follows the WAT pattern described in [CLAUDE.md](CLAUDE.md):
   should do that), only comments for non-obvious *why*. No speculative
   abstractions or config flags for hypothetical future needs.
 - If you add a new step block type renderer, dispatch it in `render_step` in
-  `tools/step_renderer.py` and update the README's "Scope" section. A quiz-like
-  type that only needs its question plus a note about what can't be shown
-  offline just needs an entry in `_TYPE_TO_QUIZ_NOTE`.
+  `tools/step_renderer.py`, and add the type to the three lists of supported
+  types: the README's "Scope" section, "Known limitations" in
+  `workflows/export_stepik_course.md`, and the `step_renderer` module
+  docstring. A quiz-like type that only needs its question plus a note about
+  what can't be shown offline just needs an entry in `_TYPE_TO_QUIZ_NOTE`, plus
+  the README and workflow lists.
 - If you touch retry/backoff logic in `tools/retry.py` or auth logic in
   `tools/stepik_client.py`, note any new rate-limit or API quirks you discover —
   future contributors will hit the same thing.
