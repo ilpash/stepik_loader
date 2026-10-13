@@ -32,8 +32,8 @@ The code follows the WAT pattern described in [CLAUDE.md](CLAUDE.md):
 
 ## Testing
 
-Run `pytest` (see README's Testing section for setup). Add tests alongside
-any behavioral change — see `tests/` for the existing patterns (mock
+Run `pytest` and both ruff commands from README's Testing section. Add tests
+alongside any behavioral change — see `tests/` for the existing patterns (mock
 `StepikClient`/`resolve` doubles, `tmp_path` for filesystem assertions, no
 real network calls).
 

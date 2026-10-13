@@ -48,6 +48,8 @@ directly in a browser; it has no dependency on this project's code.
 ```
 .venv/bin/pip install -r requirements-dev.txt
 .venv/bin/pytest
+.venv/bin/ruff check .
+.venv/bin/ruff format --check .
 ```
 
 The suite uses mocked HTTP responses throughout — it never touches the
