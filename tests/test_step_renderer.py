@@ -428,7 +428,13 @@ def test_render_video_links_the_online_video_when_the_download_fails(mock_resolv
 
 
 def _make_step_node(block, step_id=1):
-    return {"id": step_id, "title": "Step title", "block": block, "raw": {"id": step_id, "block": block}}
+    return {
+        "id": step_id,
+        "title": "Step title",
+        "block_type": block["name"],
+        "block": block,
+        "raw": {"id": step_id, "block": block},
+    }
 
 
 def _render_step_into(step_dir, step_node):

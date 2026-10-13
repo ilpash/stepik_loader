@@ -52,6 +52,7 @@ def _build_lesson_node(lesson, position, step_id_to_step):
                 "position": step["position"],
                 "title": title,
                 "dir_name": _dir_name("step_", step["position"], block_type),
+                "block_type": block_type,
                 "block": block,
                 "raw": step,
             }
