@@ -2,7 +2,7 @@
 CLI entrypoint: exports a Stepik course to a self-contained offline copy.
 
 Usage:
-    python tools/export_course.py --course-id 12345 [--output-dir exports/]
+    python tools/export_course.py --course-id 12345 [--output-dir exports]
         [--video-quality best|360|720|1080] [--skip-videos] [--skip-attachments]
         [--log-level INFO]
 """
