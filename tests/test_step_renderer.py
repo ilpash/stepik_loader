@@ -431,7 +431,7 @@ def _make_step_node(block, step_id=1):
     return {"id": step_id, "title": "Step title", "block": block, "raw": {"id": step_id, "block": block}}
 
 
-def _render_step_into(step_dir, step_node, **context_overrides):
+def _render_step_into(step_dir, step_node):
     context = StepContext(
         course_id=1,
         course_title="Course",
@@ -441,7 +441,6 @@ def _render_step_into(step_dir, step_node, **context_overrides):
         lesson_title="Lesson",
         video_quality="best",
         access_token="test-token",
-        **context_overrides,
     )
     render_step(step_node, step_dir, context)
 
