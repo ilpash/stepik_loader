@@ -4,11 +4,11 @@ The project's single Jinja environment for rendering its HTML templates.
 
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 
-_env = Environment(loader=FileSystemLoader(TEMPLATES_DIR), autoescape=True)
+_env = Environment(loader=FileSystemLoader(TEMPLATES_DIR), autoescape=True, undefined=StrictUndefined)
 
 
 def get_template(name):
