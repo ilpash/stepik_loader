@@ -481,7 +481,7 @@ def test_render_video_links_the_online_video_when_the_download_fails(mock_resolv
     assert "Video download failed" in html
 
 
-# -- render_step (integration of the above via the real resolve() closure) -----
+# -- render_step ---------------------------------------------------------------
 
 
 def _make_step_node(block, step_id=1):

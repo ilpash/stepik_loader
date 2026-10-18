@@ -56,7 +56,7 @@ def test_parse_args_reads_every_option():
     assert args.log_level == "DEBUG"
 
 
-# -- main error paths ----------------------------------------------------------
+# -- main ----------------------------------------------------------------------
 
 
 class MockClientWithToken:

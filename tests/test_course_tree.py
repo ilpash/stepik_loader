@@ -46,6 +46,9 @@ def mock_client_data():
     }
 
 
+# -- _dir_name -----------------------------------------------------------------
+
+
 def test_dir_name_basic_case():
     assert _dir_name("module_", 3, "Hello World!") == "module_003_hello-world"
 
@@ -64,6 +67,9 @@ def test_dir_name_transliterates_cyrillic_title():
 def test_dir_name_truncates_slug_to_max_length():
     # Cut at MAX_SLUG_LEN = 50 characters, right after the tenth "word-", and slugify drops that last "-".
     assert _dir_name("lesson_", 1, "word " * 30) == "lesson_001_" + "word-" * 9 + "word"
+
+
+# -- build_course_tree ---------------------------------------------------------
 
 
 def test_build_course_tree_basic_case(mock_client_data):
