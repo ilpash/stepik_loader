@@ -16,7 +16,9 @@ def no_sleep(monkeypatch):
 
 @pytest.fixture(autouse=True)
 def no_dotenv(monkeypatch):
-    monkeypatch.setattr(export_course, "load_dotenv", MagicMock())
+    mock_load_dotenv = MagicMock()
+    monkeypatch.setattr(export_course, "load_dotenv", mock_load_dotenv)
+    return mock_load_dotenv
 
 
 @pytest.fixture
