@@ -388,8 +388,9 @@ def test_render_pycharm_marks_a_file_the_course_hides(mock_resolve):
     assert "class Tests" in html
 
 
-def test_render_pycharm_notes_a_file_with_no_content(mock_resolve):
-    block = {"name": "pycharm", "text": "", "options": {"files": [{"name": "src/Empty.kt", "text": ""}]}}
+@pytest.mark.parametrize("file_text", ["", "\n"])
+def test_render_pycharm_notes_a_file_with_no_content(file_text, mock_resolve):
+    block = {"name": "pycharm", "text": "", "options": {"files": [{"name": "src/Empty.kt", "text": file_text}]}}
     html = _render_pycharm(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "<h3>src/Empty.kt</h3>" in html
     assert "This file is empty." in html
