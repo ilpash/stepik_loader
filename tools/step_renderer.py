@@ -204,7 +204,7 @@ def _render_code_templates(options):
         parts.append(f"<details><summary>{label}</summary><pre><code>{escape(source)}</code></pre></details>")
     if not parts:
         return ""
-    return "".join(["<h2>Starter code</h2>", *parts])
+    return "<h2>Starter code</h2>" + "".join(parts)
 
 
 def _render_code(block, resolve, skip_attachments):
