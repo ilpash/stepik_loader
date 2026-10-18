@@ -97,7 +97,7 @@ def _build_module_node(section, unit_id_to_unit, lesson_id_to_lesson, step_id_to
 def build_course_tree(client, course_id):
     courses = client.get_by_ids("courses", [course_id])
     if not courses:
-        raise CourseNotFoundError(f"Course {course_id} not found or not accessible with current auth scope")
+        raise CourseNotFoundError("Stepik returned no course with this id")
     course = courses[0]
 
     section_ids = course.get("sections", [])

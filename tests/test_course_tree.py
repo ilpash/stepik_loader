@@ -264,5 +264,5 @@ def test_build_course_tree_keeps_sort_order_for_a_large_lesson(minimal_mock_clie
 
 def test_build_course_tree_raises_when_course_not_found():
     client = MockStepikClient({"courses": []})
-    with pytest.raises(CourseNotFoundError, match="not found or not accessible"):
+    with pytest.raises(CourseNotFoundError, match="Stepik returned no course with this id"):
         build_course_tree(client, 1)
