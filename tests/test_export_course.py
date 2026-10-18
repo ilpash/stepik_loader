@@ -219,9 +219,15 @@ def test_main_stops_when_the_table_of_contents_cannot_be_written(tmp_path, monke
     assert "Could not write the table of contents, stopping the export" in caplog.text
 
 
-def test_main_stops_when_the_token_cannot_be_refreshed(tmp_path, monkeypatch, caplog, two_step_tree):
-    token_error = "Failed to obtain Stepik access token after 5 attempts: connection refused"
-    mock_access_token = PropertyMock(side_effect=["mock-token", StepikAuthError(token_error)])
+@pytest.mark.parametrize(
+    "token_error",
+    [
+        StepikAuthError("Failed to obtain Stepik access token after 5 attempts: connection refused"),
+        requests.JSONDecodeError("Expecting value", "<html>", 0),
+    ],
+)
+def test_main_stops_when_the_token_cannot_be_refreshed(token_error, tmp_path, monkeypatch, caplog, two_step_tree):
+    mock_access_token = PropertyMock(side_effect=["mock-token", token_error])
     mock_render_step = MagicMock()
     monkeypatch.setattr(MockClientWithToken, "access_token", mock_access_token)
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
