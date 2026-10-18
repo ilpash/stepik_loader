@@ -52,9 +52,9 @@ def test_pick_video_url_falls_back_to_nearest_when_exact_missing(caplog):
 
 
 def test_pick_video_url_skips_an_entry_with_an_unreadable_quality():
-    urls = [_video_url(None), _video_url("360")]
-    result = _pick_video_url(urls, "720", "test-log-label")
-    assert result == _video_url("360")
+    urls = [_video_url(None), _video_url("1080")]
+    result = _pick_video_url(urls, "360", "test-log-label")
+    assert result == _video_url("1080")
 
 
 # -- pure block renderers ------------------------------------------------------
