@@ -330,11 +330,12 @@ def test_render_pycharm_basic_case(mock_resolve):
     assert "not available offline" in html
 
 
-def test_render_pycharm_converts_a_markdown_statement_to_html(mock_resolve):
+@pytest.mark.parametrize("description_format", ["MD", "md"])
+def test_render_pycharm_converts_a_markdown_statement_to_html(description_format, mock_resolve):
     block = {
         "name": "pycharm",
         "text": "## Objects\n\nExamples accompanying the atom.\n\n```kotlin\nfun main() {\n    println(1)\n}\n```",
-        "options": {"description_format": "MD"},
+        "options": {"description_format": description_format},
     }
     html = _render_pycharm(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "<h2>Objects</h2>" in html
