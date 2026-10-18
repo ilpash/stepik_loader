@@ -37,26 +37,24 @@ def _resolve_ids_to_items(owner_label, kind, ids, id_to_item):
     return sorted(items, key=lambda item: item["position"])
 
 
+def _build_step_node(step):
+    block = step.get("block", {})
+    block_type = block.get("name", "unknown")
+    # A step keeps its name under options, and most types have no name at all
+    step_title = block.get("options", {}).get("title", f"Step {step['id']} ({block_type})")
+    return {
+        "id": step["id"],
+        "position": step["position"],
+        "title": step_title,
+        "dir_name": _dir_name("step_", step["position"], block_type),
+        "block_type": block_type,
+        "block": block,
+        "raw": step,
+    }
+
+
 def _build_lesson_node(lesson, position, step_id_to_step):
     lesson_steps = _resolve_ids_to_items(f"lesson {lesson['id']}", "step", lesson.get("steps", []), step_id_to_step)
-
-    steps = []
-    for step in lesson_steps:
-        block = step.get("block", {})
-        block_type = block.get("name", "unknown")
-        # A step keeps its name under options, and most types have no name at all
-        step_title = block.get("options", {}).get("title", f"Step {step['id']} ({block_type})")
-        steps.append(
-            {
-                "id": step["id"],
-                "position": step["position"],
-                "title": step_title,
-                "dir_name": _dir_name("step_", step["position"], block_type),
-                "block_type": block_type,
-                "block": block,
-                "raw": step,
-            }
-        )
 
     title = lesson.get("title", "")
     return {
@@ -64,7 +62,7 @@ def _build_lesson_node(lesson, position, step_id_to_step):
         "position": position,
         "title": title,
         "dir_name": _dir_name("lesson_", position, title),
-        "steps": steps,
+        "steps": [_build_step_node(step) for step in lesson_steps],
     }
 
 
