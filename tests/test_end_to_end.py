@@ -68,7 +68,10 @@ def course_data():
                 "position": 1,
                 "block": {
                     "name": "choice",
-                    "text": '<img src="http://cdn.example.com/some_photo.png"><p>Mark every true statement.</p>',
+                    "text": (
+                        '<img src="http://cdn.example.com/some_photo.png"><p>Mark every true statement.</p>'
+                        '<a href="http://cdn.example.com/some_handout.pdf">the handout</a>'
+                    ),
                     "options": {"is_multiple_choice": True},
                 },
             },
@@ -78,7 +81,10 @@ def course_data():
                 "position": 2,
                 "block": {
                     "name": "code",
-                    "text": r'<p>Print the sum <span class="math-tex">\( a + b \)</span>.</p>',
+                    "text": (
+                        r'<p>Print the sum <span class="math-tex">\( a + b \)</span>.</p>'
+                        '<a href="http://cdn.example.com/some_statement.pdf">the statement</a>'
+                    ),
                     "options": {
                         "samples": [["7 3", "10"], ["1 2", "3"]],
                         "execution_time_limit": 5,
@@ -134,6 +140,7 @@ def course_data():
                     "text": (
                         "## Objects\n\nExamples accompanying the atom.\n\n```kotlin\nval atom = 42\n```"
                         "\n\n| Input | Output |\n|-------|--------|\n| 1 | 2 |"
+                        "\n\nSee [the guide](http://cdn.example.com/some_guide.pdf)."
                     ),
                     "options": {
                         "title": "Exercise 1",
@@ -230,7 +237,12 @@ ALL_STEPS = [
     LESSON_3_STEP_6,
 ]
 
-ATTACHMENT_FILE = f"{LESSON_1_STEP_1}/resource_6_some_notes.pdf"
+ATTACHMENT_FILES = {
+    f"{LESSON_1_STEP_1}/resource_6_some_notes.pdf",
+    f"{LESSON_2_STEP_1}/resource_2_some_handout.pdf",
+    f"{LESSON_2_STEP_2}/resource_1_some_statement.pdf",
+    f"{LESSON_3_STEP_2}/resource_1_some_guide.pdf",
+}
 VIDEO_FILES = {f"{LESSON_3_STEP_1}/video.mp4", f"{LESSON_3_STEP_6}/video.mp4"}
 
 EXPECTED_FILES = {
@@ -244,7 +256,7 @@ EXPECTED_FILES = {
     f"{LESSON_1_STEP_1}/resource_4_some_recording.mp3",
     f"{LESSON_1_STEP_1}/resource_5_some_clip.mp4",
     f"{LESSON_2_STEP_1}/resource_1_some_photo.png",
-    ATTACHMENT_FILE,
+    *ATTACHMENT_FILES,
     *VIDEO_FILES,
     *(f"{step}/index.html" for step in ALL_STEPS),
     *(f"{step}/source.json" for step in ALL_STEPS),
@@ -401,7 +413,7 @@ def test_main_respects_the_skip_flags(tmp_path, monkeypatch, course_data, downlo
 
     # The <a> (attachment) is skipped entirely, so no local file for it, but
     # the <img> and <audio> are untouched by --skip-attachments and still resolve.
-    assert _exported_files(course_dir) == EXPECTED_FILES - {ATTACHMENT_FILE, *VIDEO_FILES}
+    assert _exported_files(course_dir) == EXPECTED_FILES - {*ATTACHMENT_FILES, *VIDEO_FILES}
 
     text_html = (course_dir / LESSON_1_STEP_1 / "index.html").read_text()
     assert 'href="http://cdn.example.com/some_notes.pdf"' in text_html
