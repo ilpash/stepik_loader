@@ -27,9 +27,10 @@ def test_parse_args_applies_defaults():
     assert args.log_level == "INFO"
 
 
-def test_parse_args_rejects_invalid_video_quality():
+@pytest.mark.parametrize("option", [["--video-quality", "480"], ["--log-level", "TRACE"]])
+def test_parse_args_rejects_an_invalid_choice(option):
     with pytest.raises(SystemExit):
-        export_course.parse_args(["--course-id", "5", "--video-quality", "480"])
+        export_course.parse_args(["--course-id", "5", *option])
 
 
 def test_parse_args_reads_every_option():
