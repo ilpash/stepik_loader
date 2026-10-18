@@ -36,8 +36,8 @@ def course_data():
         ],
         "lessons": [
             {"id": 1000, "title": "Lesson One", "steps": [10000]},
-            {"id": 1001, "title": "Lesson Two", "steps": [10001, 10002, 10003, 10004]},
-            {"id": 1002, "title": "Lesson Three", "steps": [10005, 10006, 10007, 10008, 10009]},
+            {"id": 1001, "title": "Lesson Two", "steps": [10001, 10002, 10003, 10004, 10010]},
+            {"id": 1002, "title": "Lesson Three", "steps": [10005, 10006, 10007, 10008, 10009, 10011]},
         ],
         "steps": [
             # text: every resource attribute, every way a url can be written (absolute,
@@ -99,6 +99,16 @@ def course_data():
                 "id": 10004,
                 "position": 4,
                 "block": {"name": "table", "text": "<p>A table step.</p>", "options": {}},
+            },
+            # code: a single sample and template, and no default limits
+            {
+                "id": 10010,
+                "position": 5,
+                "block": {
+                    "name": "code",
+                    "text": "<p>Print the double.</p>",
+                    "options": {"samples": [["2", "4"]], "code_templates": {"python3": "n = int(input())"}},
+                },
             },
             # video: several qualities, so --video-quality best has something to choose between
             {
@@ -163,7 +173,16 @@ def course_data():
                 "block": {
                     "name": "pycharm",
                     "text": "<p>Read the last one.</p>",
-                    "options": {"title": "Exercise 3"},
+                    "options": {"title": "Exercise 3", "files": [{"name": "src/Main.kt", "text": "fun main() {}"}]},
+                },
+            },
+            # video: a single quality
+            {
+                "id": 10011,
+                "position": 6,
+                "block": {
+                    "name": "video",
+                    "video": {"urls": [{"quality": "720", "url": "http://cdn.example.com/single-quality-720.mp4"}]},
                 },
             },
         ],
@@ -188,11 +207,13 @@ LESSON_2_STEP_1 = "module_001_module-one/lesson_002_lesson-two/step_001_choice"
 LESSON_2_STEP_2 = "module_001_module-one/lesson_002_lesson-two/step_002_code"
 LESSON_2_STEP_3 = "module_001_module-one/lesson_002_lesson-two/step_003_sorting"
 LESSON_2_STEP_4 = "module_001_module-one/lesson_002_lesson-two/step_004_table"
+LESSON_2_STEP_5 = "module_001_module-one/lesson_002_lesson-two/step_005_code"
 LESSON_3_STEP_1 = "module_002_module-two/lesson_001_lesson-three/step_001_video"
 LESSON_3_STEP_2 = "module_002_module-two/lesson_001_lesson-three/step_002_pycharm"
 LESSON_3_STEP_3 = "module_002_module-two/lesson_001_lesson-three/step_003_pycharm"
 LESSON_3_STEP_4 = "module_002_module-two/lesson_001_lesson-three/step_004_number"
 LESSON_3_STEP_5 = "module_002_module-two/lesson_001_lesson-three/step_005_pycharm"
+LESSON_3_STEP_6 = "module_002_module-two/lesson_001_lesson-three/step_006_video"
 
 ALL_STEPS = [
     LESSON_1_STEP_1,
@@ -200,15 +221,17 @@ ALL_STEPS = [
     LESSON_2_STEP_2,
     LESSON_2_STEP_3,
     LESSON_2_STEP_4,
+    LESSON_2_STEP_5,
     LESSON_3_STEP_1,
     LESSON_3_STEP_2,
     LESSON_3_STEP_3,
     LESSON_3_STEP_4,
     LESSON_3_STEP_5,
+    LESSON_3_STEP_6,
 ]
 
 ATTACHMENT_FILE = f"{LESSON_1_STEP_1}/resource_6_some_notes.pdf"
-VIDEO_FILE = f"{LESSON_3_STEP_1}/video.mp4"
+VIDEO_FILES = {f"{LESSON_3_STEP_1}/video.mp4", f"{LESSON_3_STEP_6}/video.mp4"}
 
 EXPECTED_FILES = {
     "index.html",
@@ -220,7 +243,7 @@ EXPECTED_FILES = {
     f"{LESSON_1_STEP_1}/resource_5_some_clip.mp4",
     f"{LESSON_2_STEP_1}/resource_1_some_photo.png",
     ATTACHMENT_FILE,
-    VIDEO_FILE,
+    *VIDEO_FILES,
     *(f"{step}/index.html" for step in ALL_STEPS),
     *(f"{step}/source.json" for step in ALL_STEPS),
 }
@@ -238,10 +261,10 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert exit_code == 0
     assert no_dotenv.call_count == 1
     # The table step is the only one without a dedicated renderer, so it is the one warning.
-    assert "Steps exported: 10. Warnings: 1." in caplog.text
+    assert "Steps exported: 12. Warnings: 1." in caplog.text
 
     course_dir = tmp_path / "1_sample-course"
-    assert "[1/10] Module One > Lesson One > step 10000" in caplog.text
+    assert "[1/12] Module One > Lesson One > step 10000" in caplog.text
     assert f"Done. Open {course_dir / 'index.html'} in a browser." in caplog.text
     assert _exported_files(course_dir) == EXPECTED_FILES
 
@@ -296,6 +319,12 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     table_html = (course_dir / LESSON_2_STEP_4 / "index.html").read_text()
     assert "raw step data" in table_html
 
+    single_sample_html = (course_dir / LESSON_2_STEP_5 / "index.html").read_text()
+    assert "<pre><code>2</code></pre>" in single_sample_html
+    assert "<pre><code>4</code></pre>" in single_sample_html
+    assert "<summary>python3</summary>" in single_sample_html
+    assert "Default limits" not in single_sample_html
+
     # "best" quality has to pick 1080 out of the three the step offers
     assert "http://cdn.example.com/vid-1080.mp4" in downloaded_urls
     assert "http://cdn.example.com/vid-720.mp4" not in downloaded_urls
@@ -321,6 +350,10 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
 
     no_format_html = (course_dir / LESSON_3_STEP_5 / "index.html").read_text()
     assert "<p>Read the last one.</p>" in no_format_html
+    assert "<h3>src/Main.kt</h3>" in no_format_html
+
+    single_quality_html = (course_dir / LESSON_3_STEP_6 / "index.html").read_text()
+    assert '<video controls src="video.mp4"></video>' in single_quality_html
 
 
 def test_main_counts_warnings_even_when_the_console_log_level_hides_them(
@@ -365,7 +398,7 @@ def test_main_respects_the_skip_flags(tmp_path, monkeypatch, course_data, downlo
 
     # The <a> (attachment) is skipped entirely, so no local file for it, but
     # the <img> and <audio> are untouched by --skip-attachments and still resolve.
-    assert _exported_files(course_dir) == EXPECTED_FILES - {ATTACHMENT_FILE, VIDEO_FILE}
+    assert _exported_files(course_dir) == EXPECTED_FILES - {ATTACHMENT_FILE, *VIDEO_FILES}
 
     text_html = (course_dir / LESSON_1_STEP_1 / "index.html").read_text()
     assert 'href="http://cdn.example.com/some_notes.pdf"' in text_html
@@ -396,5 +429,5 @@ def test_main_overwrites_an_earlier_export(tmp_path, monkeypatch, course_data, d
     exit_code = export_course.main(argv)
 
     assert exit_code == 0
-    assert "Steps exported: 10. Warnings: 1." in caplog.text
+    assert "Steps exported: 12. Warnings: 1." in caplog.text
     assert "an earlier export" not in step_page.read_text()
