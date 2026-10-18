@@ -35,9 +35,9 @@ credentials**) and put its ID/secret into `.env`.
 
 Options:
 - `--output-dir exports` (default) — where the course folder is created.
-- `--video-quality best|360|720|1080` (default `best`).
+- `--video-quality best|360|720|1080` (default `best`) — preferred video resolution; if a video is not available in it, the closest one is used.
 - `--skip-videos` / `--skip-attachments` — skip those downloads and keep the online links instead.
-- `--log-level INFO` (default).
+- `--log-level DEBUG|INFO|WARNING|ERROR` (default `INFO`) — lowest log severity printed to the console.
 
 The result is `exports/<course_id>_<slug>/` — a fully self-contained folder.
 Copy it anywhere (another machine, a USB drive) and open its `index.html`
