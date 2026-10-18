@@ -222,6 +222,7 @@ def test_build_course_tree_skips_an_unresolved_lesson(mock_client_data, caplog):
 
 
 def test_build_course_tree_skips_an_unresolved_step(mock_client_data, caplog):
+    # Lesson Three's first step id is absent from the steps the API returned.
     mock_client_data["lessons"][2]["steps"] = [99999, 10003]
 
     client = MockStepikClient(mock_client_data)
