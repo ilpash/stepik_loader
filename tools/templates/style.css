@@ -102,6 +102,8 @@ summary {
 
 details pre { margin: 0 0.6rem 0.6rem; }
 
+.MJX_Assistive_MathML { display: none; }
+
 .warning {
   border: 1px solid var(--warning);
   background: var(--warning-bg);
