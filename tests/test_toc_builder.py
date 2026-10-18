@@ -7,7 +7,7 @@ from toc_builder import build_toc
 @pytest.fixture
 def sample_course_tree():
     """
-    A fixed nested dict matching build_course_tree's output shape.
+    The shape build_course_tree returns, with only the keys build_toc reads.
     """
     return {
         "id": 1,
