@@ -217,6 +217,13 @@ def test_render_text_keeps_an_anchor_that_points_at_a_web_page(page_url, mock_re
     assert mock_resolve.call_count == 0
 
 
+def test_render_text_keeps_an_anchor_without_a_link(mock_resolve):
+    block = {"text": '<a rel="nofollow">some contact</a>'}
+    html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
+    assert html == '<a rel="nofollow">some contact</a>'
+    assert mock_resolve.call_count == 0
+
+
 def test_render_text_downloads_an_image_from_an_extensionless_url(mock_resolve):
     # Stepik serves plenty of images from a URL with no extension. Only <a> hrefs are
     # filtered by media type, so an <img> downloads whatever its URL looks like.

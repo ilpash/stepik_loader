@@ -58,6 +58,7 @@ def course_data():
                         '<a href="http://cdn.example.com/some_notes.pdf">notes</a>'
                         '<a href="/lesson/some-lesson-42/step/3">the next step</a>'
                         '<a href="https://www.youtube.com/watch?v=some_video_id">the lecture</a>'
+                        '<a rel="nofollow">some contact</a>'
                     ),
                 },
             },
@@ -263,6 +264,7 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert 'src="data:image/png;base64,some_image_data"' in text_html
     assert 'href="https://www.youtube.com/watch?v=some_video_id"' in text_html
     assert 'href="https://stepik.org/lesson/some-lesson-42/step/3"' in text_html
+    assert '<a rel="nofollow">some contact</a>' in text_html
 
     choice_html = (course_dir / LESSON_2_STEP_1 / "index.html").read_text()
     assert "Mark every true statement." in choice_html
