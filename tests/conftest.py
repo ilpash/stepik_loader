@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 
 import export_course
+import stepik_client
 
 
 @pytest.fixture(autouse=True)
@@ -18,6 +19,13 @@ def no_dotenv(monkeypatch):
     mock_load_dotenv = MagicMock()
     monkeypatch.setattr(export_course, "load_dotenv", mock_load_dotenv)
     return mock_load_dotenv
+
+
+@pytest.fixture(autouse=True)
+def temporary_token_cache(tmp_path, monkeypatch):
+    token_cache = tmp_path / "stepik_token.json"
+    monkeypatch.setattr(stepik_client, "DEFAULT_TOKEN_CACHE", token_cache)
+    return token_cache
 
 
 class MockStepikClient:
