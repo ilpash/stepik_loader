@@ -75,3 +75,13 @@ def test_build_toc_lists_a_skipped_step_without_a_link(tmp_path, sample_course_t
     html = (tmp_path / "index.html").read_text()
     assert "3. Third Step (not exported)" in html
     assert "step_003_text" not in html
+
+
+def test_build_toc_escapes_html_in_the_course_title(tmp_path, sample_course_tree):
+    sample_course_tree["title"] = "<script>some_script()</script>"
+
+    build_toc(sample_course_tree, tmp_path, set())
+
+    html = (tmp_path / "index.html").read_text()
+    assert "<h1>&lt;script&gt;some_script()&lt;/script&gt;</h1>" in html
+    assert "<script>" not in html

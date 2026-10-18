@@ -497,6 +497,17 @@ def test_render_step_basic_case(tmp_path, mock_download_resource):
     assert source == step_node["raw"]
 
 
+def test_render_step_escapes_html_in_the_title(tmp_path, mock_download_resource):
+    step_dir = tmp_path / "step"
+    step_node = {**_make_step_node({"name": "text", "text": "hello"}), "title": "<script>some_script()</script>"}
+
+    _render_step_into(step_dir, step_node)
+
+    html = (step_dir / "index.html").read_text()
+    assert "<h1>&lt;script&gt;some_script()&lt;/script&gt;</h1>" in html
+    assert "<script>" not in html
+
+
 def test_render_step_dispatches_code_block_to_code_renderer(tmp_path, mock_download_resource, caplog):
     block = {
         "name": "code",
