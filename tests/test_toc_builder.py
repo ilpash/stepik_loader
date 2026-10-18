@@ -64,6 +64,7 @@ def test_build_toc_basic_case(tmp_path, sample_course_tree):
     for step in lesson["steps"]:
         assert f"{module['dir_name']}/{lesson['dir_name']}/{step['dir_name']}/index.html" in html
 
+    assert '<link rel="stylesheet" href="assets/style.css">' in html
     copied_css = (tmp_path / "assets" / "style.css").read_text()
     original_css = (TEMPLATES_DIR / "style.css").read_text()
     assert copied_css == original_css
