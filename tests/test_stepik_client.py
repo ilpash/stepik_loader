@@ -243,17 +243,22 @@ def test_fetch_new_token_retries_after_a_connection_error(client_without_token, 
     assert no_sleep.call_count == 1
 
 
-def test_fetch_new_token_raises_after_exhausting_retries(client_without_token, no_sleep, monkeypatch):
-    def mock_post(url, **kwargs):
-        return MockResponse(503)
-
+@pytest.mark.parametrize(
+    ("failure", "reason"),
+    [
+        ([MockResponse(503)] * stepik_client.MAX_ATTEMPTS, f"HTTP 503 from {stepik_client.AUTH_URL}"),
+        (requests.ConnectionError("connection refused"), "connection refused"),
+    ],
+)
+def test_fetch_new_token_raises_after_exhausting_retries(failure, reason, client_without_token, no_sleep, monkeypatch):
+    mock_post = MagicMock(side_effect=failure)
     monkeypatch.setattr(client_without_token.session, "post", mock_post)
     with pytest.raises(StepikAuthError) as exc_info:
         client_without_token._fetch_new_token()
     assert str(exc_info.value) == (
-        f"Failed to obtain Stepik access token after {stepik_client.MAX_ATTEMPTS} attempts: "
-        f"HTTP 503 from {stepik_client.AUTH_URL}"
+        f"Failed to obtain Stepik access token after {stepik_client.MAX_ATTEMPTS} attempts: {reason}"
     )
+    assert mock_post.call_count == stepik_client.MAX_ATTEMPTS
     assert no_sleep.call_count == stepik_client.MAX_ATTEMPTS - 1
 
 
@@ -293,12 +298,19 @@ def test_request_retries_after_a_connection_error(client_with_token, no_sleep, m
     assert no_sleep.call_count == 1
 
 
-def test_request_raises_after_exhausting_retries(client_with_token, no_sleep, monkeypatch):
-    mock_request = MagicMock(return_value=MockResponse(503))
+@pytest.mark.parametrize(
+    ("failure", "reason"),
+    [
+        ([MockResponse(503)] * stepik_client.MAX_ATTEMPTS, "HTTP 503 from http://example.com"),
+        (requests.ConnectionError("connection refused"), "connection refused"),
+    ],
+)
+def test_request_raises_after_exhausting_retries(failure, reason, client_with_token, no_sleep, monkeypatch):
+    mock_request = MagicMock(side_effect=failure)
     monkeypatch.setattr(client_with_token.session, "request", mock_request)
-    with pytest.raises(requests.HTTPError) as exc_info:
+    with pytest.raises(requests.RequestException) as exc_info:
         client_with_token._request("GET", "http://example.com")
-    assert str(exc_info.value) == "HTTP 503 from http://example.com"
+    assert str(exc_info.value) == reason
     assert mock_request.call_count == stepik_client.MAX_ATTEMPTS
     assert no_sleep.call_args_list == [call(1), call(2), call(4), call(8)]
 

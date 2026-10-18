@@ -161,8 +161,17 @@ def test_download_resource_retries_on_retryable_status_then_succeeds(tmp_path, m
     assert no_sleep.call_count == 1
 
 
-def test_download_resource_returns_none_after_exhausting_retries(tmp_path, mock_session_get, no_sleep, caplog):
-    mock_session_get.return_value = MockStreamResponse(503)
+@pytest.mark.parametrize(
+    ("failure", "reason"),
+    [
+        ([MockStreamResponse(503)] * resource_downloader.MAX_ATTEMPTS, "HTTP 503 from http://example.com/notes.txt"),
+        (requests.ConnectionError("connection refused"), "connection refused"),
+    ],
+)
+def test_download_resource_returns_none_after_exhausting_retries(
+    failure, reason, tmp_path, mock_session_get, no_sleep, caplog
+):
+    mock_session_get.side_effect = failure
     result = download_resource(
         "http://example.com/notes.txt", tmp_path, "test-log-label", access_token="test-token", filename_hint="notes.txt"
     )
@@ -170,8 +179,8 @@ def test_download_resource_returns_none_after_exhausting_retries(tmp_path, mock_
     assert mock_session_get.call_count == resource_downloader.MAX_ATTEMPTS
     assert no_sleep.call_count == resource_downloader.MAX_ATTEMPTS - 1
     assert (
-        f"failed to download http://example.com/notes.txt after {resource_downloader.MAX_ATTEMPTS} attempts"
-        in caplog.text
+        f"[test-log-label] failed to download http://example.com/notes.txt after {resource_downloader.MAX_ATTEMPTS} "
+        f"attempts: {reason}" in caplog.text
     )
 
 
@@ -244,11 +253,3 @@ def test_download_resource_removes_only_the_partial_file_when_interrupted(tmp_pa
         )
     assert list(tmp_path.iterdir()) == [tmp_path / "first.txt"]
     assert (tmp_path / "first.txt").read_bytes() == b"whole file"
-
-
-def test_download_resource_returns_none_on_connection_error(tmp_path, mock_session_get):
-    mock_session_get.side_effect = requests.ConnectionError("connection refused")
-    result = download_resource(
-        "http://example.com/notes.txt", tmp_path, "test-log-label", access_token="test-token", filename_hint="notes.txt"
-    )
-    assert result is None
