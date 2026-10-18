@@ -12,16 +12,13 @@ def sample_course_tree():
     return {
         "id": 1,
         "title": "Sample Course",
-        "dir_name": "1_sample-course",
         "modules": [
             {
-                "id": 10,
                 "position": 1,
                 "title": "Module One",
                 "dir_name": "module_001_module-one",
                 "lessons": [
                     {
-                        "id": 1000,
                         "position": 1,
                         "title": "Lesson One",
                         "dir_name": "lesson_001_lesson-one",
