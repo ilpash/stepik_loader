@@ -50,7 +50,7 @@ def course_data():
                     "name": "text",
                     "text": (
                         '<img src="http://cdn.example.com/some_picture.png">'
-                        '<img src="/media/attachments/lessons/460/some_diagram.png">'
+                        '<img src="/media/attachments/lesson/42/some_diagram.png">'
                         '<img src="data:image/png;base64,some_image_data">'
                         '<audio src="http://cdn.example.com/some_audio.mp3"></audio>'
                         '<audio src="//audio.example.com/some_recording.mp3"></audio>'
@@ -354,7 +354,7 @@ def test_main_respects_the_skip_flags(tmp_path, monkeypatch, course_data, downlo
     assert "Video download skipped" in video_html
     assert downloaded_urls == [
         "http://cdn.example.com/some_picture.png",
-        "https://stepik.org/media/attachments/lessons/460/some_diagram.png",
+        "https://stepik.org/media/attachments/lesson/42/some_diagram.png",
         "http://cdn.example.com/some_audio.mp3",
         "https://audio.example.com/some_recording.mp3",
         "http://cdn.example.com/some_clip.mp4",
