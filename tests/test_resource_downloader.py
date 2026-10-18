@@ -88,6 +88,22 @@ def test_download_resource_guesses_extension_from_content_type_when_hint_has_no_
     assert result == "video.mp4"
 
 
+def test_download_resource_keeps_the_file_inside_the_folder(tmp_path, mock_session_get):
+    step_dir = tmp_path / "step"
+    step_dir.mkdir()
+    mock_session_get.return_value = MockStreamResponse(200)
+    result = download_resource(
+        "http://example.com/notes.txt",
+        step_dir,
+        "test-log-label",
+        access_token="test-token",
+        filename_hint="../notes.txt",
+    )
+    assert result == "notes.txt"
+    assert list(tmp_path.iterdir()) == [step_dir]
+    assert list(step_dir.iterdir()) == [step_dir / "notes.txt"]
+
+
 def test_download_resource_overwrites_a_file_from_an_earlier_run(tmp_path, mock_session_get):
     (tmp_path / "notes.txt").write_bytes(b"existing file")
     mock_session_get.return_value = MockStreamResponse(200, chunks=[b"new"])
