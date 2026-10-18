@@ -52,7 +52,7 @@ def test_init_raises_stepik_auth_error_when_a_credential_is_missing(missing_vari
         StepikClient()
 
 
-def test_init_reads_credentials_from_constructor_args(tmp_path):
+def test_init_reads_every_constructor_arg(tmp_path):
     client = StepikClient(
         client_id="test-client-id",
         client_secret="test-client-secret",
@@ -60,6 +60,7 @@ def test_init_reads_credentials_from_constructor_args(tmp_path):
     )
     assert client.client_id == "test-client-id"
     assert client.client_secret == "test-client-secret"
+    assert client.token_cache_path == tmp_path / "cache.json"
 
 
 def test_init_reads_credentials_from_the_environment(tmp_path, monkeypatch):
@@ -68,6 +69,11 @@ def test_init_reads_credentials_from_the_environment(tmp_path, monkeypatch):
     client = StepikClient(token_cache_path=tmp_path / "cache.json")
     assert client.client_id == "test-client-id"
     assert client.client_secret == "test-client-secret"
+
+
+def test_init_uses_the_default_token_cache(temporary_token_cache):
+    client = StepikClient(client_id="test-client-id", client_secret="test-client-secret")
+    assert client.token_cache_path == temporary_token_cache
 
 
 # -- _load_cached_token / _save_cached_token -----------------------------------
