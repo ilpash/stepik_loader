@@ -465,7 +465,11 @@ def test_render_step_basic_case(tmp_path, mock_download_resource):
     _render_step_into(step_dir, step_node)
 
     html = (step_dir / "index.html").read_text()
-    assert "Step title" in html
+    assert "<title>Step title — Course</title>" in html
+    assert '<a href="../index.html">Course</a>' in html
+    assert "Module › Lesson" in html
+    assert '<span class="block-type">text</span>' in html
+    assert "<h1>Step title</h1>" in html
     assert "hello" in html
     source = json.loads((step_dir / "source.json").read_text())
     assert source == step_node["raw"]
