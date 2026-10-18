@@ -499,6 +499,7 @@ def test_render_step_basic_case(tmp_path, mock_download_resource):
     _render_step_into(step_dir, step_node)
 
     html = (step_dir / "index.html").read_text()
+    assert '<meta charset="utf-8">' in html
     assert "<title>Step title — Course</title>" in html
     assert '<a href="../index.html">Course</a>' in html
     assert "Module › Lesson" in html

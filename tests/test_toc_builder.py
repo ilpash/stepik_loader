@@ -50,6 +50,7 @@ def test_build_toc_basic_case(tmp_path, sample_course_tree):
     build_toc(sample_course_tree, tmp_path, set())
 
     html = (tmp_path / "index.html").read_text()
+    assert '<meta charset="utf-8">' in html
     assert "<title>Sample Course</title>" in html
     assert "<h1>Sample Course</h1>" in html
     assert "Exported from Stepik course 1 on " in html
