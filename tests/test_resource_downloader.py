@@ -138,19 +138,16 @@ def test_download_resource_saves_nothing_when_the_server_sends_a_web_page(tmp_pa
     assert "returned a web page" in caplog.text
 
 
-def test_download_resource_returns_none_on_non_retryable_http_error(tmp_path, mock_session_get, caplog):
-    mock_session_get.return_value = MockStreamResponse(404)
+@pytest.mark.parametrize("status_code", [400, 404])
+def test_download_resource_returns_none_on_non_retryable_http_error(status_code, tmp_path, mock_session_get, caplog):
+    mock_session_get.return_value = MockStreamResponse(status_code)
     result = download_resource(
-        "http://example.com/missing.txt",
-        tmp_path,
-        "test-log-label",
-        access_token="test-token",
-        filename_hint="missing.txt",
+        "http://example.com/notes.txt", tmp_path, "test-log-label", access_token="test-token", filename_hint="notes.txt"
     )
     assert result is None
     assert mock_session_get.call_count == 1
     assert list(tmp_path.iterdir()) == []
-    assert "failed to download http://example.com/missing.txt: HTTP 404" in caplog.text
+    assert f"failed to download http://example.com/notes.txt: HTTP {status_code}" in caplog.text
 
 
 def test_download_resource_retries_on_retryable_status_then_succeeds(tmp_path, mock_session_get, no_sleep):
