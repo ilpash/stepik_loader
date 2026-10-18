@@ -57,7 +57,7 @@ def test_safe_filename_truncates_an_unusually_long_extension_too():
 
 
 def test_download_resource_basic_case(tmp_path, mock_session_get):
-    mock_session_get.return_value = MockStreamResponse(200, chunks=[b"hello"])
+    mock_session_get.return_value = MockStreamResponse(200, chunks=[b"hello"], headers={"Content-Type": "text/plain"})
     result = download_resource(
         "http://example.com/notes.txt", tmp_path, "test-log-label", access_token="test-token", filename_hint="notes.txt"
     )
