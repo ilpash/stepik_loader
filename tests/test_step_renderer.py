@@ -408,6 +408,19 @@ def test_render_video_returns_warning_when_no_urls(mock_resolve, caplog):
     assert "[test-log-label] video step has no downloadable URLs" in caplog.text
 
 
+def test_render_video_returns_warning_when_the_entry_has_no_url(mock_resolve, caplog):
+    html = _render_video(
+        block={"video": {"urls": [{"quality": "720"}]}},
+        resolve=mock_resolve,
+        log_label="test-log-label",
+        quality="best",
+        skip_videos=False,
+    )
+    assert "unavailable" in html.lower()
+    assert mock_resolve.call_count == 0
+    assert "[test-log-label] video step has no downloadable URLs" in caplog.text
+
+
 def test_render_video_basic_case(mock_resolve):
     mock_resolve.return_value = "video.mp4"
     block = {"video": {"urls": [{"quality": "720", "url": "https://cdn.example.com/lecture.mp4"}]}}
