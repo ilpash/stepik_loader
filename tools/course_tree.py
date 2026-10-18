@@ -45,7 +45,7 @@ def _build_lesson_node(lesson, position, step_id_to_step):
         block = step.get("block", {})
         block_type = block.get("name", "unknown")
         # A step keeps its name under options, and most types have no name at all
-        step_title = block.get("options", {}).get("title") or f"Step {step['id']} ({block_type})"
+        step_title = block.get("options", {}).get("title", f"Step {step['id']} ({block_type})")
         steps.append(
             {
                 "id": step["id"],
