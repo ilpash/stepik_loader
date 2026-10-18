@@ -103,10 +103,11 @@ def test_render_quiz_omits_multiple_answer_note_for_single_choice(mock_resolve):
 
 
 def test_render_generic_basic_case(caplog):
-    block = {"name": "unknown-type", "custom_field": "custom_value"}
+    block = {"name": "unknown-type", "text": "<p>Привет</p>", "custom_field": "custom_value"}
     html = _render_generic(block, "test-log-label")
     assert "<pre><code>" in html
     assert "&quot;custom_field&quot;" in html
+    assert "Привет" in html
     assert "no dedicated renderer" in caplog.text
 
 
@@ -493,7 +494,7 @@ def _render_step_into(step_dir, step_node):
 def test_render_step_basic_case(tmp_path, mock_download_resource):
     step_dir = tmp_path / "step"
     image_url = "https://cdn.example.com/some_picture.png"
-    block = {"name": "text", "text": f'<p>hello</p><img src="{image_url}">'}
+    block = {"name": "text", "text": f'<p>Привет</p><img src="{image_url}">'}
     step_node = _make_step_node(block, step_id=42)
 
     _render_step_into(step_dir, step_node)
@@ -505,7 +506,7 @@ def test_render_step_basic_case(tmp_path, mock_download_resource):
     assert "Module › Lesson" in html
     assert '<span class="block-type">text</span>' in html
     assert "<h1>Step title</h1>" in html
-    assert "hello" in html
+    assert "Привет" in html
     assert 'src="local_resource"' in html
     mock_download_resource.assert_called_once_with(
         image_url,
@@ -514,8 +515,9 @@ def test_render_step_basic_case(tmp_path, mock_download_resource):
         access_token="test-token",
         filename_hint="resource_1_some_picture.png",
     )
-    source = json.loads((step_dir / "source.json").read_text())
-    assert source == step_node["raw"]
+    source = (step_dir / "source.json").read_text()
+    assert json.loads(source) == step_node["raw"]
+    assert "Привет" in source
 
 
 def test_render_step_escapes_html_in_the_title(tmp_path, mock_download_resource):
