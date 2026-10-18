@@ -29,99 +29,6 @@ def mock_download_resource(monkeypatch):
     return mock_download
 
 
-# -- _pick_video_url -----------------------------------------------------------
-
-
-def _video_url(quality):
-    return {"quality": quality, "url": f"https://cdn.example.com/lecture-{quality}.mp4"}
-
-
-def test_pick_video_url_returns_none_for_empty_list():
-    assert _pick_video_url([], "best", "test-log-label") is None
-
-
-def test_pick_video_url_best_picks_highest_quality():
-    urls = [_video_url("360"), _video_url("1080"), _video_url("720")]
-    assert _pick_video_url(urls, "best", "test-log-label") == _video_url("1080")
-
-
-def test_pick_video_url_exact_match(caplog):
-    urls = [_video_url("360"), _video_url("720"), _video_url("1080")]
-    assert _pick_video_url(urls, "720", "test-log-label") == _video_url("720")
-    assert "not available" not in caplog.text
-
-
-def test_pick_video_url_falls_back_to_nearest_when_exact_missing(caplog):
-    # 720 falls between 480 and 1080, nearer to 480 (240 away) than 1080 (360 away).
-    urls = [_video_url("360"), _video_url("480"), _video_url("1080")]
-    result = _pick_video_url(urls, "720", "test-log-label")
-    assert result == _video_url("480")
-    assert "not available" in caplog.text
-
-
-@pytest.mark.parametrize("requested", ["best", "360"])
-def test_pick_video_url_skips_an_entry_with_an_unreadable_quality(requested):
-    urls = [_video_url(None), _video_url("1080")]
-    result = _pick_video_url(urls, requested, "test-log-label")
-    assert result == _video_url("1080")
-
-
-# -- _render_quiz --------------------------------------------------------------
-
-
-def test_render_quiz_basic_case(mock_resolve):
-    # Real API shape: block["options"] is a settings dict, not a list of answers.
-    mock_resolve.return_value = "local_picture.png"
-    block = {
-        "name": "choice",
-        "text": '<img src="https://cdn.example.com/some_picture.png"> Mark every true statement.',
-        "options": {"is_multiple_choice": True},
-    }
-    html = _render_quiz(block=block, resolve=mock_resolve, skip_attachments=False)
-    assert "Mark every true statement." in html
-    assert 'src="local_picture.png"' in html
-    assert "not available offline" in html
-    assert "More than one answer may be correct" in html
-    assert "is_multiple_choice" not in html
-    assert "<li>" not in html
-
-
-@pytest.mark.parametrize(
-    ("block_type", "note"),
-    [
-        ("choice", "asks you to choose an answer"),
-        ("sorting", "asks you to sort a list"),
-        ("matching", "asks you to match pairs"),
-        ("string", "expects a typed answer"),
-        ("number", "expects a typed answer"),
-        ("free-answer", "expects a typed answer"),
-    ],
-)
-def test_render_quiz_basic_case_for_every_quiz_type(block_type, note, mock_resolve):
-    block = {"name": block_type, "text": "The question", "options": {}}
-    html = _render_quiz(block=block, resolve=mock_resolve, skip_attachments=False)
-    assert "The question" in html
-    assert note in html
-
-
-def test_render_quiz_omits_multiple_answer_note_for_single_choice(mock_resolve):
-    block = {"name": "choice", "text": "Pick one", "options": {"is_multiple_choice": False}}
-    html = _render_quiz(block=block, resolve=mock_resolve, skip_attachments=False)
-    assert "More than one answer" not in html
-
-
-# -- _render_generic -----------------------------------------------------------
-
-
-def test_render_generic_basic_case(caplog):
-    block = {"name": "unknown-type", "text": "<p>Привет</p>", "custom_field": "custom_value"}
-    html = _render_generic(block, "test-log-label")
-    assert "<pre><code>" in html
-    assert "&quot;custom_field&quot;" in html
-    assert "Привет" in html
-    assert "no dedicated renderer" in caplog.text
-
-
 # -- _render_text --------------------------------------------------------------
 
 
@@ -248,6 +155,163 @@ def test_render_text_downloads_an_image_from_an_extensionless_url(mock_resolve):
 
     assert 'src="local_image"' in html
     mock_resolve.assert_called_once_with(image_url, "resource_1_some-image-id")
+
+
+# -- _pick_video_url -----------------------------------------------------------
+
+
+def _video_url(quality):
+    return {"quality": quality, "url": f"https://cdn.example.com/lecture-{quality}.mp4"}
+
+
+def test_pick_video_url_returns_none_for_empty_list():
+    assert _pick_video_url([], "best", "test-log-label") is None
+
+
+def test_pick_video_url_best_picks_highest_quality():
+    urls = [_video_url("360"), _video_url("1080"), _video_url("720")]
+    assert _pick_video_url(urls, "best", "test-log-label") == _video_url("1080")
+
+
+def test_pick_video_url_exact_match(caplog):
+    urls = [_video_url("360"), _video_url("720"), _video_url("1080")]
+    assert _pick_video_url(urls, "720", "test-log-label") == _video_url("720")
+    assert "not available" not in caplog.text
+
+
+def test_pick_video_url_falls_back_to_nearest_when_exact_missing(caplog):
+    # 720 falls between 480 and 1080, nearer to 480 (240 away) than 1080 (360 away).
+    urls = [_video_url("360"), _video_url("480"), _video_url("1080")]
+    result = _pick_video_url(urls, "720", "test-log-label")
+    assert result == _video_url("480")
+    assert "not available" in caplog.text
+
+
+@pytest.mark.parametrize("requested", ["best", "360"])
+def test_pick_video_url_skips_an_entry_with_an_unreadable_quality(requested):
+    urls = [_video_url(None), _video_url("1080")]
+    result = _pick_video_url(urls, requested, "test-log-label")
+    assert result == _video_url("1080")
+
+
+# -- _render_video -------------------------------------------------------------
+
+
+def test_render_video_basic_case(mock_resolve):
+    mock_resolve.return_value = "video.mp4"
+    block = {"video": {"urls": [{"quality": "720", "url": "https://cdn.example.com/lecture.mp4"}]}}
+
+    html = _render_video(
+        block=block,
+        resolve=mock_resolve,
+        log_label="test-log-label",
+        quality="best",
+        skip_videos=False,
+    )
+
+    assert html == '<video controls src="video.mp4"></video>'
+    mock_resolve.assert_called_once_with("https://cdn.example.com/lecture.mp4", "video.mp4")
+
+
+def test_render_video_links_the_online_video_when_skip_videos_true(mock_resolve):
+    video_url = "https://cdn.example.com/lecture.mp4?expires=some_time&signature=some_signature"
+    html = _render_video(
+        block={"video": {"urls": [{"quality": "720", "url": video_url}]}},
+        resolve=mock_resolve,
+        log_label="test-log-label",
+        quality="best",
+        skip_videos=True,
+    )
+    assert 'src="https://cdn.example.com/lecture.mp4?expires=some_time&amp;signature=some_signature"' in html
+    assert "Video download skipped" in html
+    assert mock_resolve.call_count == 0
+
+
+def test_render_video_returns_warning_when_no_urls(mock_resolve, caplog):
+    # urls=[] makes _pick_video_url return None, so _render_video returns
+    # its "unavailable" warning before ever downloading anything.
+    html = _render_video(
+        block={"video": {"urls": []}},
+        resolve=mock_resolve,
+        log_label="test-log-label",
+        quality="best",
+        skip_videos=False,
+    )
+    assert "unavailable" in html.lower()
+    assert mock_resolve.call_count == 0
+    assert "[test-log-label] video step has no downloadable URLs" in caplog.text
+
+
+def test_render_video_returns_warning_when_the_entry_has_no_url(mock_resolve, caplog):
+    html = _render_video(
+        block={"video": {"urls": [{"quality": "720"}]}},
+        resolve=mock_resolve,
+        log_label="test-log-label",
+        quality="best",
+        skip_videos=False,
+    )
+    assert "unavailable" in html.lower()
+    assert mock_resolve.call_count == 0
+    assert "[test-log-label] video step has no downloadable URLs" in caplog.text
+
+
+def test_render_video_links_the_online_video_when_the_download_fails(mock_resolve):
+    mock_resolve.return_value = None
+    block = {"video": {"urls": [{"quality": "720", "url": "https://cdn.example.com/lecture.mp4"}]}}
+
+    html = _render_video(
+        block=block,
+        resolve=mock_resolve,
+        log_label="test-log-label",
+        quality="best",
+        skip_videos=False,
+    )
+    assert '<video controls src="https://cdn.example.com/lecture.mp4"></video>' in html
+    assert "Video download failed" in html
+
+
+# -- _render_quiz --------------------------------------------------------------
+
+
+def test_render_quiz_basic_case(mock_resolve):
+    # Real API shape: block["options"] is a settings dict, not a list of answers.
+    mock_resolve.return_value = "local_picture.png"
+    block = {
+        "name": "choice",
+        "text": '<img src="https://cdn.example.com/some_picture.png"> Mark every true statement.',
+        "options": {"is_multiple_choice": True},
+    }
+    html = _render_quiz(block=block, resolve=mock_resolve, skip_attachments=False)
+    assert "Mark every true statement." in html
+    assert 'src="local_picture.png"' in html
+    assert "not available offline" in html
+    assert "More than one answer may be correct" in html
+    assert "is_multiple_choice" not in html
+    assert "<li>" not in html
+
+
+@pytest.mark.parametrize(
+    ("block_type", "note"),
+    [
+        ("choice", "asks you to choose an answer"),
+        ("sorting", "asks you to sort a list"),
+        ("matching", "asks you to match pairs"),
+        ("string", "expects a typed answer"),
+        ("number", "expects a typed answer"),
+        ("free-answer", "expects a typed answer"),
+    ],
+)
+def test_render_quiz_basic_case_for_every_quiz_type(block_type, note, mock_resolve):
+    block = {"name": block_type, "text": "The question", "options": {}}
+    html = _render_quiz(block=block, resolve=mock_resolve, skip_attachments=False)
+    assert "The question" in html
+    assert note in html
+
+
+def test_render_quiz_omits_multiple_answer_note_for_single_choice(mock_resolve):
+    block = {"name": "choice", "text": "Pick one", "options": {"is_multiple_choice": False}}
+    html = _render_quiz(block=block, resolve=mock_resolve, skip_attachments=False)
+    assert "More than one answer" not in html
 
 
 # -- _render_code --------------------------------------------------------------
@@ -405,80 +469,16 @@ def test_render_pycharm_renders_a_statement_when_the_step_has_no_files(mock_reso
     assert "not available offline" in html
 
 
-# -- _render_video -------------------------------------------------------------
+# -- _render_generic -----------------------------------------------------------
 
 
-def test_render_video_links_the_online_video_when_skip_videos_true(mock_resolve):
-    video_url = "https://cdn.example.com/lecture.mp4?expires=some_time&signature=some_signature"
-    html = _render_video(
-        block={"video": {"urls": [{"quality": "720", "url": video_url}]}},
-        resolve=mock_resolve,
-        log_label="test-log-label",
-        quality="best",
-        skip_videos=True,
-    )
-    assert 'src="https://cdn.example.com/lecture.mp4?expires=some_time&amp;signature=some_signature"' in html
-    assert "Video download skipped" in html
-    assert mock_resolve.call_count == 0
-
-
-def test_render_video_returns_warning_when_no_urls(mock_resolve, caplog):
-    # urls=[] makes _pick_video_url return None, so _render_video returns
-    # its "unavailable" warning before ever downloading anything.
-    html = _render_video(
-        block={"video": {"urls": []}},
-        resolve=mock_resolve,
-        log_label="test-log-label",
-        quality="best",
-        skip_videos=False,
-    )
-    assert "unavailable" in html.lower()
-    assert mock_resolve.call_count == 0
-    assert "[test-log-label] video step has no downloadable URLs" in caplog.text
-
-
-def test_render_video_returns_warning_when_the_entry_has_no_url(mock_resolve, caplog):
-    html = _render_video(
-        block={"video": {"urls": [{"quality": "720"}]}},
-        resolve=mock_resolve,
-        log_label="test-log-label",
-        quality="best",
-        skip_videos=False,
-    )
-    assert "unavailable" in html.lower()
-    assert mock_resolve.call_count == 0
-    assert "[test-log-label] video step has no downloadable URLs" in caplog.text
-
-
-def test_render_video_basic_case(mock_resolve):
-    mock_resolve.return_value = "video.mp4"
-    block = {"video": {"urls": [{"quality": "720", "url": "https://cdn.example.com/lecture.mp4"}]}}
-
-    html = _render_video(
-        block=block,
-        resolve=mock_resolve,
-        log_label="test-log-label",
-        quality="best",
-        skip_videos=False,
-    )
-
-    assert html == '<video controls src="video.mp4"></video>'
-    mock_resolve.assert_called_once_with("https://cdn.example.com/lecture.mp4", "video.mp4")
-
-
-def test_render_video_links_the_online_video_when_the_download_fails(mock_resolve):
-    mock_resolve.return_value = None
-    block = {"video": {"urls": [{"quality": "720", "url": "https://cdn.example.com/lecture.mp4"}]}}
-
-    html = _render_video(
-        block=block,
-        resolve=mock_resolve,
-        log_label="test-log-label",
-        quality="best",
-        skip_videos=False,
-    )
-    assert '<video controls src="https://cdn.example.com/lecture.mp4"></video>' in html
-    assert "Video download failed" in html
+def test_render_generic_basic_case(caplog):
+    block = {"name": "unknown-type", "text": "<p>Привет</p>", "custom_field": "custom_value"}
+    html = _render_generic(block, "test-log-label")
+    assert "<pre><code>" in html
+    assert "&quot;custom_field&quot;" in html
+    assert "Привет" in html
+    assert "no dedicated renderer" in caplog.text
 
 
 # -- render_step ---------------------------------------------------------------
