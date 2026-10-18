@@ -7,7 +7,7 @@ Dedicated renderers exist for text, video, code and pycharm blocks, and quiz
 blocks keep their question text plus a note about what can't be shown offline.
 Every other block type falls back to a generic "raw step data" dump, with a
 warning logged. A hyperlink is only downloaded when it points at a file --
-links to web pages keep the URL the course author wrote.
+links to web pages keep pointing at the online page.
 """
 
 import json
