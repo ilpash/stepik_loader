@@ -40,8 +40,9 @@ def _resolve_ids_to_items(owner_label, kind, ids, id_to_item):
 def _build_step_node(step):
     block = step.get("block", {})
     block_type = block.get("name", "unknown")
+    generated_title = f"Step {step['id']} ({block_type})"
     # A step keeps its name under options, and most types have no name at all
-    step_title = block.get("options", {}).get("title", f"Step {step['id']} ({block_type})")
+    step_title = block.get("options", {}).get("title", generated_title)
     return {
         "id": step["id"],
         "position": step["position"],
