@@ -341,7 +341,7 @@ def test_render_code_basic_case(mock_resolve):
     assert html.index("<summary>c++") < html.index("<summary>python3")
     # The C++ template's <iostream> becomes the entities &lt;iostream&gt;, so a
     # browser prints it as text instead of parsing it as a tag.
-    assert "&lt;iostream&gt;" in html
+    assert "<pre><code>#include &lt;iostream&gt;</code></pre></details>" in html
     assert "<iostream>" not in html
     assert "not available offline" in html
 
@@ -403,8 +403,7 @@ def test_render_pycharm_basic_case(mock_resolve):
     assert "Implement the function." in html
     assert "<h2>Files</h2>" in html
     assert "<h3>src/Task.kt</h3>" in html
-    assert "val numbers = listOf&lt;Int&gt;()" in html
-    assert "TODO()" in html
+    assert "<pre><code>fun main() {\n  val numbers = listOf&lt;Int&gt;()\n  TODO()\n}</code></pre>" in html
     assert "hidden" not in html
     assert "not available offline" in html
 
