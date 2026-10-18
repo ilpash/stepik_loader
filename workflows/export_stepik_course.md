@@ -25,7 +25,7 @@ that course under `exports/<course_id>_<slug>/`, following the
 ## Steps
 1. Confirm the course ID with the user if it wasn't given explicitly.
 2. Run the exporter:
-   ```
+   ```sh
    .venv/bin/python tools/export_course.py --course-id <ID> [--video-quality best|360|720|1080] [--skip-videos] [--skip-attachments]
    ```
    - Default output directory is `exports/`; override with `--output-dir` if the user wants it elsewhere.

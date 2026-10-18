@@ -17,7 +17,7 @@ tool follows, and `CLAUDE.md` for the WAT framework this project is built on.
 
 ## Setup
 
-```
+```sh
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 cp .env.example .env
@@ -29,7 +29,7 @@ credentials**) and put its ID/secret into `.env`.
 
 ## Usage
 
-```
+```sh
 .venv/bin/python tools/export_course.py --course-id 12345
 ```
 
@@ -45,7 +45,7 @@ directly in a browser; it has no dependency on this project's code.
 
 ## Testing
 
-```
+```sh
 .venv/bin/pip install -r requirements-dev.txt
 .venv/bin/pytest
 .venv/bin/ruff check .
