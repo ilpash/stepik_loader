@@ -218,7 +218,8 @@ def test_main_stops_when_the_table_of_contents_cannot_be_written(tmp_path, monke
 
 
 def test_main_stops_when_the_token_cannot_be_refreshed(tmp_path, monkeypatch, caplog, two_step_tree):
-    mock_access_token = PropertyMock(side_effect=["mock-token", StepikAuthError("connection refused")])
+    token_error = "Failed to obtain Stepik access token after 5 attempts: connection refused"
+    mock_access_token = PropertyMock(side_effect=["mock-token", StepikAuthError(token_error)])
     mock_render_step = MagicMock()
     monkeypatch.setattr(MockClientWithToken, "access_token", mock_access_token)
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
@@ -229,7 +230,7 @@ def test_main_stops_when_the_token_cannot_be_refreshed(tmp_path, monkeypatch, ca
 
     assert exit_code == 1
     assert mock_render_step.call_count == 1
-    assert "Could not refresh the Stepik access token, stopping the export: connection refused" in caplog.text
+    assert f"Could not refresh the Stepik access token, stopping the export: {token_error}" in caplog.text
     assert not (tmp_path / "1_course" / "index.html").exists()
 
 
