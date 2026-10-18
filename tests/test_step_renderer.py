@@ -102,7 +102,7 @@ def test_render_quiz_omits_multiple_answer_note_for_single_choice(mock_resolve):
     assert "More than one answer" not in html
 
 
-def test_render_generic_dumps_raw_block_as_json(caplog):
+def test_render_generic_basic_case(caplog):
     block = {"name": "unknown-type", "custom_field": "custom_value"}
     html = _render_generic(block, "test-log-label")
     assert "<pre><code>" in html
