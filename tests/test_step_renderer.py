@@ -66,7 +66,7 @@ def test_pick_video_url_skips_an_entry_with_an_unreadable_quality(requested):
     assert result == _video_url("1080")
 
 
-# -- pure block renderers ------------------------------------------------------
+# -- _render_quiz --------------------------------------------------------------
 
 
 def test_render_quiz_basic_case(mock_resolve):
@@ -108,6 +108,9 @@ def test_render_quiz_omits_multiple_answer_note_for_single_choice(mock_resolve):
     block = {"name": "choice", "text": "Pick one", "options": {"is_multiple_choice": False}}
     html = _render_quiz(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "More than one answer" not in html
+
+
+# -- _render_generic -----------------------------------------------------------
 
 
 def test_render_generic_basic_case(caplog):
