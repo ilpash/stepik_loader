@@ -1,7 +1,7 @@
 """
 Shared retry settings, request timeout and backoff wait for HTTP calls against
-Stepik's API and its resource CDNs, used by both stepik_client.py and
-resource_downloader.py.
+Stepik's API and the hosts that serve step resources, used by both
+stepik_client.py and resource_downloader.py.
 """
 
 import time
