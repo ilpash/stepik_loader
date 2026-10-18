@@ -256,9 +256,11 @@ def test_render_code_basic_case(mock_resolve):
     }
     html = _render_code(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "Swap the sides of the comparison." in html
+    assert "<h2>Samples</h2>" in html
     assert "<pre><code>7 &lt; 9</code></pre>" in html
     assert "<pre><code>9 &gt; 7</code></pre>" in html
     assert "Default limits: 5 s, 256 MB." in html
+    assert "<h2>Starter code</h2>" in html
     assert "<summary>python3 — 1 s, 128 MB</summary>" in html
     assert "<summary>c++ — 2 s, 256 MB</summary>" in html
     assert html.index("<summary>c++") < html.index("<summary>python3")
@@ -324,6 +326,7 @@ def test_render_pycharm_basic_case(mock_resolve):
     }
     html = _render_pycharm(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "Implement the function." in html
+    assert "<h2>Files</h2>" in html
     assert "<h3>src/Task.kt</h3>" in html
     assert "val numbers = listOf&lt;Int&gt;()" in html
     assert "TODO()" in html
