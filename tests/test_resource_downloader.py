@@ -1,3 +1,4 @@
+import errno
 from unittest.mock import MagicMock
 
 import pytest
@@ -199,6 +200,22 @@ def test_download_resource_raises_on_the_first_failed_disk_write(tmp_path, mock_
 
     mock_session_get.return_value = UnwritableStreamResponse(200)
     with pytest.raises(OSError, match="no space left on device"):
+        download_resource(
+            "http://example.com/notes.txt",
+            tmp_path,
+            "test-log-label",
+            access_token="test-token",
+            filename_hint="notes.txt",
+        )
+    assert mock_session_get.call_count == 1
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_download_resource_raises_when_the_file_cannot_be_created(tmp_path, mock_session_get, monkeypatch):
+    mock_session_get.return_value = MockStreamResponse(200)
+    mock_open = MagicMock(side_effect=PermissionError(errno.EACCES, "Permission denied"))
+    monkeypatch.setattr(resource_downloader, "open", mock_open, raising=False)
+    with pytest.raises(PermissionError):
         download_resource(
             "http://example.com/notes.txt",
             tmp_path,
