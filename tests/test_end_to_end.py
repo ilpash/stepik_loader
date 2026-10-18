@@ -256,7 +256,6 @@ def _exported_files(course_dir):
 
 
 def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, caplog, no_dotenv):
-    caplog.set_level(logging.INFO, logger="stepik_export")
     monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
 
     exit_code = export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
@@ -422,7 +421,6 @@ def test_main_respects_the_skip_flags(tmp_path, monkeypatch, course_data, downlo
 
 
 def test_main_overwrites_an_earlier_export(tmp_path, monkeypatch, course_data, downloaded_urls, caplog):
-    caplog.set_level(logging.INFO, logger="stepik_export")
     monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
     argv = ["--course-id", "1", "--output-dir", str(tmp_path)]
     export_course.main(argv)

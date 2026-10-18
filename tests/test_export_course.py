@@ -1,5 +1,4 @@
 import errno
-import logging
 import os
 from unittest.mock import MagicMock, PropertyMock
 
@@ -159,7 +158,6 @@ def two_step_tree():
 
 
 def test_main_skips_a_step_it_cannot_write(tmp_path, monkeypatch, caplog, two_step_tree):
-    caplog.set_level(logging.INFO, logger="stepik_export")
     mock_render_step = MagicMock(side_effect=[OSError(errno.EACCES, "Permission denied"), None])
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
     monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
