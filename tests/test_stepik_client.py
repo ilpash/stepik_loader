@@ -184,13 +184,13 @@ def test_access_token_refreshes_an_expired_token(client_with_token, monkeypatch)
 
 def test_fetch_new_token_basic_case(client_without_token, monkeypatch):
     mock_post = MagicMock(
-        return_value=MockResponse(200, json_data={"access_token": "fetched-token", "expires_in": 3600})
+        return_value=MockResponse(200, json_data={"access_token": "fetched-token", "expires_in": 36000})
     )
     monkeypatch.setattr(client_without_token.session, "post", mock_post)
     before = time.time()
     client_without_token._fetch_new_token()
     assert client_without_token._access_token == "fetched-token"
-    assert before + 3600 <= client_without_token._token_expires_at <= time.time() + 3600
+    assert before + 36000 <= client_without_token._token_expires_at <= time.time() + 36000
     mock_post.assert_called_once_with(
         stepik_client.AUTH_URL,
         data={"grant_type": "client_credentials"},
