@@ -44,7 +44,7 @@ warning_counter = WarningCounter()
 logger.addHandler(warning_counter)
 
 
-def parse_args(argv=None):
+def parse_args(argv):
     parser = argparse.ArgumentParser(description="Export a Stepik course for offline use.")
     parser.add_argument("--course-id", type=int, required=True, help="id of the public Stepik course to export")
     parser.add_argument("--output-dir", default="exports", help="parent directory for the exported course folder")

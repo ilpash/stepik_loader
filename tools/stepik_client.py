@@ -143,7 +143,7 @@ class StepikClient:
 
         raise last_error
 
-    def get(self, resource, params=None):
+    def get(self, resource, params):
         response = self._request("GET", API_BASE + resource, params=params)
         return response.json()
 
