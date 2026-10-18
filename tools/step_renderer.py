@@ -214,8 +214,10 @@ def _render_code(block, resolve, skip_attachments):
         _render_code_samples(options.get("samples")),
         _render_code_default_limits(options),
         _render_code_templates(options),
-        '<p class="warning">This step asks you to write a program; submitting a solution and '
-        "grading are not available offline.</p>",
+        (
+            '<p class="warning">This step asks you to write a program; submitting a solution and '
+            "grading are not available offline.</p>"
+        ),
     ]
     return "".join(parts)
 
@@ -243,8 +245,10 @@ def _render_pycharm(block, resolve, skip_attachments):
     parts = [
         _render_text(block, resolve, skip_attachments),
         _render_pycharm_files(options.get("files")),
-        '<p class="warning">This step is solved in an IDE; submitting a solution and grading '
-        "are not available offline.</p>",
+        (
+            '<p class="warning">This step is solved in an IDE; submitting a solution and grading '
+            "are not available offline.</p>"
+        ),
     ]
     return "".join(parts)
 
