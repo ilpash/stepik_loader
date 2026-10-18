@@ -99,7 +99,7 @@ def test_load_cached_token_handles_corrupt_json(client_without_token):
     assert client_without_token._access_token is None
 
 
-def test_save_cached_token_writes_expected_json(client_without_token):
+def test_save_cached_token_basic_case(client_without_token):
     client_without_token._access_token = "test-token"
     client_without_token._token_expires_at = 12345
     client_without_token._save_cached_token()

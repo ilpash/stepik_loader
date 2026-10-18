@@ -32,7 +32,7 @@ def mock_download_resource(monkeypatch):
 # -- _render_text --------------------------------------------------------------
 
 
-def test_render_text_rewrites_img_src_via_resolve(mock_resolve):
+def test_render_text_basic_case(mock_resolve):
     mock_resolve.return_value = "local.png"
     block = {"text": '<img src="https://cdn.example.com/diagram.png">'}
 
