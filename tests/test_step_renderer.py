@@ -481,7 +481,8 @@ def _render_step_into(step_dir, step_node):
 
 def test_render_step_basic_case(tmp_path, mock_download_resource):
     step_dir = tmp_path / "step"
-    block = {"name": "text", "text": "hello"}
+    image_url = "https://cdn.example.com/some_picture.png"
+    block = {"name": "text", "text": f'<p>hello</p><img src="{image_url}">'}
     step_node = _make_step_node(block, step_id=42)
 
     _render_step_into(step_dir, step_node)
@@ -493,6 +494,14 @@ def test_render_step_basic_case(tmp_path, mock_download_resource):
     assert '<span class="block-type">text</span>' in html
     assert "<h1>Step title</h1>" in html
     assert "hello" in html
+    assert 'src="local_resource"' in html
+    mock_download_resource.assert_called_once_with(
+        image_url,
+        step_dir,
+        "course=1 lesson=2 step=42",
+        access_token="test-token",
+        filename_hint="resource_1_some_picture.png",
+    )
     source = json.loads((step_dir / "source.json").read_text())
     assert source == step_node["raw"]
 
