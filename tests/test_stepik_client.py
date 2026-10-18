@@ -168,15 +168,26 @@ def test_ensure_token_fetches_when_the_token_expires_within_the_margin(client_wi
 
 
 def test_fetch_new_token_basic_case(client_without_token, monkeypatch):
-    def mock_post(url, **kwargs):
-        return MockResponse(200, json_data={"access_token": "fetched-token", "expires_in": 3600})
-
+    mock_post = MagicMock(
+        return_value=MockResponse(200, json_data={"access_token": "fetched-token", "expires_in": 3600})
+    )
     monkeypatch.setattr(client_without_token.session, "post", mock_post)
     before = time.time()
     client_without_token._fetch_new_token()
     assert client_without_token._access_token == "fetched-token"
     assert before + 3600 <= client_without_token._token_expires_at <= time.time() + 3600
-    assert client_without_token.token_cache_path.exists()
+    mock_post.assert_called_once_with(
+        stepik_client.AUTH_URL,
+        data={"grant_type": "client_credentials"},
+        auth=("test-client-id", "test-client-secret"),
+        timeout=stepik_client.TIMEOUT_SECONDS,
+    )
+    data = json.loads(client_without_token.token_cache_path.read_text())
+    assert data == {
+        "client_id": "test-client-id",
+        "access_token": "fetched-token",
+        "expires_at": client_without_token._token_expires_at,
+    }
 
 
 def test_fetch_new_token_raises_on_non_retryable_status(client_without_token, monkeypatch):
