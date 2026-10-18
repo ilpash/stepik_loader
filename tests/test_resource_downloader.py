@@ -72,7 +72,7 @@ def test_download_resource_basic_case(tmp_path, mock_session_get):
 def test_download_resource_attaches_auth_header_for_stepik_host(tmp_path, mock_session_get):
     mock_session_get.return_value = MockStreamResponse(200)
     download_resource(
-        "https://stepik.org/media/notes.txt",
+        "https://stepik.org/media/attachments/lesson/42/notes.txt",
         tmp_path,
         "test-log-label",
         access_token="test-token",
