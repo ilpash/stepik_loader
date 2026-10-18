@@ -66,6 +66,10 @@ def test_build_toc_basic_case(tmp_path, sample_course_tree):
     copied_css = (tmp_path / "assets" / "style.css").read_text()
     original_css = (TEMPLATES_DIR / "style.css").read_text()
     assert copied_css == original_css
+    for name in ["tex-svg-full.js", "LICENSE"]:
+        copied_file = (tmp_path / "assets" / "mathjax" / name).read_bytes()
+        original_file = (TEMPLATES_DIR / "mathjax" / name).read_bytes()
+        assert copied_file == original_file
 
 
 def test_build_toc_lists_a_skipped_step_without_a_link(tmp_path, sample_course_tree):

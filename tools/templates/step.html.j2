@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ step_title }} — {{ course_title }}</title>
 <link rel="stylesheet" href="{{ css_path }}">
+{% if "math-tex" in body_html %}
+<script id="MathJax-script" async src="{{ mathjax_path }}"></script>
+{% endif %}
 </head>
 <body>
 <p class="breadcrumb">

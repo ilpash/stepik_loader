@@ -78,7 +78,7 @@ def course_data():
                 "position": 2,
                 "block": {
                     "name": "code",
-                    "text": "<p>Print the sum.</p>",
+                    "text": r'<p>Print the sum <span class="math-tex">\( a + b \)</span>.</p>',
                     "options": {
                         "samples": [["7 3", "10"], ["1 2", "3"]],
                         "execution_time_limit": 5,
@@ -236,6 +236,8 @@ VIDEO_FILES = {f"{LESSON_3_STEP_1}/video.mp4", f"{LESSON_3_STEP_6}/video.mp4"}
 EXPECTED_FILES = {
     "index.html",
     "assets/style.css",
+    "assets/mathjax/tex-svg-full.js",
+    "assets/mathjax/LICENSE",
     f"{LESSON_1_STEP_1}/resource_1_some_picture.png",
     f"{LESSON_1_STEP_1}/resource_2_some_diagram.png",
     f"{LESSON_1_STEP_1}/resource_3_some_audio.mp3",
@@ -296,6 +298,7 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert 'href="https://www.youtube.com/watch?v=some_video_id"' in text_html
     assert 'href="https://stepik.org/lesson/some-lesson-42/step/3"' in text_html
     assert '<a rel="nofollow">some contact</a>' in text_html
+    assert "<script" not in text_html
 
     choice_html = (course_dir / LESSON_2_STEP_1 / "index.html").read_text()
     assert "Mark every true statement." in choice_html
@@ -305,6 +308,7 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
 
     code_html = (course_dir / LESSON_2_STEP_2 / "index.html").read_text()
     assert "asks you to write a program" in code_html
+    assert 'src="../../../assets/mathjax/tex-svg-full.js"' in code_html
     assert "<pre><code>7 3</code></pre>" in code_html
     assert "<pre><code>3</code></pre>" in code_html
     assert "<summary>python3 — 1 s, 128 MB</summary>" in code_html

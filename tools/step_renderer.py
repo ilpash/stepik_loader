@@ -7,7 +7,8 @@ Dedicated renderers exist for text, video, code and pycharm blocks, and quiz
 blocks keep their question text plus a note about what can't be shown offline.
 Every other block type falls back to a generic "raw step data" dump, with a
 warning logged. A hyperlink is only downloaded when it points at a file --
-links to web pages keep pointing at the online page.
+links to web pages keep pointing at the online page. A page whose text holds a
+formula loads the copy of MathJax that the export carries in assets/mathjax/.
 """
 
 import json
@@ -303,6 +304,7 @@ def render_step(step_node, step_dir, context):
         body_html=body_html,
         css_path=context.link_from(step_dir, "assets", "style.css"),
         toc_path=context.link_from(step_dir, "index.html"),
+        mathjax_path=context.link_from(step_dir, "assets", "mathjax", "tex-svg-full.js"),
     )
     (step_dir / "index.html").write_text(html, encoding="utf-8")
     (step_dir / "source.json").write_text(json.dumps(step_node["raw"], ensure_ascii=False, indent=2), encoding="utf-8")

@@ -69,6 +69,8 @@ real Stepik API or network, and runs in a few seconds.
   their question text plus a note about what can't be shown offline. Everything
   else gets a generic fallback (raw step data shown as-is) with a warning
   logged — see `tools/step_renderer.py`.
+- **Formulas** are drawn offline by a copy of MathJax that each export carries in
+  `assets/mathjax/`.
 - **Links are kept, not mirrored.** A hyperlink in step text is downloaded only when
   it points at a file (a PDF, an archive, an image). Links to web pages — a video,
   an article, another step of the same course — keep pointing at the online page,

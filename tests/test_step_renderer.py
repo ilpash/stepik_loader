@@ -521,6 +521,7 @@ def test_render_step_basic_case(tmp_path, mock_download_resource):
     html = (step_dir / "index.html").read_text()
     assert '<meta charset="utf-8">' in html
     assert "<title>Step title — Course</title>" in html
+    assert "<script" not in html
     assert '<a href="../index.html">Course</a>' in html
     assert "Module › Lesson" in html
     assert '<span class="block-type">text</span>' in html
@@ -550,6 +551,18 @@ def test_render_step_escapes_html_in_the_title(tmp_path, mock_download_resource)
     html = (step_dir / "index.html").read_text()
     assert "<h1>&lt;script&gt;some_script()&lt;/script&gt;</h1>" in html
     assert "<script>" not in html
+
+
+def test_render_step_loads_mathjax_on_a_page_with_a_formula(tmp_path, mock_download_resource):
+    step_dir = tmp_path / "step"
+    formula = r'<span class="math-tex">\( 1 \le n \)</span>'
+    block = {"name": "text", "text": f"<p>The input holds {formula} numbers.</p>"}
+
+    _render_step_into(step_dir, _make_step_node(block))
+
+    html = (step_dir / "index.html").read_text()
+    assert '<script id="MathJax-script" async src="../assets/mathjax/tex-svg-full.js"></script>' in html
+    assert formula in html
 
 
 def test_render_step_dispatches_code_block_to_code_renderer(tmp_path, mock_download_resource, caplog):
