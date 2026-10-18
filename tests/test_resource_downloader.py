@@ -34,7 +34,7 @@ def mock_session_get(monkeypatch):
 
 
 def test_safe_filename_basic_case():
-    assert safe_filename("https://cdn.example.com/path/My File!.png") == "My_File_.png"
+    assert safe_filename("https://cdn.example.com/path/My%20File!.png") == "My_File_.png"
 
 
 def test_safe_filename_falls_back_when_url_has_no_basename():
