@@ -1,5 +1,6 @@
 import errno
 import logging
+import os
 from unittest.mock import MagicMock, PropertyMock
 
 import pytest
@@ -174,8 +175,9 @@ def test_main_skips_a_step_it_cannot_write(tmp_path, monkeypatch, caplog, two_st
     assert "1. First step (not exported)" in toc_html
 
 
-def test_main_stops_when_the_disk_is_full(tmp_path, monkeypatch, caplog, two_step_tree):
-    mock_render_step = MagicMock(side_effect=OSError(errno.ENOSPC, "No space left on device"))
+@pytest.mark.parametrize("error_code", [errno.ENOSPC, errno.EDQUOT])
+def test_main_stops_when_the_disk_is_full(error_code, tmp_path, monkeypatch, caplog, two_step_tree):
+    mock_render_step = MagicMock(side_effect=OSError(error_code, os.strerror(error_code)))
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
     monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
     monkeypatch.setattr(export_course, "render_step", mock_render_step)
