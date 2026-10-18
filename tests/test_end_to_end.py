@@ -238,6 +238,8 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert "Steps exported: 10. Warnings: 1." in caplog.text
 
     course_dir = tmp_path / "1_sample-course"
+    assert "[1/10] Module One > Lesson One > step 10000" in caplog.text
+    assert f"Done. Open {course_dir / 'index.html'} in a browser." in caplog.text
     assert _exported_files(course_dir) == EXPECTED_FILES
 
     # The table of contents links every step, and names each one however that step is named
