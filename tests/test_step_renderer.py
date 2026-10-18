@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 import pytest
 
 from step_renderer import (
-    _TYPE_TO_QUIZ_NOTE,
     StepContext,
     _pick_video_url,
     _render_code,
@@ -78,12 +77,22 @@ def test_render_quiz_basic_case(mock_resolve):
     assert "<li>" not in html
 
 
-@pytest.mark.parametrize("block_type", sorted(_TYPE_TO_QUIZ_NOTE))
-def test_render_quiz_keeps_the_question_for_every_quiz_type(block_type, mock_resolve):
+@pytest.mark.parametrize(
+    ("block_type", "note"),
+    [
+        ("choice", "asks you to choose an answer"),
+        ("sorting", "asks you to sort a list"),
+        ("matching", "asks you to match pairs"),
+        ("string", "expects a typed answer"),
+        ("number", "expects a typed answer"),
+        ("free-answer", "expects a typed answer"),
+    ],
+)
+def test_render_quiz_basic_case_for_every_quiz_type(block_type, note, mock_resolve):
     block = {"name": block_type, "text": "The question", "options": {}}
     html = _render_quiz(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "The question" in html
-    assert 'class="warning"' in html
+    assert note in html
 
 
 def test_render_quiz_omits_multiple_answer_note_for_single_choice(mock_resolve):
