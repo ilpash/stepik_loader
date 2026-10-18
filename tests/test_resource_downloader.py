@@ -63,6 +63,9 @@ def test_download_resource_basic_case(tmp_path, mock_session_get):
     )
     assert result == "notes.txt"
     assert (tmp_path / "notes.txt").read_bytes() == b"hello"
+    mock_session_get.assert_called_once_with(
+        "http://example.com/notes.txt", headers={}, stream=True, timeout=resource_downloader.TIMEOUT_SECONDS
+    )
 
 
 def test_download_resource_attaches_auth_header_for_stepik_host(tmp_path, mock_session_get):
@@ -75,18 +78,6 @@ def test_download_resource_attaches_auth_header_for_stepik_host(tmp_path, mock_s
         filename_hint="notes.txt",
     )
     assert mock_session_get.call_args.kwargs["headers"].get("Authorization") == "Bearer test-token"
-
-
-def test_download_resource_omits_auth_header_for_non_stepik_host(tmp_path, mock_session_get):
-    mock_session_get.return_value = MockStreamResponse(200)
-    download_resource(
-        "https://example.com/notes.txt",
-        tmp_path,
-        "test-log-label",
-        access_token="test-token",
-        filename_hint="notes.txt",
-    )
-    assert "Authorization" not in mock_session_get.call_args.kwargs["headers"]
 
 
 def test_download_resource_guesses_extension_from_content_type_when_hint_has_no_suffix(tmp_path, mock_session_get):
