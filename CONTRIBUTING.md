@@ -30,8 +30,8 @@ The code follows the WAT pattern described in [CLAUDE.md](CLAUDE.md):
   what can't be shown offline just needs an entry in `_TYPE_TO_QUIZ_NOTE`, plus
   the README and workflow lists.
 - If you touch retry/backoff logic in `tools/retry.py` or auth logic in
-  `tools/stepik_client.py`, note any new rate-limit or API quirks you discover —
-  future contributors will hit the same thing.
+  `tools/stepik_client.py`, note any new rate-limit or API quirks you discover in
+  `workflows/export_stepik_course.md` — future contributors will hit the same thing.
 
 ## Testing
 
