@@ -80,7 +80,7 @@ def test_load_cached_token_basic_case(client_without_token):
 
 
 def test_load_cached_token_ignores_cache_for_different_client_id(client_without_token):
-    cache = {"client_id": "other", "access_token": "cached-token", "expires_at": time.time() + 3600}
+    cache = {"client_id": "other-client-id", "access_token": "cached-token", "expires_at": time.time() + 3600}
     client_without_token.token_cache_path.write_text(json.dumps(cache))
     client_without_token._load_cached_token()
     assert client_without_token._access_token is None

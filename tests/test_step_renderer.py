@@ -30,31 +30,31 @@ def _video_url(quality):
 
 
 def test_pick_video_url_returns_none_for_empty_list():
-    assert _pick_video_url([], "best", "test-context") is None
+    assert _pick_video_url([], "best", "test-log-label") is None
 
 
 def test_pick_video_url_best_picks_highest_quality():
     urls = [_video_url("360"), _video_url("1080"), _video_url("720")]
-    assert _pick_video_url(urls, "best", "test-context") == _video_url("1080")
+    assert _pick_video_url(urls, "best", "test-log-label") == _video_url("1080")
 
 
 def test_pick_video_url_exact_match(caplog):
     urls = [_video_url("360"), _video_url("720"), _video_url("1080")]
-    assert _pick_video_url(urls, "720", "test-context") == _video_url("720")
+    assert _pick_video_url(urls, "720", "test-log-label") == _video_url("720")
     assert "not available" not in caplog.text
 
 
 def test_pick_video_url_falls_back_to_nearest_when_exact_missing(caplog):
     # 720 falls between 480 and 1080, nearer to 480 (240 away) than 1080 (360 away).
     urls = [_video_url("360"), _video_url("480"), _video_url("1080")]
-    result = _pick_video_url(urls, "720", "test-context")
+    result = _pick_video_url(urls, "720", "test-log-label")
     assert result == _video_url("480")
     assert "not available" in caplog.text
 
 
 def test_pick_video_url_skips_an_entry_with_an_unreadable_quality():
     urls = [_video_url(None), _video_url("360")]
-    result = _pick_video_url(urls, "720", "test-context")
+    result = _pick_video_url(urls, "720", "test-log-label")
     assert result == _video_url("360")
 
 
@@ -94,7 +94,7 @@ def test_render_quiz_omits_multiple_answer_note_for_single_choice(mock_resolve):
 
 def test_render_generic_dumps_raw_block_as_json(caplog):
     block = {"name": "unknown-type", "custom_field": "custom_value"}
-    html = _render_generic(block, "test-context")
+    html = _render_generic(block, "test-log-label")
     assert "<pre><code>" in html
     assert "&quot;custom_field&quot;" in html
     assert "no dedicated renderer" in caplog.text
@@ -150,12 +150,12 @@ def test_render_text_keeps_the_absolute_url_when_a_download_fails(mock_resolve):
 
 
 def test_render_text_downloads_audio_from_a_protocol_relative_url(mock_resolve):
-    mock_resolve.return_value = "local_word.mp3"
+    mock_resolve.return_value = "local_recording.mp3"
     block = {"text": '<audio src="//audio.example.com/some_recording.mp3"></audio>'}
 
     html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
 
-    assert 'src="local_word.mp3"' in html
+    assert 'src="local_recording.mp3"' in html
     mock_resolve.assert_called_once_with(
         "https://audio.example.com/some_recording.mp3", "resource_1_some_recording.mp3"
     )
@@ -369,7 +369,7 @@ def test_render_video_links_the_online_video_when_skip_videos_true(mock_resolve)
     html = _render_video(
         block={"video": {"urls": [{"quality": "720", "url": video_url}]}},
         resolve=mock_resolve,
-        log_label="test-context",
+        log_label="test-log-label",
         quality="best",
         skip_videos=True,
     )
@@ -384,13 +384,13 @@ def test_render_video_returns_warning_when_no_urls(mock_resolve, caplog):
     html = _render_video(
         block={"video": {"urls": []}},
         resolve=mock_resolve,
-        log_label="test-context",
+        log_label="test-log-label",
         quality="best",
         skip_videos=False,
     )
     assert "unavailable" in html.lower()
     assert mock_resolve.call_count == 0
-    assert "[test-context] video step has no downloadable URLs" in caplog.text
+    assert "[test-log-label] video step has no downloadable URLs" in caplog.text
 
 
 def test_render_video_basic_case(mock_resolve):
@@ -400,7 +400,7 @@ def test_render_video_basic_case(mock_resolve):
     html = _render_video(
         block=block,
         resolve=mock_resolve,
-        log_label="test-context",
+        log_label="test-log-label",
         quality="best",
         skip_videos=False,
     )
@@ -416,7 +416,7 @@ def test_render_video_links_the_online_video_when_the_download_fails(mock_resolv
     html = _render_video(
         block=block,
         resolve=mock_resolve,
-        log_label="test-context",
+        log_label="test-log-label",
         quality="best",
         skip_videos=False,
     )
