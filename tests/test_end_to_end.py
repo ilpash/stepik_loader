@@ -271,14 +271,14 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     client = MockStepikClient(course_data)
     monkeypatch.setattr(export_course, "StepikClient", lambda: client)
 
-    exit_code = export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
+    exit_code = export_course.main(["--course-id", "1", "--output-dir", str(tmp_path / "exports")])
     assert exit_code == 0
     assert no_dotenv.call_count == 1
     assert client.get_by_ids_calls[0] == ("courses", [1])
     # The table step is the only one without a dedicated renderer, so it is the one warning.
     assert "Steps exported: 12. Warnings: 1." in caplog.text
 
-    course_dir = tmp_path / "1_sample-course"
+    course_dir = tmp_path / "exports" / "1_sample-course"
     assert "[1/12] Module One > Lesson One > step 10000" in caplog.text
     assert f"Done. Open {course_dir / 'index.html'} in a browser." in caplog.text
     assert _exported_files(course_dir) == EXPECTED_FILES
