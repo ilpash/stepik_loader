@@ -244,6 +244,8 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert "Sample Course" in toc_html
     for step in ALL_STEPS:
         assert f"{step}/index.html" in toc_html
+    link_positions = [toc_html.index(f"{step}/index.html") for step in ALL_STEPS]
+    assert link_positions == sorted(link_positions)
     assert "Step 10000 (text)" in toc_html
     assert "Step 10001 (code)" in toc_html
     assert "Exercise 1" in toc_html
