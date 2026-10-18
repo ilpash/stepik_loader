@@ -105,7 +105,7 @@ def test_save_cached_token_writes_expected_json(client_without_token):
     assert data == {"client_id": "test-client-id", "access_token": "test-token", "expires_at": 12345}
 
 
-# -- _ensure_token -------------------------------------------------------------
+# -- _ensure_token / access_token ----------------------------------------------
 
 
 def test_ensure_token_keeps_the_token_already_in_memory(client_with_token, monkeypatch):
@@ -161,6 +161,19 @@ def test_ensure_token_fetches_when_the_token_expires_within_the_margin(client_wi
     client_with_token._ensure_token()
 
     assert client_with_token._access_token == "fetched-token"
+    assert mock_fetch_new_token.call_count == 1
+
+
+def test_access_token_refreshes_an_expired_token(client_with_token, monkeypatch):
+    client_with_token._token_expires_at = time.time() - 1
+
+    def fetch_token():
+        client_with_token._access_token = "fetched-token"
+
+    mock_fetch_new_token = MagicMock(side_effect=fetch_token)
+    monkeypatch.setattr(client_with_token, "_fetch_new_token", mock_fetch_new_token)
+
+    assert client_with_token.access_token == "fetched-token"
     assert mock_fetch_new_token.call_count == 1
 
 
