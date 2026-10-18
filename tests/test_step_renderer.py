@@ -484,6 +484,8 @@ def _render_step_into(step_dir, step_node):
         lesson_title="Lesson",
         video_quality="best",
         access_token="test-token",
+        skip_videos=False,
+        skip_attachments=False,
     )
     render_step(step_node, step_dir, context)
 

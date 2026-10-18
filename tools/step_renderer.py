@@ -43,8 +43,8 @@ class StepContext:
     lesson_title: str
     video_quality: str
     access_token: str
-    skip_videos: bool = False
-    skip_attachments: bool = False
+    skip_videos: bool
+    skip_attachments: bool
 
     def log_label(self, step_id):
         return f"course={self.course_id} lesson={self.lesson_id} step={step_id}"
