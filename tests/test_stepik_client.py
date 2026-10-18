@@ -43,9 +43,11 @@ def client_with_token(client_without_token):
 # -- __init__ ------------------------------------------------------------------
 
 
-def test_init_raises_stepik_auth_error_when_credentials_missing(monkeypatch):
-    monkeypatch.delenv("STEPIK_CLIENT_ID", raising=False)
-    monkeypatch.delenv("STEPIK_CLIENT_SECRET", raising=False)
+@pytest.mark.parametrize("missing_variable", ["STEPIK_CLIENT_ID", "STEPIK_CLIENT_SECRET"])
+def test_init_raises_stepik_auth_error_when_a_credential_is_missing(missing_variable, monkeypatch):
+    monkeypatch.setenv("STEPIK_CLIENT_ID", "test-client-id")
+    monkeypatch.setenv("STEPIK_CLIENT_SECRET", "test-client-secret")
+    monkeypatch.delenv(missing_variable)
     with pytest.raises(StepikAuthError):
         StepikClient()
 
