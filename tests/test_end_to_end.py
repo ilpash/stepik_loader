@@ -16,7 +16,7 @@ from conftest import MockStepikClient
 @pytest.fixture
 def course_data():
     """
-    Raw Stepik-API-shaped fixture data covering every block type, every way a
+    Raw Stepik-API-shaped fixture data covering every renderer, every way a
     step can be named, and every format variant of the fields that have them.
     Collections vary in size on purpose -- one module holds two lessons and the
     other holds one, and lesson one holds a single step while the others hold
