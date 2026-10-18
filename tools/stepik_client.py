@@ -154,7 +154,7 @@ class StepikClient:
         """
         results = []
         for batch in itertools.batched(ids, IDS_BATCH_SIZE):
-            params = [("ids[]", str(id_)) for id_ in batch]
+            params = [("ids[]", id_) for id_ in batch]
             data = self.get(resource, params=params)
             results.extend(data.get(resource, []))
         return results

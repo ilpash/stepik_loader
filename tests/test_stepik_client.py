@@ -380,9 +380,9 @@ def test_get_by_ids_batches_requests(client_with_token, monkeypatch):
     results = client_with_token.get_by_ids("courses", list(range(1, 66)))
 
     assert mock_get.call_args_list == [
-        call("courses", params=[("ids[]", str(course_id)) for course_id in range(1, 31)]),
-        call("courses", params=[("ids[]", str(course_id)) for course_id in range(31, 61)]),
-        call("courses", params=[("ids[]", str(course_id)) for course_id in range(61, 66)]),
+        call("courses", params=[("ids[]", course_id) for course_id in range(1, 31)]),
+        call("courses", params=[("ids[]", course_id) for course_id in range(31, 61)]),
+        call("courses", params=[("ids[]", course_id) for course_id in range(61, 66)]),
     ]
     assert len(results) == 65
 
