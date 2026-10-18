@@ -69,14 +69,14 @@ def _build_lesson_node(lesson, position, step_id_to_step):
 
 
 def _build_module_node(section, unit_id_to_unit, lesson_id_to_lesson, step_id_to_step):
-    module_units = _resolve_ids_to_items(f"module {section['id']}", "unit", section.get("units", []), unit_id_to_unit)
+    module_units = _resolve_ids_to_items(f"section {section['id']}", "unit", section.get("units", []), unit_id_to_unit)
 
     lessons = []
     for unit in module_units:
         lesson = lesson_id_to_lesson.get(unit["lesson"])
         if not lesson:
             logger.warning(
-                "unit %s (module %s) references lesson %s which could not be resolved, skipping",
+                "unit %s (section %s) references lesson %s which could not be resolved, skipping",
                 unit["id"],
                 section["id"],
                 unit["lesson"],
