@@ -522,6 +522,8 @@ def test_render_step_basic_case(tmp_path, mock_download_resource):
     assert "<h1>Step title</h1>" in html
     assert "Привет" in html
     assert 'src="local_resource"' in html
+    # Every other renderer adds a note to this block, so its absence is what proves the dispatch
+    assert 'class="warning"' not in html
     mock_download_resource.assert_called_once_with(
         image_url,
         step_dir,
