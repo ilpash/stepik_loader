@@ -378,3 +378,19 @@ def test_main_respects_the_skip_flags(tmp_path, monkeypatch, course_data, downlo
         "http://cdn.example.com/some_clip.mp4",
         "http://cdn.example.com/some_photo.png",
     ]
+
+
+def test_main_overwrites_an_earlier_export(tmp_path, monkeypatch, course_data, downloaded_urls, caplog):
+    caplog.set_level(logging.INFO, logger="stepik_export")
+    monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
+    argv = ["--course-id", "1", "--output-dir", str(tmp_path)]
+    export_course.main(argv)
+    step_page = tmp_path / "1_sample-course" / LESSON_1_STEP_1 / "index.html"
+    step_page.write_text("an earlier export")
+    caplog.clear()
+
+    exit_code = export_course.main(argv)
+
+    assert exit_code == 0
+    assert "Steps exported: 10. Warnings: 1." in caplog.text
+    assert "an earlier export" not in step_page.read_text()
