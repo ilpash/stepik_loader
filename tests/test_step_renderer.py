@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+import resource_downloader
 from step_renderer import (
     StepContext,
     _pick_video_url,
@@ -19,6 +20,13 @@ from step_renderer import (
 @pytest.fixture
 def mock_resolve():
     return MagicMock(return_value="local_resource")
+
+
+@pytest.fixture
+def mock_download_resource(monkeypatch):
+    mock_download = MagicMock(return_value="local_resource")
+    monkeypatch.setattr(resource_downloader, "download_resource", mock_download)
+    return mock_download
 
 
 # -- _pick_video_url -----------------------------------------------------------

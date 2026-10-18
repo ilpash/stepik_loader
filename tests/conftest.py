@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 import pytest
 
 import export_course
-import resource_downloader
 
 
 @pytest.fixture(autouse=True)
@@ -19,13 +18,6 @@ def no_dotenv(monkeypatch):
     mock_load_dotenv = MagicMock()
     monkeypatch.setattr(export_course, "load_dotenv", mock_load_dotenv)
     return mock_load_dotenv
-
-
-@pytest.fixture
-def mock_download_resource(monkeypatch):
-    mock_download = MagicMock(return_value="local_resource")
-    monkeypatch.setattr(resource_downloader, "download_resource", mock_download)
-    return mock_download
 
 
 class MockStepikClient:
