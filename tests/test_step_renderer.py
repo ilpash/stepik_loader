@@ -227,19 +227,19 @@ def test_render_text_downloads_an_image_from_an_extensionless_url(mock_resolve):
 def test_render_code_basic_case(mock_resolve):
     block = {
         "name": "code",
-        "text": "<p>Print the sum of two integers.</p>",
+        "text": "<p>Swap the sides of the comparison.</p>",
         "options": {
-            "samples": [["7 3", "10"]],
+            "samples": [["7 < 9", "9 > 7"]],
             "execution_time_limit": 5,
             "execution_memory_limit": 256,
             "limits": {"python3": {"time": 1, "memory": 128}, "c++": {"time": 2, "memory": 256}},
-            "code_templates": {"python3": "print(sum())", "c++": "#include <iostream>"},
+            "code_templates": {"python3": "line = input()", "c++": "#include <iostream>"},
         },
     }
     html = _render_code(block=block, resolve=mock_resolve, skip_attachments=False)
-    assert "Print the sum of two integers." in html
-    assert "<pre><code>7 3</code></pre>" in html
-    assert "<pre><code>10</code></pre>" in html
+    assert "Swap the sides of the comparison." in html
+    assert "<pre><code>7 &lt; 9</code></pre>" in html
+    assert "<pre><code>9 &gt; 7</code></pre>" in html
     assert "Default limits: 5 s, 256 MB." in html
     assert "<summary>python3 — 1 s, 128 MB</summary>" in html
     assert "<summary>c++ — 2 s, 256 MB</summary>" in html
@@ -295,12 +295,19 @@ def test_render_pycharm_basic_case(mock_resolve):
         "options": {
             "title": "Exercise 1",
             "description_format": "html",
-            "files": [{"name": "src/Task.kt", "text": "fun main() {\n  TODO()\n}", "is_visible": True}],
+            "files": [
+                {
+                    "name": "src/Task.kt",
+                    "text": "fun main() {\n  val numbers = listOf<Int>()\n  TODO()\n}",
+                    "is_visible": True,
+                }
+            ],
         },
     }
     html = _render_pycharm(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "Implement the function." in html
     assert "<h3>src/Task.kt</h3>" in html
+    assert "val numbers = listOf&lt;Int&gt;()" in html
     assert "TODO()" in html
     assert "hidden" not in html
     assert "not available offline" in html
