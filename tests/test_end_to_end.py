@@ -143,7 +143,7 @@ def course_data():
                         "\n\nSee [the guide](http://cdn.example.com/some_guide.pdf)."
                     ),
                     "options": {
-                        "title": "Exercise 1",
+                        "title": "Some Title",
                         "description_format": "MD",
                         "files": [
                             {"name": "src/Task.kt", "text": "fun main() {}", "is_visible": True},
@@ -160,7 +160,7 @@ def course_data():
                 "block": {
                     "name": "pycharm",
                     "text": "<p>Read this one.</p>",
-                    "options": {"title": "Exercise 2", "description_format": "html", "files": []},
+                    "options": {"title": "Another Title", "description_format": "html", "files": []},
                 },
             },
             # number: the note for a quiz that expects a typed answer
@@ -180,7 +180,10 @@ def course_data():
                 "block": {
                     "name": "pycharm",
                     "text": "<p>Read the last one.</p>",
-                    "options": {"title": "Exercise 3", "files": [{"name": "src/Main.kt", "text": "fun main() {}"}]},
+                    "options": {
+                        "title": "A Different Title",
+                        "files": [{"name": "src/Main.kt", "text": "fun main() {}"}],
+                    },
                 },
             },
             # video: a single quality
@@ -298,9 +301,9 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert link_positions == sorted(link_positions)
     assert "Step 10000 (text)" in toc_html
     assert "Step 10001 (code)" in toc_html
-    assert "Exercise 1" in toc_html
-    assert "Exercise 2" in toc_html
-    assert "Exercise 3" in toc_html
+    assert "Some Title" in toc_html
+    assert "Another Title" in toc_html
+    assert "A Different Title" in toc_html
     assert "Step 10005 (video)" in toc_html
 
     text_html = (course_dir / LESSON_1_1_STEP_1 / "index.html").read_text()
