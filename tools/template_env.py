@@ -8,7 +8,13 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 ASSETS_DIR = Path(__file__).resolve().parent / "assets"
 
-_env = Environment(loader=FileSystemLoader(ASSETS_DIR), autoescape=True, undefined=StrictUndefined)
+_env = Environment(
+    loader=FileSystemLoader(ASSETS_DIR),
+    autoescape=True,
+    undefined=StrictUndefined,
+    trim_blocks=True,
+    lstrip_blocks=True,
+)
 
 
 def get_template(name):
