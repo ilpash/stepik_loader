@@ -126,16 +126,13 @@ def test_download_resource_overwrites_a_file_from_an_earlier_run(tmp_path, mock_
 
 def test_download_resource_saves_nothing_when_the_server_sends_a_web_page(tmp_path, mock_session_get, caplog):
     mock_session_get.return_value = MockStreamResponse(200, headers={"Content-Type": "text/html; charset=utf-8"})
+    page_url = "https://github.com/some_user/some_repo/blob/main/solution.py"
     result = download_resource(
-        "https://github.com/some_user/some_repo/blob/main/solution.py",
-        tmp_path,
-        "test-log-label",
-        access_token="test-token",
-        filename_hint="solution.py",
+        page_url, tmp_path, "test-log-label", access_token="test-token", filename_hint="solution.py"
     )
     assert result is None
     assert list(tmp_path.iterdir()) == []
-    assert "returned a web page" in caplog.text
+    assert f"[test-log-label] {page_url} returned a web page, keeping the link" in caplog.text
 
 
 @pytest.mark.parametrize("status_code", [400, 404])
@@ -147,7 +144,7 @@ def test_download_resource_returns_none_on_non_retryable_http_error(status_code,
     assert result is None
     assert mock_session_get.call_count == 1
     assert list(tmp_path.iterdir()) == []
-    assert f"failed to download http://example.com/notes.txt: HTTP {status_code}" in caplog.text
+    assert f"[test-log-label] failed to download http://example.com/notes.txt: HTTP {status_code}" in caplog.text
 
 
 def test_download_resource_retries_on_retryable_status_then_succeeds(tmp_path, mock_session_get, no_sleep):

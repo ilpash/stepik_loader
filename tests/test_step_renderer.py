@@ -184,7 +184,7 @@ def test_pick_video_url_falls_back_to_nearest_when_exact_missing(caplog):
     urls = [_video_url("360"), _video_url("480"), _video_url("1080")]
     result = _pick_video_url(urls, "720", "test-log-label")
     assert result == _video_url("480")
-    assert "not available" in caplog.text
+    assert "[test-log-label] requested video quality 720 not available, using 480 instead" in caplog.text
 
 
 @pytest.mark.parametrize("requested", ["best", "360"])
@@ -477,7 +477,7 @@ def test_render_generic_basic_case(caplog):
     assert "<pre><code>" in html
     assert "&quot;custom_field&quot;" in html
     assert "Привет" in html
-    assert "no dedicated renderer" in caplog.text
+    assert "[test-log-label] no dedicated renderer for block type 'unknown-type', using generic fallback" in caplog.text
 
 
 # -- render_step ---------------------------------------------------------------

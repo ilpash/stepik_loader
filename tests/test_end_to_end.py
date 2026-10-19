@@ -277,6 +277,10 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert client.get_by_ids_calls[0] == ("courses", [1])
     # The table step is the only one without a dedicated renderer, so it is the one warning.
     assert "Steps exported: 12. Warnings: 1." in caplog.text
+    assert (
+        "[course=1 lesson=1001 step=10004] no dedicated renderer for block type 'table', using generic fallback"
+        in caplog.text
+    )
 
     course_dir = tmp_path / "exports" / "1_sample-course"
     assert "[1/12] Module One > Lesson One > step 10000" in caplog.text
