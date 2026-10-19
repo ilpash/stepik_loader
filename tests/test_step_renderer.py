@@ -187,9 +187,10 @@ def test_pick_video_url_falls_back_to_nearest_when_exact_missing(caplog):
     assert "[test-log-label] requested video quality 720 not available, using 480 instead" in caplog.text
 
 
+@pytest.mark.parametrize("unreadable_quality", [None, "unknown"])
 @pytest.mark.parametrize("requested", ["best", "360"])
-def test_pick_video_url_skips_an_entry_with_an_unreadable_quality(requested):
-    urls = [_video_url(None), _video_url("1080")]
+def test_pick_video_url_skips_an_entry_with_an_unreadable_quality(requested, unreadable_quality):
+    urls = [_video_url(unreadable_quality), _video_url("1080")]
     result = _pick_video_url(urls, requested, "test-log-label")
     assert result == _video_url("1080")
 
