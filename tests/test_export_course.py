@@ -194,14 +194,17 @@ def test_main_stops_when_the_disk_is_full(error_code, tmp_path, monkeypatch, cap
 def test_main_stops_when_the_export_folder_cannot_be_created(tmp_path, monkeypatch, caplog, two_step_tree):
     not_a_folder = tmp_path / "not_a_folder.txt"
     not_a_folder.write_text("")
+    mock_copy_assets = MagicMock()
     mock_render_step = MagicMock()
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
     monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
+    monkeypatch.setattr(export_course, "copy_assets", mock_copy_assets)
     monkeypatch.setattr(export_course, "render_step", mock_render_step)
 
     exit_code = export_course.main(["--course-id", "1", "--output-dir", str(not_a_folder)])
 
     assert exit_code == 1
+    assert mock_copy_assets.call_count == 0
     assert mock_render_step.call_count == 0
     assert "Could not create the export folder, stopping the export" in caplog.text
 
