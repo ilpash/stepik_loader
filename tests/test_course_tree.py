@@ -40,7 +40,7 @@ def mock_client_data():
             {
                 "id": 10003,
                 "position": 2,
-                "block": {"name": "pycharm", "text": "step two", "options": {"title": "Scopes"}},
+                "block": {"name": "pycharm", "text": "step two", "options": {"title": "Some Title"}},
             },
         ],
     }
@@ -147,14 +147,18 @@ def test_build_course_tree_basic_case(mock_client_data):
                             {
                                 "id": 10003,
                                 "position": 2,
-                                "title": "Scopes",
+                                "title": "Some Title",
                                 "dir_name": "step_002_pycharm",
                                 "block_type": "pycharm",
-                                "block": {"name": "pycharm", "text": "step two", "options": {"title": "Scopes"}},
+                                "block": {"name": "pycharm", "text": "step two", "options": {"title": "Some Title"}},
                                 "raw": {
                                     "id": 10003,
                                     "position": 2,
-                                    "block": {"name": "pycharm", "text": "step two", "options": {"title": "Scopes"}},
+                                    "block": {
+                                        "name": "pycharm",
+                                        "text": "step two",
+                                        "options": {"title": "Some Title"},
+                                    },
                                 },
                             },
                         ],
