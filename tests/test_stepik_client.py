@@ -271,15 +271,21 @@ def test_fetch_new_token_raises_after_exhausting_retries(failure, reason, client
 # -- _request ------------------------------------------------------------------
 
 
-def test_request_basic_case(client_with_token, no_sleep, monkeypatch):
+def test_request_basic_case(client_without_token, no_sleep, monkeypatch):
+    def fetch_token():
+        client_without_token._access_token = "fetched-token"
+
+    mock_fetch_new_token = MagicMock(side_effect=fetch_token)
     mock_request = MagicMock(return_value=MockResponse(200))
-    monkeypatch.setattr(client_with_token.session, "request", mock_request)
-    result = client_with_token._request("GET", "http://example.com", params=[("ids[]", 1)])
+    monkeypatch.setattr(client_without_token, "_fetch_new_token", mock_fetch_new_token)
+    monkeypatch.setattr(client_without_token.session, "request", mock_request)
+    result = client_without_token._request("GET", "http://example.com", params=[("ids[]", 1)])
     assert result.status_code == 200
+    assert mock_fetch_new_token.call_count == 1
     mock_request.assert_called_once_with(
         "GET",
         "http://example.com",
-        headers={"Authorization": "Bearer test-token"},
+        headers={"Authorization": "Bearer fetched-token"},
         timeout=stepik_client.TIMEOUT_SECONDS,
         params=[("ids[]", 1)],
     )
