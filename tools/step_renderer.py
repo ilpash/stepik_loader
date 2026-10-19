@@ -122,10 +122,10 @@ def _pick_video_url(urls, requested, log_label):
     return closest
 
 
-def _render_video(block, resolve, log_label, quality, skip_videos):
+def _render_video(block, resolve, log_label, video_quality, skip_videos):
     video = block.get("video", {})
     urls = video.get("urls", [])
-    selected = _pick_video_url(urls, quality, log_label)
+    selected = _pick_video_url(urls, video_quality, log_label)
     if not selected or not selected.get("url"):
         logger.warning("[%s] video step has no downloadable URLs", log_label)
         return '<p class="warning">Video unavailable: no downloadable URL was returned by the API.</p>'

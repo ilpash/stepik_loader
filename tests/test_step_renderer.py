@@ -205,7 +205,7 @@ def test_render_video_basic_case(mock_resolve):
         block=block,
         resolve=mock_resolve,
         log_label="test-log-label",
-        quality="best",
+        video_quality="best",
         skip_videos=False,
     )
 
@@ -219,7 +219,7 @@ def test_render_video_links_the_online_video_when_skip_videos_true(mock_resolve)
         block={"video": {"urls": [{"quality": "720", "url": video_url}]}},
         resolve=mock_resolve,
         log_label="test-log-label",
-        quality="best",
+        video_quality="best",
         skip_videos=True,
     )
     assert 'src="https://cdn.example.com/lecture.mp4?expires=some_time&amp;signature=some_signature"' in html
@@ -234,7 +234,7 @@ def test_render_video_returns_warning_when_no_urls(mock_resolve, caplog):
         block={"video": {"urls": []}},
         resolve=mock_resolve,
         log_label="test-log-label",
-        quality="best",
+        video_quality="best",
         skip_videos=False,
     )
     assert "unavailable" in html.lower()
@@ -247,7 +247,7 @@ def test_render_video_returns_warning_when_the_entry_has_no_url(mock_resolve, ca
         block={"video": {"urls": [{"quality": "720"}]}},
         resolve=mock_resolve,
         log_label="test-log-label",
-        quality="best",
+        video_quality="best",
         skip_videos=False,
     )
     assert "unavailable" in html.lower()
@@ -263,7 +263,7 @@ def test_render_video_links_the_online_video_when_the_download_fails(mock_resolv
         block=block,
         resolve=mock_resolve,
         log_label="test-log-label",
-        quality="best",
+        video_quality="best",
         skip_videos=False,
     )
     assert '<video controls src="https://cdn.example.com/lecture.mp4"></video>' in html
