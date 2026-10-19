@@ -1,7 +1,8 @@
 """
 End-to-end tests of export_course.main(), with the Stepik API and all network
 downloads mocked: one long basic-case export of a course that covers every
-renderer, plus tests for the export options.
+renderer, plus tests for the export options and for a second export into the
+same folder.
 """
 
 import logging
