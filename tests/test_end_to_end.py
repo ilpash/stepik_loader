@@ -247,6 +247,8 @@ VIDEO_FILES = {f"{LESSON_3_STEP_1}/video.mp4", f"{LESSON_3_STEP_6}/video.mp4"}
 
 EXPECTED_FILES = {
     "index.html",
+    "assets/step.html.j2",
+    "assets/toc.html.j2",
     "assets/style.css",
     "assets/mathjax/tex-svg-full.js",
     "assets/mathjax/LICENSE",

@@ -1,7 +1,7 @@
 import pytest
 
 import toc_builder
-from template_env import TEMPLATES_DIR
+from template_env import ASSETS_DIR
 from toc_builder import build_toc
 
 
@@ -64,13 +64,8 @@ def test_build_toc_basic_case(tmp_path, sample_course_tree):
         assert f"{module['dir_name']}/{lesson['dir_name']}/{step['dir_name']}/index.html" in html
 
     assert '<link rel="stylesheet" href="assets/style.css">' in html
-    copied_css = (tmp_path / "assets" / "style.css").read_text()
-    original_css = (TEMPLATES_DIR / "style.css").read_text()
-    assert copied_css == original_css
-    for name in ["tex-svg-full.js", "LICENSE"]:
-        copied_file = (tmp_path / "assets" / "mathjax" / name).read_bytes()
-        original_file = (TEMPLATES_DIR / "mathjax" / name).read_bytes()
-        assert copied_file == original_file
+    for name in ["step.html.j2", "toc.html.j2", "style.css", "mathjax/tex-svg-full.js", "mathjax/LICENSE"]:
+        assert (tmp_path / "assets" / name).read_bytes() == (ASSETS_DIR / name).read_bytes()
 
 
 def test_build_toc_lists_a_skipped_step_without_a_link(tmp_path, sample_course_tree):
@@ -92,12 +87,11 @@ def test_build_toc_escapes_html_in_the_course_title(tmp_path, sample_course_tree
 
 
 def test_build_toc_leaves_hidden_files_out_of_the_assets(tmp_path, sample_course_tree, monkeypatch):
-    templates_dir = tmp_path / "templates"
-    (templates_dir / "mathjax").mkdir(parents=True)
-    (templates_dir / "style.css").write_text("")
-    (templates_dir / "mathjax" / "tex-svg-full.js").write_text("")
-    (templates_dir / "mathjax" / ".DS_Store").write_bytes(b"finder data")
-    monkeypatch.setattr(toc_builder, "TEMPLATES_DIR", templates_dir)
+    assets_dir = tmp_path / "project" / "assets"
+    (assets_dir / "mathjax").mkdir(parents=True)
+    (assets_dir / "mathjax" / "tex-svg-full.js").write_text("")
+    (assets_dir / "mathjax" / ".DS_Store").write_bytes(b"finder data")
+    monkeypatch.setattr(toc_builder, "ASSETS_DIR", assets_dir)
     course_dir = tmp_path / "course"
 
     build_toc(sample_course_tree, course_dir, set())
