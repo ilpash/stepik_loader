@@ -91,8 +91,8 @@ def test_build_toc_leaves_hidden_files_out_of_the_assets(tmp_path, sample_course
     (assets_dir / "mathjax").mkdir(parents=True)
     (assets_dir / "style.css").write_text("")
     (assets_dir / "mathjax" / "tex-svg-full.js").write_text("")
-    (assets_dir / ".DS_Store").write_bytes(b"finder data")
-    (assets_dir / "mathjax" / ".DS_Store").write_bytes(b"finder data")
+    (assets_dir / ".hidden_file").write_text("")
+    (assets_dir / "mathjax" / ".hidden_file").write_text("")
     monkeypatch.setattr(toc_builder, "ASSETS_DIR", assets_dir)
     course_dir = tmp_path / "course"
 
