@@ -1,5 +1,6 @@
 import pytest
 
+import toc_builder
 from template_env import TEMPLATES_DIR
 from toc_builder import build_toc
 
@@ -88,3 +89,18 @@ def test_build_toc_escapes_html_in_the_course_title(tmp_path, sample_course_tree
     html = (tmp_path / "index.html").read_text()
     assert "<h1>&lt;script&gt;some_script()&lt;/script&gt;</h1>" in html
     assert "<script>" not in html
+
+
+def test_build_toc_leaves_hidden_files_out_of_the_assets(tmp_path, sample_course_tree, monkeypatch):
+    templates_dir = tmp_path / "templates"
+    (templates_dir / "mathjax").mkdir(parents=True)
+    (templates_dir / "style.css").write_text("")
+    (templates_dir / "mathjax" / "tex-svg-full.js").write_text("")
+    (templates_dir / "mathjax" / ".DS_Store").write_bytes(b"finder data")
+    monkeypatch.setattr(toc_builder, "TEMPLATES_DIR", templates_dir)
+    course_dir = tmp_path / "course"
+
+    build_toc(sample_course_tree, course_dir, set())
+
+    assert (course_dir / "assets" / "mathjax" / "tex-svg-full.js").exists()
+    assert not (course_dir / "assets" / "mathjax" / ".DS_Store").exists()

@@ -14,7 +14,9 @@ def build_toc(course_tree, course_dir, skipped_step_ids):
     assets_dir = course_dir / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy(TEMPLATES_DIR / "style.css", assets_dir / "style.css")
-    shutil.copytree(TEMPLATES_DIR / "mathjax", assets_dir / "mathjax", dirs_exist_ok=True)
+    shutil.copytree(
+        TEMPLATES_DIR / "mathjax", assets_dir / "mathjax", dirs_exist_ok=True, ignore=shutil.ignore_patterns(".*")
+    )
 
     html = get_template("toc.html.j2").render(
         course_title=course_tree["title"],
