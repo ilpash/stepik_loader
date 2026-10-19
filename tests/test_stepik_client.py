@@ -48,7 +48,7 @@ def test_init_raises_stepik_auth_error_when_a_credential_is_missing(missing_vari
     monkeypatch.setenv("STEPIK_CLIENT_ID", "test-client-id")
     monkeypatch.setenv("STEPIK_CLIENT_SECRET", "test-client-secret")
     monkeypatch.delenv(missing_variable)
-    with pytest.raises(StepikAuthError):
+    with pytest.raises(StepikAuthError, match="STEPIK_CLIENT_ID / STEPIK_CLIENT_SECRET are not set"):
         StepikClient()
 
 

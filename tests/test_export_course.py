@@ -126,7 +126,7 @@ def test_main_warns_when_the_course_has_no_steps(tmp_path, monkeypatch, caplog):
     exit_code = export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
 
     assert exit_code == 0
-    assert "has no steps to export" in caplog.text
+    assert "Course 1 has no steps to export." in caplog.text
 
 
 @pytest.fixture
@@ -159,7 +159,8 @@ def two_step_tree():
 
 
 def test_main_skips_a_step_it_cannot_write(tmp_path, monkeypatch, caplog, two_step_tree):
-    mock_render_step = MagicMock(side_effect=[OSError(errno.EACCES, "Permission denied"), None])
+    write_error = OSError(errno.EACCES, "Permission denied")
+    mock_render_step = MagicMock(side_effect=[write_error, None])
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
     monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
     monkeypatch.setattr(export_course, "render_step", mock_render_step)
@@ -168,7 +169,7 @@ def test_main_skips_a_step_it_cannot_write(tmp_path, monkeypatch, caplog, two_st
 
     assert exit_code == 0
     assert mock_render_step.call_count == 2
-    assert "[course=1 lesson=1000 step=10000] could not write the step, skipping it" in caplog.text
+    assert f"[course=1 lesson=1000 step=10000] could not write the step, skipping it: {write_error}" in caplog.text
     assert "Steps exported: 1. Warnings: 1." in caplog.text
     toc_html = (tmp_path / "1_course" / "index.html").read_text()
     assert "1. First step (not exported)" in toc_html
@@ -176,7 +177,8 @@ def test_main_skips_a_step_it_cannot_write(tmp_path, monkeypatch, caplog, two_st
 
 @pytest.mark.parametrize("error_code", [errno.ENOSPC, errno.EDQUOT])
 def test_main_stops_when_the_disk_is_full(error_code, tmp_path, monkeypatch, caplog, two_step_tree):
-    mock_render_step = MagicMock(side_effect=OSError(error_code, os.strerror(error_code)))
+    disk_error = OSError(error_code, os.strerror(error_code))
+    mock_render_step = MagicMock(side_effect=disk_error)
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
     monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
     monkeypatch.setattr(export_course, "render_step", mock_render_step)
@@ -185,7 +187,7 @@ def test_main_stops_when_the_disk_is_full(error_code, tmp_path, monkeypatch, cap
 
     assert exit_code == 1
     assert mock_render_step.call_count == 1
-    assert "The disk is full, stopping the export" in caplog.text
+    assert f"The disk is full, stopping the export: {disk_error}" in caplog.text
     assert not (tmp_path / "1_course" / "index.html").exists()
 
 
@@ -205,7 +207,8 @@ def test_main_stops_when_the_export_folder_cannot_be_created(tmp_path, monkeypat
 
 
 def test_main_stops_when_the_table_of_contents_cannot_be_written(tmp_path, monkeypatch, caplog, two_step_tree):
-    mock_build_toc = MagicMock(side_effect=OSError(errno.ENOSPC, "No space left on device"))
+    toc_error = OSError(errno.ENOSPC, "No space left on device")
+    mock_build_toc = MagicMock(side_effect=toc_error)
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
     monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
     monkeypatch.setattr(export_course, "render_step", MagicMock())
@@ -215,7 +218,7 @@ def test_main_stops_when_the_table_of_contents_cannot_be_written(tmp_path, monke
 
     assert exit_code == 1
     assert mock_build_toc.call_count == 1
-    assert "Could not write the table of contents, stopping the export" in caplog.text
+    assert f"Could not write the table of contents, stopping the export: {toc_error}" in caplog.text
 
 
 @pytest.mark.parametrize(
