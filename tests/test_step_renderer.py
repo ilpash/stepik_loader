@@ -164,6 +164,12 @@ def _video_url(quality):
     return {"quality": quality, "url": f"https://cdn.example.com/lecture-{quality}.mp4"}
 
 
+def test_pick_video_url_basic_case(caplog):
+    urls = [_video_url("360"), _video_url("720"), _video_url("1080")]
+    assert _pick_video_url(urls, "720", "test-log-label") == _video_url("720")
+    assert "not available" not in caplog.text
+
+
 def test_pick_video_url_returns_none_for_empty_list():
     assert _pick_video_url([], "best", "test-log-label") is None
 
@@ -171,12 +177,6 @@ def test_pick_video_url_returns_none_for_empty_list():
 def test_pick_video_url_best_picks_highest_quality():
     urls = [_video_url("360"), _video_url("1080"), _video_url("720")]
     assert _pick_video_url(urls, "best", "test-log-label") == _video_url("1080")
-
-
-def test_pick_video_url_exact_match(caplog):
-    urls = [_video_url("360"), _video_url("720"), _video_url("1080")]
-    assert _pick_video_url(urls, "720", "test-log-label") == _video_url("720")
-    assert "not available" not in caplog.text
 
 
 def test_pick_video_url_falls_back_to_nearest_when_exact_missing(caplog):
