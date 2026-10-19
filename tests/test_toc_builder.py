@@ -89,12 +89,15 @@ def test_build_toc_escapes_html_in_the_course_title(tmp_path, sample_course_tree
 def test_build_toc_leaves_hidden_files_out_of_the_assets(tmp_path, sample_course_tree, monkeypatch):
     assets_dir = tmp_path / "project" / "assets"
     (assets_dir / "mathjax").mkdir(parents=True)
+    (assets_dir / "style.css").write_text("")
     (assets_dir / "mathjax" / "tex-svg-full.js").write_text("")
+    (assets_dir / ".DS_Store").write_bytes(b"finder data")
     (assets_dir / "mathjax" / ".DS_Store").write_bytes(b"finder data")
     monkeypatch.setattr(toc_builder, "ASSETS_DIR", assets_dir)
     course_dir = tmp_path / "course"
 
     build_toc(sample_course_tree, course_dir, set())
 
-    assert (course_dir / "assets" / "mathjax" / "tex-svg-full.js").exists()
-    assert not (course_dir / "assets" / "mathjax" / ".DS_Store").exists()
+    copied_assets = course_dir / "assets"
+    copied_files = {path.relative_to(copied_assets).as_posix() for path in copied_assets.rglob("*") if path.is_file()}
+    assert copied_files == {"style.css", "mathjax/tex-svg-full.js"}
