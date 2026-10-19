@@ -19,7 +19,7 @@ def course_data():
     Raw Stepik-API-shaped fixture data covering every renderer, every way a
     step can be named, and every format variant of the fields that have them.
     Collections vary in size on purpose -- one module holds two lessons and the
-    other holds one, and lesson one holds a single step while the others hold
+    other holds one, and lesson 1.1 holds a single step while the others hold
     several -- so each loop is exercised with one entry and with many. Step
     positions are shuffled, so the ordering is proven rather than incidental.
     """
@@ -35,9 +35,9 @@ def course_data():
             {"id": 102, "position": 1, "lesson": 1002},
         ],
         "lessons": [
-            {"id": 1000, "title": "Lesson One", "steps": [10000]},
-            {"id": 1001, "title": "Lesson Two", "steps": [10001, 10002, 10003, 10004, 10010]},
-            {"id": 1002, "title": "Lesson Three", "steps": [10005, 10006, 10007, 10008, 10009, 10011]},
+            {"id": 1000, "title": "Lesson 1.1", "steps": [10000]},
+            {"id": 1001, "title": "Lesson 1.2", "steps": [10001, 10002, 10003, 10004, 10010]},
+            {"id": 1002, "title": "Lesson 2.1", "steps": [10005, 10006, 10007, 10008, 10009, 10011]},
         ],
         "steps": [
             # text: every resource attribute, every way a url can be written (absolute,
@@ -209,41 +209,41 @@ def downloaded_urls(monkeypatch):
     return urls
 
 
-LESSON_1_STEP_1 = "module_001_module-one/lesson_001_lesson-one/step_001_text"
-LESSON_2_STEP_1 = "module_001_module-one/lesson_002_lesson-two/step_001_choice"
-LESSON_2_STEP_2 = "module_001_module-one/lesson_002_lesson-two/step_002_code"
-LESSON_2_STEP_3 = "module_001_module-one/lesson_002_lesson-two/step_003_sorting"
-LESSON_2_STEP_4 = "module_001_module-one/lesson_002_lesson-two/step_004_table"
-LESSON_2_STEP_5 = "module_001_module-one/lesson_002_lesson-two/step_005_code"
-LESSON_3_STEP_1 = "module_002_module-two/lesson_001_lesson-three/step_001_video"
-LESSON_3_STEP_2 = "module_002_module-two/lesson_001_lesson-three/step_002_pycharm"
-LESSON_3_STEP_3 = "module_002_module-two/lesson_001_lesson-three/step_003_pycharm"
-LESSON_3_STEP_4 = "module_002_module-two/lesson_001_lesson-three/step_004_number"
-LESSON_3_STEP_5 = "module_002_module-two/lesson_001_lesson-three/step_005_pycharm"
-LESSON_3_STEP_6 = "module_002_module-two/lesson_001_lesson-three/step_006_video"
+LESSON_1_1_STEP_1 = "module_001_module-one/lesson_001_lesson-1-1/step_001_text"
+LESSON_1_2_STEP_1 = "module_001_module-one/lesson_002_lesson-1-2/step_001_choice"
+LESSON_1_2_STEP_2 = "module_001_module-one/lesson_002_lesson-1-2/step_002_code"
+LESSON_1_2_STEP_3 = "module_001_module-one/lesson_002_lesson-1-2/step_003_sorting"
+LESSON_1_2_STEP_4 = "module_001_module-one/lesson_002_lesson-1-2/step_004_table"
+LESSON_1_2_STEP_5 = "module_001_module-one/lesson_002_lesson-1-2/step_005_code"
+LESSON_2_1_STEP_1 = "module_002_module-two/lesson_001_lesson-2-1/step_001_video"
+LESSON_2_1_STEP_2 = "module_002_module-two/lesson_001_lesson-2-1/step_002_pycharm"
+LESSON_2_1_STEP_3 = "module_002_module-two/lesson_001_lesson-2-1/step_003_pycharm"
+LESSON_2_1_STEP_4 = "module_002_module-two/lesson_001_lesson-2-1/step_004_number"
+LESSON_2_1_STEP_5 = "module_002_module-two/lesson_001_lesson-2-1/step_005_pycharm"
+LESSON_2_1_STEP_6 = "module_002_module-two/lesson_001_lesson-2-1/step_006_video"
 
 ALL_STEPS = [
-    LESSON_1_STEP_1,
-    LESSON_2_STEP_1,
-    LESSON_2_STEP_2,
-    LESSON_2_STEP_3,
-    LESSON_2_STEP_4,
-    LESSON_2_STEP_5,
-    LESSON_3_STEP_1,
-    LESSON_3_STEP_2,
-    LESSON_3_STEP_3,
-    LESSON_3_STEP_4,
-    LESSON_3_STEP_5,
-    LESSON_3_STEP_6,
+    LESSON_1_1_STEP_1,
+    LESSON_1_2_STEP_1,
+    LESSON_1_2_STEP_2,
+    LESSON_1_2_STEP_3,
+    LESSON_1_2_STEP_4,
+    LESSON_1_2_STEP_5,
+    LESSON_2_1_STEP_1,
+    LESSON_2_1_STEP_2,
+    LESSON_2_1_STEP_3,
+    LESSON_2_1_STEP_4,
+    LESSON_2_1_STEP_5,
+    LESSON_2_1_STEP_6,
 ]
 
 ATTACHMENT_FILES = {
-    f"{LESSON_1_STEP_1}/resource_6_some_notes.pdf",
-    f"{LESSON_2_STEP_1}/resource_2_some_handout.pdf",
-    f"{LESSON_2_STEP_2}/resource_1_some_statement.pdf",
-    f"{LESSON_3_STEP_2}/resource_1_some_guide.pdf",
+    f"{LESSON_1_1_STEP_1}/resource_6_some_notes.pdf",
+    f"{LESSON_1_2_STEP_1}/resource_2_some_handout.pdf",
+    f"{LESSON_1_2_STEP_2}/resource_1_some_statement.pdf",
+    f"{LESSON_2_1_STEP_2}/resource_1_some_guide.pdf",
 }
-VIDEO_FILES = {f"{LESSON_3_STEP_1}/video.mp4", f"{LESSON_3_STEP_6}/video.mp4"}
+VIDEO_FILES = {f"{LESSON_2_1_STEP_1}/video.mp4", f"{LESSON_2_1_STEP_6}/video.mp4"}
 
 EXPECTED_FILES = {
     "index.html",
@@ -252,12 +252,12 @@ EXPECTED_FILES = {
     "assets/style.css",
     "assets/mathjax/tex-svg-full.js",
     "assets/mathjax/LICENSE",
-    f"{LESSON_1_STEP_1}/resource_1_some_picture.png",
-    f"{LESSON_1_STEP_1}/resource_2_some_diagram.png",
-    f"{LESSON_1_STEP_1}/resource_3_some_audio.mp3",
-    f"{LESSON_1_STEP_1}/resource_4_some_recording.mp3",
-    f"{LESSON_1_STEP_1}/resource_5_some_clip.mp4",
-    f"{LESSON_2_STEP_1}/resource_1_some_photo.png",
+    f"{LESSON_1_1_STEP_1}/resource_1_some_picture.png",
+    f"{LESSON_1_1_STEP_1}/resource_2_some_diagram.png",
+    f"{LESSON_1_1_STEP_1}/resource_3_some_audio.mp3",
+    f"{LESSON_1_1_STEP_1}/resource_4_some_recording.mp3",
+    f"{LESSON_1_1_STEP_1}/resource_5_some_clip.mp4",
+    f"{LESSON_1_2_STEP_1}/resource_1_some_photo.png",
     *ATTACHMENT_FILES,
     *VIDEO_FILES,
     *(f"{step}/index.html" for step in ALL_STEPS),
@@ -285,7 +285,7 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     )
 
     course_dir = tmp_path / "exports" / "1_sample-course"
-    assert "[1/12] Module One > Lesson One > step 10000" in caplog.text
+    assert "[1/12] Module One > Lesson 1.1 > step 10000" in caplog.text
     assert f"Done. Open {course_dir / 'index.html'} in a browser." in caplog.text
     assert _exported_files(course_dir) == EXPECTED_FILES
 
@@ -303,7 +303,7 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert "Exercise 3" in toc_html
     assert "Step 10005 (video)" in toc_html
 
-    text_html = (course_dir / LESSON_1_STEP_1 / "index.html").read_text()
+    text_html = (course_dir / LESSON_1_1_STEP_1 / "index.html").read_text()
     # A step sits three levels below the course root, and both links back must clear it
     assert 'href="../../../assets/style.css"' in text_html
     assert 'href="../../../index.html"' in text_html
@@ -319,13 +319,13 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert '<a rel="nofollow">some contact</a>' in text_html
     assert "<script" not in text_html
 
-    choice_html = (course_dir / LESSON_2_STEP_1 / "index.html").read_text()
+    choice_html = (course_dir / LESSON_1_2_STEP_1 / "index.html").read_text()
     assert "Mark every true statement." in choice_html
     assert 'src="resource_1_some_photo.png"' in choice_html
     assert "asks you to choose an answer" in choice_html
     assert "More than one answer may be correct" in choice_html
 
-    code_html = (course_dir / LESSON_2_STEP_2 / "index.html").read_text()
+    code_html = (course_dir / LESSON_1_2_STEP_2 / "index.html").read_text()
     assert "asks you to write a program" in code_html
     assert 'src="../../../assets/mathjax/tex-svg-full.js"' in code_html
     assert "<pre><code>7 3</code></pre>" in code_html
@@ -334,15 +334,15 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert "&lt;iostream&gt;" in code_html
     assert "kotlin" not in code_html
 
-    sorting_html = (course_dir / LESSON_2_STEP_3 / "index.html").read_text()
+    sorting_html = (course_dir / LESSON_1_2_STEP_3 / "index.html").read_text()
     assert "Put these in order." in sorting_html
     assert "asks you to sort a list" in sorting_html
     assert "More than one answer" not in sorting_html
 
-    table_html = (course_dir / LESSON_2_STEP_4 / "index.html").read_text()
+    table_html = (course_dir / LESSON_1_2_STEP_4 / "index.html").read_text()
     assert "raw step data" in table_html
 
-    single_sample_html = (course_dir / LESSON_2_STEP_5 / "index.html").read_text()
+    single_sample_html = (course_dir / LESSON_1_2_STEP_5 / "index.html").read_text()
     assert "<pre><code>2</code></pre>" in single_sample_html
     assert "<pre><code>4</code></pre>" in single_sample_html
     assert "<summary>python3</summary>" in single_sample_html
@@ -351,10 +351,10 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     # "best" quality has to pick 1080 out of the three the step offers
     assert "http://cdn.example.com/vid-1080.mp4" in downloaded_urls
     assert "http://cdn.example.com/vid-720.mp4" not in downloaded_urls
-    video_html = (course_dir / LESSON_3_STEP_1 / "index.html").read_text()
+    video_html = (course_dir / LESSON_2_1_STEP_1 / "index.html").read_text()
     assert '<video controls src="video.mp4"></video>' in video_html
 
-    markdown_html = (course_dir / LESSON_3_STEP_2 / "index.html").read_text()
+    markdown_html = (course_dir / LESSON_2_1_STEP_2 / "index.html").read_text()
     assert "<h2>Objects</h2>" in markdown_html
     assert '<pre><code class="language-kotlin">val atom = 42\n</code></pre>' in markdown_html
     assert "<th>Input</th>" in markdown_html
@@ -364,18 +364,18 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert "This file is empty." in markdown_html
     assert "solved in an IDE" in markdown_html
 
-    pycharm_html = (course_dir / LESSON_3_STEP_3 / "index.html").read_text()
+    pycharm_html = (course_dir / LESSON_2_1_STEP_3 / "index.html").read_text()
     assert "Read this one." in pycharm_html
     assert "<h2>Files</h2>" not in pycharm_html
 
-    number_html = (course_dir / LESSON_3_STEP_4 / "index.html").read_text()
+    number_html = (course_dir / LESSON_2_1_STEP_4 / "index.html").read_text()
     assert "expects a typed answer" in number_html
 
-    no_format_html = (course_dir / LESSON_3_STEP_5 / "index.html").read_text()
+    no_format_html = (course_dir / LESSON_2_1_STEP_5 / "index.html").read_text()
     assert "<p>Read the last one.</p>" in no_format_html
     assert "<h3>src/Main.kt</h3>" in no_format_html
 
-    single_quality_html = (course_dir / LESSON_3_STEP_6 / "index.html").read_text()
+    single_quality_html = (course_dir / LESSON_2_1_STEP_6 / "index.html").read_text()
     assert '<video controls src="video.mp4"></video>' in single_quality_html
 
 
@@ -423,11 +423,11 @@ def test_main_respects_the_skip_flags(tmp_path, monkeypatch, course_data, downlo
     # the <img> and <audio> are untouched by --skip-attachments and still resolve.
     assert _exported_files(course_dir) == EXPECTED_FILES - {*ATTACHMENT_FILES, *VIDEO_FILES}
 
-    text_html = (course_dir / LESSON_1_STEP_1 / "index.html").read_text()
+    text_html = (course_dir / LESSON_1_1_STEP_1 / "index.html").read_text()
     assert 'href="http://cdn.example.com/some_notes.pdf"' in text_html
     assert 'href="https://stepik.org/lesson/some-lesson-42/step/3"' in text_html
 
-    video_html = (course_dir / LESSON_3_STEP_1 / "index.html").read_text()
+    video_html = (course_dir / LESSON_2_1_STEP_1 / "index.html").read_text()
     assert '<video controls src="http://cdn.example.com/vid-1080.mp4"></video>' in video_html
     assert "Video download skipped" in video_html
     assert downloaded_urls == [
@@ -444,7 +444,7 @@ def test_main_overwrites_an_earlier_export(tmp_path, monkeypatch, course_data, d
     monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
     argv = ["--course-id", "1", "--output-dir", str(tmp_path)]
     export_course.main(argv)
-    step_page = tmp_path / "1_sample-course" / LESSON_1_STEP_1 / "index.html"
+    step_page = tmp_path / "1_sample-course" / LESSON_1_1_STEP_1 / "index.html"
     step_page.write_text("an earlier export")
     caplog.clear()
 

@@ -29,9 +29,9 @@ def mock_client_data():
             {"id": 102, "position": 2, "lesson": 1002},
         ],
         "lessons": [
-            {"id": 1000, "title": "Lesson One", "steps": [10000]},
-            {"id": 1001, "title": "Lesson Two", "steps": [10001]},
-            {"id": 1002, "title": "Lesson Three", "steps": [10002, 10003]},
+            {"id": 1000, "title": "Lesson 1.1", "steps": [10000]},
+            {"id": 1001, "title": "Lesson 2.1", "steps": [10001]},
+            {"id": 1002, "title": "Lesson 2.2", "steps": [10002, 10003]},
         ],
         "steps": [
             {"id": 10000, "position": 1, "block": {"name": "text", "text": "hello"}},
@@ -90,8 +90,8 @@ def test_build_course_tree_basic_case(mock_client_data):
                     {
                         "id": 1000,
                         "position": 1,
-                        "title": "Lesson One",
-                        "dir_name": "lesson_001_lesson-one",
+                        "title": "Lesson 1.1",
+                        "dir_name": "lesson_001_lesson-1-1",
                         "steps": [
                             {
                                 "id": 10000,
@@ -115,8 +115,8 @@ def test_build_course_tree_basic_case(mock_client_data):
                     {
                         "id": 1001,
                         "position": 1,
-                        "title": "Lesson Two",
-                        "dir_name": "lesson_001_lesson-two",
+                        "title": "Lesson 2.1",
+                        "dir_name": "lesson_001_lesson-2-1",
                         "steps": [
                             {
                                 "id": 10001,
@@ -132,8 +132,8 @@ def test_build_course_tree_basic_case(mock_client_data):
                     {
                         "id": 1002,
                         "position": 2,
-                        "title": "Lesson Three",
-                        "dir_name": "lesson_002_lesson-three",
+                        "title": "Lesson 2.2",
+                        "dir_name": "lesson_002_lesson-2-2",
                         "steps": [
                             {
                                 "id": 10002,
@@ -212,7 +212,7 @@ def test_build_course_tree_skips_an_unresolved_unit(mock_client_data, caplog):
     client = MockStepikClient(mock_client_data)
     tree = build_course_tree(client, 1)
 
-    assert [lesson["dir_name"] for lesson in tree["modules"][1]["lessons"]] == ["lesson_002_lesson-three"]
+    assert [lesson["dir_name"] for lesson in tree["modules"][1]["lessons"]] == ["lesson_002_lesson-2-2"]
     assert "section 11 references unit 99999 which could not be resolved, skipping" in caplog.text
 
 
@@ -223,12 +223,12 @@ def test_build_course_tree_skips_an_unresolved_lesson(mock_client_data, caplog):
     client = MockStepikClient(mock_client_data)
     tree = build_course_tree(client, 1)
 
-    assert [lesson["dir_name"] for lesson in tree["modules"][1]["lessons"]] == ["lesson_002_lesson-three"]
+    assert [lesson["dir_name"] for lesson in tree["modules"][1]["lessons"]] == ["lesson_002_lesson-2-2"]
     assert "unit 101 (section 11) references lesson 99999 which could not be resolved, skipping" in caplog.text
 
 
 def test_build_course_tree_skips_an_unresolved_step(mock_client_data, caplog):
-    # Lesson Three's first step id is absent from the steps the API returned.
+    # Lesson 2.2's first step id is absent from the steps the API returned.
     mock_client_data["lessons"][2]["steps"] = [99999, 10003]
 
     client = MockStepikClient(mock_client_data)
