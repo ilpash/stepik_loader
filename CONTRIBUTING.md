@@ -32,6 +32,9 @@ The code follows the WAT pattern described in [CLAUDE.md](CLAUDE.md):
 - If you touch retry/backoff logic in `tools/retry.py` or auth logic in
   `tools/stepik_client.py`, note any new rate-limit or API quirks you discover in
   `workflows/export_stepik_course.md` — future contributors will hit the same thing.
+- `tools/assets/mathjax/` holds `es5/tex-svg-full.js` from the `mathjax@3.2.2` npm
+  package, next to its Apache-2.0 `LICENSE`. Dependabot does not update it, so to
+  move to a newer MathJax, replace both files by hand.
 
 ## Testing
 
