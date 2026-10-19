@@ -206,6 +206,23 @@ def test_main_stops_when_the_export_folder_cannot_be_created(tmp_path, monkeypat
     assert "Could not create the export folder, stopping the export" in caplog.text
 
 
+def test_main_stops_when_the_assets_cannot_be_copied(tmp_path, monkeypatch, caplog, two_step_tree):
+    copy_error = OSError(errno.ENOSPC, "No space left on device")
+    mock_copy_assets = MagicMock(side_effect=copy_error)
+    mock_render_step = MagicMock()
+    monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
+    monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
+    monkeypatch.setattr(export_course, "copy_assets", mock_copy_assets)
+    monkeypatch.setattr(export_course, "render_step", mock_render_step)
+
+    exit_code = export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
+
+    assert exit_code == 1
+    assert mock_copy_assets.call_count == 1
+    assert mock_render_step.call_count == 0
+    assert f"Could not copy the page assets, stopping the export: {copy_error}" in caplog.text
+
+
 def test_main_stops_when_the_table_of_contents_cannot_be_written(tmp_path, monkeypatch, caplog, two_step_tree):
     toc_error = OSError(errno.ENOSPC, "No space left on device")
     mock_build_toc = MagicMock(side_effect=toc_error)

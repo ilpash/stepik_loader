@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 from course_tree import CourseNotFoundError, build_course_tree
 from step_renderer import StepContext, render_step
 from stepik_client import StepikAuthError, StepikClient
-from toc_builder import build_toc
+from toc_builder import build_toc, copy_assets
 
 DISK_FULL_ERROR_CODES = {errno.ENOSPC, errno.EDQUOT}
 
@@ -98,6 +98,11 @@ def main(argv=None):
         course_dir.mkdir(parents=True, exist_ok=True)
     except OSError as exc:
         logger.error("Could not create the export folder, stopping the export: %s", exc)
+        return 1
+    try:
+        copy_assets(course_dir)
+    except OSError as exc:
+        logger.error("Could not copy the page assets, stopping the export: %s", exc)
         return 1
 
     steps = [

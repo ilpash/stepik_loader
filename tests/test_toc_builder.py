@@ -2,7 +2,7 @@ import pytest
 
 import toc_builder
 from template_env import ASSETS_DIR
-from toc_builder import build_toc
+from toc_builder import build_toc, copy_assets
 
 
 @pytest.fixture
@@ -44,6 +44,36 @@ def sample_course_tree():
     }
 
 
+# -- copy_assets ---------------------------------------------------------------
+
+
+def test_copy_assets_basic_case(tmp_path):
+    copy_assets(tmp_path)
+
+    for name in ["step.html.j2", "toc.html.j2", "style.css", "mathjax/tex-svg-full.js", "mathjax/LICENSE"]:
+        assert (tmp_path / "assets" / name).read_bytes() == (ASSETS_DIR / name).read_bytes()
+
+
+def test_copy_assets_leaves_hidden_files_out(tmp_path, monkeypatch):
+    assets_dir = tmp_path / "project" / "assets"
+    (assets_dir / "mathjax").mkdir(parents=True)
+    (assets_dir / "style.css").write_text("")
+    (assets_dir / "mathjax" / "tex-svg-full.js").write_text("")
+    (assets_dir / ".hidden_file").write_text("")
+    (assets_dir / "mathjax" / ".hidden_file").write_text("")
+    monkeypatch.setattr(toc_builder, "ASSETS_DIR", assets_dir)
+    course_dir = tmp_path / "course"
+
+    copy_assets(course_dir)
+
+    copied_assets = course_dir / "assets"
+    copied_files = {path.relative_to(copied_assets).as_posix() for path in copied_assets.rglob("*") if path.is_file()}
+    assert copied_files == {"style.css", "mathjax/tex-svg-full.js"}
+
+
+# -- build_toc -----------------------------------------------------------------
+
+
 def test_build_toc_basic_case(tmp_path, sample_course_tree):
     build_toc(sample_course_tree, tmp_path, set())
 
@@ -64,8 +94,6 @@ def test_build_toc_basic_case(tmp_path, sample_course_tree):
         assert f"{module['dir_name']}/{lesson['dir_name']}/{step['dir_name']}/index.html" in html
 
     assert '<link rel="stylesheet" href="assets/style.css">' in html
-    for name in ["step.html.j2", "toc.html.j2", "style.css", "mathjax/tex-svg-full.js", "mathjax/LICENSE"]:
-        assert (tmp_path / "assets" / name).read_bytes() == (ASSETS_DIR / name).read_bytes()
 
 
 def test_build_toc_lists_a_skipped_step_without_a_link(tmp_path, sample_course_tree):
@@ -84,20 +112,3 @@ def test_build_toc_escapes_html_in_the_course_title(tmp_path, sample_course_tree
     html = (tmp_path / "index.html").read_text()
     assert "<h1>&lt;script&gt;some_script()&lt;/script&gt;</h1>" in html
     assert "<script>" not in html
-
-
-def test_build_toc_leaves_hidden_files_out_of_the_assets(tmp_path, sample_course_tree, monkeypatch):
-    assets_dir = tmp_path / "project" / "assets"
-    (assets_dir / "mathjax").mkdir(parents=True)
-    (assets_dir / "style.css").write_text("")
-    (assets_dir / "mathjax" / "tex-svg-full.js").write_text("")
-    (assets_dir / ".hidden_file").write_text("")
-    (assets_dir / "mathjax" / ".hidden_file").write_text("")
-    monkeypatch.setattr(toc_builder, "ASSETS_DIR", assets_dir)
-    course_dir = tmp_path / "course"
-
-    build_toc(sample_course_tree, course_dir, set())
-
-    copied_assets = course_dir / "assets"
-    copied_files = {path.relative_to(copied_assets).as_posix() for path in copied_assets.rglob("*") if path.is_file()}
-    assert copied_files == {"style.css", "mathjax/tex-svg-full.js"}

@@ -10,9 +10,11 @@ from datetime import datetime
 from template_env import ASSETS_DIR, get_template
 
 
-def build_toc(course_tree, course_dir, skipped_step_ids):
+def copy_assets(course_dir):
     shutil.copytree(ASSETS_DIR, course_dir / "assets", dirs_exist_ok=True, ignore=shutil.ignore_patterns(".*"))
 
+
+def build_toc(course_tree, course_dir, skipped_step_ids):
     html = get_template("toc.html.j2").render(
         course_title=course_tree["title"],
         course_id=course_tree["id"],
