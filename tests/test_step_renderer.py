@@ -238,7 +238,7 @@ def test_render_video_returns_warning_when_no_urls(mock_resolve, caplog):
         video_quality="best",
         skip_videos=False,
     )
-    assert "unavailable" in html.lower()
+    assert "Video unavailable" in html
     assert mock_resolve.call_count == 0
     assert "[test-log-label] video step has no downloadable URLs" in caplog.text
 
@@ -251,7 +251,7 @@ def test_render_video_returns_warning_when_the_entry_has_no_url(mock_resolve, ca
         video_quality="best",
         skip_videos=False,
     )
-    assert "unavailable" in html.lower()
+    assert "Video unavailable" in html
     assert mock_resolve.call_count == 0
     assert "[test-log-label] video step has no downloadable URLs" in caplog.text
 
