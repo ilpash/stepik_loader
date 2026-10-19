@@ -94,12 +94,12 @@ def test_load_cached_token_ignores_cache_for_different_client_id(client_without_
     assert client_without_token._access_token is None
 
 
-def test_load_cached_token_handles_missing_file(client_without_token):
+def test_load_cached_token_ignores_a_missing_file(client_without_token):
     client_without_token._load_cached_token()
     assert client_without_token._access_token is None
 
 
-def test_load_cached_token_handles_corrupt_json(client_without_token):
+def test_load_cached_token_ignores_corrupt_json(client_without_token):
     client_without_token.token_cache_path.write_text("not json{{{")
     client_without_token._load_cached_token()
     assert client_without_token._access_token is None
