@@ -425,14 +425,14 @@ def test_render_pycharm_converts_a_markdown_statement_to_html(description_format
     block = {
         "name": "pycharm",
         "text": (
-            "## Objects\n\nExamples accompanying the atom.\n\n```kotlin\nfun main() {\n    println(1)\n}\n```"
+            "## Some Heading\n\nSome text.\n\n```kotlin\nfun main() {\n    println(1)\n}\n```"
             "\n\n| Input | Output |\n|-------|--------|\n| 1 | 2 |"
         ),
         "options": {"description_format": description_format},
     }
     html = _render_pycharm(block=block, resolve=mock_resolve, skip_attachments=False)
-    assert "<h2>Objects</h2>" in html
-    assert "<p>Examples accompanying the atom.</p>" in html
+    assert "<h2>Some Heading</h2>" in html
+    assert "<p>Some text.</p>" in html
     assert '<pre><code class="language-kotlin">fun main() {\n    println(1)\n}\n</code></pre>' in html
     assert "<th>Input</th>" in html
 
@@ -441,9 +441,9 @@ def test_render_pycharm_converts_a_markdown_statement_to_html(description_format
     "options", [{}, {"description_format": None}, {"description_format": "html"}, {"description_format": "HTML"}]
 )
 def test_render_pycharm_treats_any_other_description_format_as_html(options, mock_resolve):
-    block = {"name": "pycharm", "text": "## Objects", "options": options}
+    block = {"name": "pycharm", "text": "## Some Heading", "options": options}
     html = _render_pycharm(block=block, resolve=mock_resolve, skip_attachments=False)
-    assert "## Objects" in html
+    assert "## Some Heading" in html
 
 
 def test_render_pycharm_marks_a_file_the_course_hides(mock_resolve):

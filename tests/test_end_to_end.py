@@ -151,7 +151,7 @@ def course_data():
                 "block": {
                     "name": "pycharm",
                     "text": (
-                        "## Objects\n\nExamples accompanying the atom.\n\n```kotlin\nval atom = 42\n```"
+                        "## Some Heading\n\nSome text.\n\n```kotlin\nval atom = 42\n```"
                         "\n\n| Input | Output |\n|-------|--------|\n| 1 | 2 |"
                         "\n\nSee [the guide](http://cdn.example.com/some_guide.pdf)."
                     ),
@@ -382,7 +382,7 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert '<video controls src="video.mp4"></video>' in video_html
 
     markdown_html = (course_dir / LESSON_2_1_STEP_2 / "index.html").read_text()
-    assert "<h2>Objects</h2>" in markdown_html
+    assert "<h2>Some Heading</h2>" in markdown_html
     assert '<pre><code class="language-kotlin">val atom = 42\n</code></pre>' in markdown_html
     assert "<th>Input</th>" in markdown_html
     assert "<h2>Files</h2>" in markdown_html
