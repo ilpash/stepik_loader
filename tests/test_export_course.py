@@ -151,8 +151,8 @@ def two_step_tree():
                         "title": "Lesson 1.1",
                         "dir_name": "lesson_001_lesson-1-1",
                         "steps": [
-                            {"id": 10000, "position": 1, "title": "First step", "dir_name": "step_001_text"},
-                            {"id": 10001, "position": 2, "title": "Second step", "dir_name": "step_002_text"},
+                            {"id": 10000, "position": 1, "title": "First Step", "dir_name": "step_001_text"},
+                            {"id": 10001, "position": 2, "title": "Second Step", "dir_name": "step_002_text"},
                         ],
                     }
                 ],
@@ -177,7 +177,7 @@ def test_main_skips_a_step_it_cannot_write(tmp_path, monkeypatch, caplog, two_st
     )
     assert "INFO Steps exported: 1. Warnings: 1." in caplog.text
     toc_html = (tmp_path / "1_sample-course" / "index.html").read_text()
-    assert "1. First step (not exported)" in toc_html
+    assert "1. First Step (not exported)" in toc_html
 
 
 @pytest.mark.parametrize("error_code", [errno.ENOSPC, errno.EDQUOT])
