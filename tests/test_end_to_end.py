@@ -5,6 +5,7 @@ renderer, plus tests for the export options and for a second export into the
 same folder.
 """
 
+import io
 import logging
 
 import pytest
@@ -404,6 +405,19 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
 
     single_quality_html = (course_dir / LESSON_2_1_STEP_6 / "index.html").read_text()
     assert '<video controls src="video.mp4"></video>' in single_quality_html
+
+
+def test_main_prints_the_log_at_the_chosen_level(tmp_path, monkeypatch, course_data, downloaded_urls):
+    console = io.StringIO()
+    monkeypatch.setattr(export_course.console_handler, "stream", console)
+    monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
+
+    export_course.main(["--course-id", "1", "--output-dir", str(tmp_path), "--log-level", "WARNING"])
+
+    assert console.getvalue() == (
+        "WARNING [course=1 lesson=1001 step=10004] no dedicated renderer for block type 'table', "
+        "using generic fallback\n"
+    )
 
 
 def test_main_counts_warnings_even_when_the_console_log_level_hides_them(
