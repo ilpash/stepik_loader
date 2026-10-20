@@ -246,6 +246,20 @@ def test_main_stops_when_the_table_of_contents_cannot_be_written(tmp_path, monke
     assert f"ERROR Could not write the table of contents, stopping the export: {toc_error}" in caplog.text
 
 
+def test_main_gives_every_step_the_current_access_token(tmp_path, monkeypatch, two_step_tree):
+    mock_access_token = PropertyMock(side_effect=["first-token", "second-token"])
+    mock_render_step = MagicMock()
+    monkeypatch.setattr(MockClientWithToken, "access_token", mock_access_token)
+    monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
+    monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
+    monkeypatch.setattr(export_course, "render_step", mock_render_step)
+
+    export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
+
+    contexts = [render_call.args[2] for render_call in mock_render_step.call_args_list]
+    assert [context.access_token for context in contexts] == ["first-token", "second-token"]
+
+
 @pytest.mark.parametrize(
     "token_error",
     [
