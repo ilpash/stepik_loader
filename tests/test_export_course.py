@@ -119,7 +119,7 @@ def test_main_propagates_unexpected_error_from_fetch_phase(monkeypatch):
 
 
 def test_main_warns_when_the_course_has_no_steps(tmp_path, monkeypatch, caplog):
-    empty_tree = {"id": 1, "title": "Course", "dir_name": "1_course", "modules": []}
+    empty_tree = {"id": 1, "title": "Sample Course", "dir_name": "1_sample-course", "modules": []}
     monkeypatch.setattr(export_course, "StepikClient", MockClientWithToken)
     monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: empty_tree)
 
@@ -133,20 +133,20 @@ def test_main_warns_when_the_course_has_no_steps(tmp_path, monkeypatch, caplog):
 def two_step_tree():
     return {
         "id": 1,
-        "title": "Course",
-        "dir_name": "1_course",
+        "title": "Sample Course",
+        "dir_name": "1_sample-course",
         "modules": [
             {
                 "id": 10,
                 "position": 1,
-                "title": "Module",
-                "dir_name": "module_001_module",
+                "title": "Module One",
+                "dir_name": "module_001_module-one",
                 "lessons": [
                     {
                         "id": 1000,
                         "position": 1,
-                        "title": "Lesson",
-                        "dir_name": "lesson_001_lesson",
+                        "title": "Lesson 1.1",
+                        "dir_name": "lesson_001_lesson-1-1",
                         "steps": [
                             {"id": 10000, "position": 1, "title": "First step", "dir_name": "step_001_text"},
                             {"id": 10001, "position": 2, "title": "Second step", "dir_name": "step_002_text"},
@@ -171,7 +171,7 @@ def test_main_skips_a_step_it_cannot_write(tmp_path, monkeypatch, caplog, two_st
     assert mock_render_step.call_count == 2
     assert f"[course=1 lesson=1000 step=10000] could not write the step, skipping it: {write_error}" in caplog.text
     assert "Steps exported: 1. Warnings: 1." in caplog.text
-    toc_html = (tmp_path / "1_course" / "index.html").read_text()
+    toc_html = (tmp_path / "1_sample-course" / "index.html").read_text()
     assert "1. First step (not exported)" in toc_html
 
 
@@ -188,7 +188,7 @@ def test_main_stops_when_the_disk_is_full(error_code, tmp_path, monkeypatch, cap
     assert exit_code == 1
     assert mock_render_step.call_count == 1
     assert f"The disk is full, stopping the export: {disk_error}" in caplog.text
-    assert not (tmp_path / "1_course" / "index.html").exists()
+    assert not (tmp_path / "1_sample-course" / "index.html").exists()
 
 
 def test_main_stops_when_the_export_folder_cannot_be_created(tmp_path, monkeypatch, caplog, two_step_tree):
@@ -261,7 +261,7 @@ def test_main_stops_when_the_token_cannot_be_refreshed(token_error, tmp_path, mo
     assert exit_code == 1
     assert mock_render_step.call_count == 1
     assert f"Could not refresh the Stepik access token, stopping the export: {token_error}" in caplog.text
-    assert not (tmp_path / "1_course" / "index.html").exists()
+    assert not (tmp_path / "1_sample-course" / "index.html").exists()
 
 
 def test_main_propagates_unexpected_error_from_render_phase(tmp_path, monkeypatch, two_step_tree):
