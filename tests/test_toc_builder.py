@@ -15,14 +15,14 @@ def sample_course_tree():
         "title": "Sample Course",
         "modules": [
             {
-                "position": 1,
-                "title": "Module One",
-                "dir_name": "module_001_module-one",
+                "position": 3,
+                "title": "Module Three",
+                "dir_name": "module_003_module-three",
                 "lessons": [
                     {
-                        "position": 1,
-                        "title": "Lesson One",
-                        "dir_name": "lesson_001_lesson-one",
+                        "position": 4,
+                        "title": "Lesson Four",
+                        "dir_name": "lesson_004_lesson-four",
                         "steps": [
                             {
                                 "id": 10000,
@@ -82,8 +82,8 @@ def test_build_toc_basic_case(tmp_path, sample_course_tree):
     assert "<title>Sample Course</title>" in html
     assert "<h1>Sample Course</h1>" in html
     assert "Exported from Stepik course 1 on " in html
-    assert "1. Module One" in html
-    assert "1. Lesson One" in html
+    assert "3. Module Three" in html
+    assert "4. Lesson Four" in html
     assert "1. First Step" in html
     assert "2. " not in html
     assert "3. Third Step" in html
