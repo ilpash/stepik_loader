@@ -61,6 +61,7 @@ def course_data():
                         '<a href="/lesson/some-lesson-42/step/3">the next step</a>'
                         '<a href="https://www.youtube.com/watch?v=some_video_id">the lecture</a>'
                         '<a rel="nofollow">some contact</a>'
+                        '<a href="http://cdn.example.com/some_picture.png">the picture</a>'
                     ),
                 },
             },
@@ -336,6 +337,8 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert 'href="https://www.youtube.com/watch?v=some_video_id"' in text_html
     assert 'href="https://stepik.org/lesson/some-lesson-42/step/3"' in text_html
     assert '<a rel="nofollow">some contact</a>' in text_html
+    assert 'href="resource_1_some_picture.png"' in text_html
+    assert downloaded_urls.count("http://cdn.example.com/some_picture.png") == 1
     assert "<script" not in text_html
 
     choice_html = (course_dir / LESSON_1_2_STEP_1 / "index.html").read_text()
