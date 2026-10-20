@@ -324,6 +324,8 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert "Step 10005 (video)" in toc_html
 
     text_html = (course_dir / LESSON_1_1_STEP_1 / "index.html").read_text()
+    assert "<title>Step 10000 (text) — Sample Course</title>" in text_html
+    assert "Module One › Lesson 1.1" in text_html
     # A step sits three levels below the course root, and both links back must clear it
     assert 'href="../../../assets/style.css"' in text_html
     assert 'href="../../../index.html"' in text_html
@@ -383,6 +385,8 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert '<video controls src="video.mp4"></video>' in video_html
 
     markdown_html = (course_dir / LESSON_2_1_STEP_2 / "index.html").read_text()
+    assert "<title>Some Title — Sample Course</title>" in markdown_html
+    assert "Module Two › Lesson 2.1" in markdown_html
     assert "<h2>Some Heading</h2>" in markdown_html
     assert '<pre><code class="language-kotlin">val atom = 42\n</code></pre>' in markdown_html
     assert "<th>Input</th>" in markdown_html
