@@ -37,7 +37,7 @@ def course_data():
         ],
         "lessons": [
             {"id": 1000, "title": "Lesson 1.1", "steps": [10000]},
-            {"id": 1001, "title": "Lesson 1.2", "steps": [10001, 10002, 10003, 10004, 10010]},
+            {"id": 1001, "title": "Lesson 1.2", "steps": [10001, 10002, 10003, 10004, 10010, 10012]},
             {"id": 1002, "title": "Lesson 2.1", "steps": [10005, 10006, 10007, 10008, 10009, 10011]},
         ],
         "steps": [
@@ -116,6 +116,16 @@ def course_data():
                     "name": "code",
                     "text": "<p>Print the double.</p>",
                     "options": {"samples": [["2", "4"]], "code_templates": {"python3": "n = int(input())"}},
+                },
+            },
+            # code: no samples and no starter code
+            {
+                "id": 10012,
+                "position": 6,
+                "block": {
+                    "name": "code",
+                    "text": "<p>Print the answer.</p>",
+                    "options": {"samples": [], "code_templates": {"python3": ""}},
                 },
             },
             # video: several qualities, so --video-quality best has something to choose between
@@ -220,6 +230,7 @@ LESSON_1_2_STEP_2 = "module_001_module-one/lesson_002_lesson-1-2/step_002_code"
 LESSON_1_2_STEP_3 = "module_001_module-one/lesson_002_lesson-1-2/step_003_sorting"
 LESSON_1_2_STEP_4 = "module_001_module-one/lesson_002_lesson-1-2/step_004_table"
 LESSON_1_2_STEP_5 = "module_001_module-one/lesson_002_lesson-1-2/step_005_code"
+LESSON_1_2_STEP_6 = "module_001_module-one/lesson_002_lesson-1-2/step_006_code"
 LESSON_2_1_STEP_1 = "module_002_module-two/lesson_001_lesson-2-1/step_001_video"
 LESSON_2_1_STEP_2 = "module_002_module-two/lesson_001_lesson-2-1/step_002_pycharm"
 LESSON_2_1_STEP_3 = "module_002_module-two/lesson_001_lesson-2-1/step_003_pycharm"
@@ -234,6 +245,7 @@ ALL_STEPS = [
     LESSON_1_2_STEP_3,
     LESSON_1_2_STEP_4,
     LESSON_1_2_STEP_5,
+    LESSON_1_2_STEP_6,
     LESSON_2_1_STEP_1,
     LESSON_2_1_STEP_2,
     LESSON_2_1_STEP_3,
@@ -284,14 +296,14 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert no_dotenv.call_count == 1
     assert client.get_by_ids_calls[0] == ("courses", [1])
     # The table step is the only one without a dedicated renderer, so it is the one warning.
-    assert "Steps exported: 12. Warnings: 1." in caplog.text
+    assert "Steps exported: 13. Warnings: 1." in caplog.text
     assert (
         "[course=1 lesson=1001 step=10004] no dedicated renderer for block type 'table', using generic fallback"
         in caplog.text
     )
 
     course_dir = tmp_path / "exports" / "1_sample-course"
-    assert "[1/12] Module One > Lesson 1.1 > step 10000" in caplog.text
+    assert "[1/13] Module One > Lesson 1.1 > step 10000" in caplog.text
     assert f"Done. Open {course_dir / 'index.html'} in a browser." in caplog.text
     assert _exported_files(course_dir) == EXPECTED_FILES
 
@@ -354,6 +366,11 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert "<pre><code>4</code></pre>" in single_sample_html
     assert "<summary>python3</summary>" in single_sample_html
     assert "Default limits" not in single_sample_html
+
+    no_samples_html = (course_dir / LESSON_1_2_STEP_6 / "index.html").read_text()
+    assert "asks you to write a program" in no_samples_html
+    assert "Samples" not in no_samples_html
+    assert "Starter code" not in no_samples_html
 
     # "best" quality has to pick 1080 out of the three the step offers
     assert "http://cdn.example.com/vid-1080.mp4" in downloaded_urls
@@ -458,5 +475,5 @@ def test_main_overwrites_an_earlier_export(tmp_path, monkeypatch, course_data, d
     exit_code = export_course.main(argv)
 
     assert exit_code == 0
-    assert "Steps exported: 12. Warnings: 1." in caplog.text
+    assert "Steps exported: 13. Warnings: 1." in caplog.text
     assert "an earlier export" not in step_page.read_text()
