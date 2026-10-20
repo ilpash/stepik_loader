@@ -90,7 +90,7 @@ def test_download_resource_guesses_extension_from_content_type_when_hint_has_no_
 
 
 def test_download_resource_adds_no_extension_for_an_unknown_content_type(tmp_path, mock_session_get):
-    mock_session_get.return_value = MockStreamResponse(200)
+    mock_session_get.return_value = MockStreamResponse(200, headers={"Content-Type": "application/x-some-unknown-type"})
     result = download_resource(
         "http://example.com/some_file", tmp_path, "test-log-label", access_token="test-token", filename_hint="some_file"
     )
