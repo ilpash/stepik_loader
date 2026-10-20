@@ -132,7 +132,7 @@ def test_download_resource_saves_nothing_when_the_server_sends_a_web_page(tmp_pa
     )
     assert result is None
     assert list(tmp_path.iterdir()) == []
-    assert f"[test-log-label] {page_url} returned a web page, keeping the link" in caplog.text
+    assert f"WARNING [test-log-label] {page_url} returned a web page, keeping the link" in caplog.text
 
 
 @pytest.mark.parametrize("status_code", [400, 404])
@@ -144,7 +144,9 @@ def test_download_resource_returns_none_on_non_retryable_http_error(status_code,
     assert result is None
     assert mock_session_get.call_count == 1
     assert list(tmp_path.iterdir()) == []
-    assert f"[test-log-label] failed to download http://example.com/notes.txt: HTTP {status_code}" in caplog.text
+    assert (
+        f"WARNING [test-log-label] failed to download http://example.com/notes.txt: HTTP {status_code}" in caplog.text
+    )
 
 
 def test_download_resource_retries_on_retryable_status_then_succeeds(tmp_path, mock_session_get, no_sleep):
@@ -176,8 +178,8 @@ def test_download_resource_returns_none_after_exhausting_retries(
     assert mock_session_get.call_count == resource_downloader.MAX_ATTEMPTS
     assert no_sleep.call_count == resource_downloader.MAX_ATTEMPTS - 1
     assert (
-        f"[test-log-label] failed to download http://example.com/notes.txt after {resource_downloader.MAX_ATTEMPTS} "
-        f"attempts: {reason}" in caplog.text
+        f"WARNING [test-log-label] failed to download http://example.com/notes.txt "
+        f"after {resource_downloader.MAX_ATTEMPTS} attempts: {reason}" in caplog.text
     )
 
 

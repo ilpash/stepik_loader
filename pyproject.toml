@@ -1,6 +1,7 @@
 [tool.pytest]
 pythonpath = ["tools"]
 testpaths = ["tests"]
+log_format = "%(levelname)s %(message)s"
 
 [tool.ruff]
 src = ["tools", "tests"]

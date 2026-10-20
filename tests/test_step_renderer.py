@@ -195,7 +195,7 @@ def test_pick_video_url_falls_back_to_nearest_when_exact_missing(caplog):
     urls = [_video_url("360"), _video_url("480"), _video_url("1080")]
     result = _pick_video_url(urls, "720", "test-log-label")
     assert result == _video_url("480")
-    assert "[test-log-label] requested video quality 720 not available, using 480 instead" in caplog.text
+    assert "WARNING [test-log-label] requested video quality 720 not available, using 480 instead" in caplog.text
 
 
 @pytest.mark.parametrize("unreadable_quality", [None, "unknown"])
@@ -251,7 +251,7 @@ def test_render_video_returns_warning_when_no_urls(mock_resolve, caplog):
     )
     assert "Video unavailable" in html
     assert mock_resolve.call_count == 0
-    assert "[test-log-label] video step has no downloadable URLs" in caplog.text
+    assert "WARNING [test-log-label] video step has no downloadable URLs" in caplog.text
 
 
 def test_render_video_returns_warning_when_the_entry_has_no_url(mock_resolve, caplog):
@@ -264,7 +264,7 @@ def test_render_video_returns_warning_when_the_entry_has_no_url(mock_resolve, ca
     )
     assert "Video unavailable" in html
     assert mock_resolve.call_count == 0
-    assert "[test-log-label] video step has no downloadable URLs" in caplog.text
+    assert "WARNING [test-log-label] video step has no downloadable URLs" in caplog.text
 
 
 def test_render_video_links_the_online_video_when_the_download_fails(mock_resolve):
@@ -489,7 +489,10 @@ def test_render_generic_basic_case(caplog):
     assert "<pre><code>" in html
     assert "&quot;custom_field&quot;" in html
     assert "Привет" in html
-    assert "[test-log-label] no dedicated renderer for block type 'unknown-type', using generic fallback" in caplog.text
+    assert (
+        "WARNING [test-log-label] no dedicated renderer for block type 'unknown-type', using generic fallback"
+        in caplog.text
+    )
 
 
 # -- render_step ---------------------------------------------------------------

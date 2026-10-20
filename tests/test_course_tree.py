@@ -206,7 +206,7 @@ def test_build_course_tree_skips_an_unresolved_section(mock_client_data, caplog)
     tree = build_course_tree(client, 1)
 
     assert [module["dir_name"] for module in tree["modules"]] == ["module_002_module-two"]
-    assert "course 1 references section 99999 which could not be resolved, skipping" in caplog.text
+    assert "WARNING course 1 references section 99999 which could not be resolved, skipping" in caplog.text
 
 
 def test_build_course_tree_skips_an_unresolved_unit(mock_client_data, caplog):
@@ -217,7 +217,7 @@ def test_build_course_tree_skips_an_unresolved_unit(mock_client_data, caplog):
     tree = build_course_tree(client, 1)
 
     assert [lesson["dir_name"] for lesson in tree["modules"][1]["lessons"]] == ["lesson_002_lesson-2-2"]
-    assert "section 11 references unit 99999 which could not be resolved, skipping" in caplog.text
+    assert "WARNING section 11 references unit 99999 which could not be resolved, skipping" in caplog.text
 
 
 def test_build_course_tree_skips_an_unresolved_lesson(mock_client_data, caplog):
@@ -228,7 +228,7 @@ def test_build_course_tree_skips_an_unresolved_lesson(mock_client_data, caplog):
     tree = build_course_tree(client, 1)
 
     assert [lesson["dir_name"] for lesson in tree["modules"][1]["lessons"]] == ["lesson_002_lesson-2-2"]
-    assert "unit 101 (section 11) references lesson 99999 which could not be resolved, skipping" in caplog.text
+    assert "WARNING unit 101 (section 11) references lesson 99999 which could not be resolved, skipping" in caplog.text
 
 
 def test_build_course_tree_skips_an_unresolved_step(mock_client_data, caplog):
@@ -239,7 +239,7 @@ def test_build_course_tree_skips_an_unresolved_step(mock_client_data, caplog):
     tree = build_course_tree(client, 1)
 
     assert [step["dir_name"] for step in tree["modules"][1]["lessons"][1]["steps"]] == ["step_002_pycharm"]
-    assert "lesson 1002 references step 99999 which could not be resolved, skipping" in caplog.text
+    assert "WARNING lesson 1002 references step 99999 which could not be resolved, skipping" in caplog.text
 
 
 def test_build_course_tree_truncates_course_slug(minimal_mock_client_data):

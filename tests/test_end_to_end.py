@@ -298,15 +298,15 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert no_dotenv.call_count == 1
     assert client.get_by_ids_calls[0] == ("courses", [1])
     # The table step is the only one without a dedicated renderer, so it is the one warning.
-    assert "Steps exported: 13. Warnings: 1." in caplog.text
+    assert "INFO Steps exported: 13. Warnings: 1." in caplog.text
     assert (
-        "[course=1 lesson=1001 step=10004] no dedicated renderer for block type 'table', using generic fallback"
+        "WARNING [course=1 lesson=1001 step=10004] no dedicated renderer for block type 'table', using generic fallback"
         in caplog.text
     )
 
     course_dir = tmp_path / "exports" / "1_sample-course"
-    assert "[1/13] Module One > Lesson 1.1 > step 10000" in caplog.text
-    assert f"Done. Open {course_dir / 'index.html'} in a browser." in caplog.text
+    assert "INFO [1/13] Module One > Lesson 1.1 > step 10000" in caplog.text
+    assert f"INFO Done. Open {course_dir / 'index.html'} in a browser." in caplog.text
     assert _exported_files(course_dir) == EXPECTED_FILES
 
     # The table of contents links every step, and names each one however that step is named
@@ -492,5 +492,5 @@ def test_main_overwrites_an_earlier_export(tmp_path, monkeypatch, course_data, d
     exit_code = export_course.main(argv)
 
     assert exit_code == 0
-    assert "Steps exported: 13. Warnings: 1." in caplog.text
+    assert "INFO Steps exported: 13. Warnings: 1." in caplog.text
     assert "an earlier export" not in step_page.read_text()

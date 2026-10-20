@@ -69,7 +69,7 @@ def test_main_stops_when_auth_fails(monkeypatch, caplog):
 
     monkeypatch.setattr(export_course, "StepikClient", raise_auth_error)
     assert export_course.main(["--course-id", "1"]) == 1
-    assert "STEPIK_CLIENT_ID / STEPIK_CLIENT_SECRET are not set." in caplog.text
+    assert "ERROR STEPIK_CLIENT_ID / STEPIK_CLIENT_SECRET are not set." in caplog.text
 
 
 def test_main_stops_when_the_course_is_not_found(monkeypatch, caplog):
@@ -80,7 +80,7 @@ def test_main_stops_when_the_course_is_not_found(monkeypatch, caplog):
 
     monkeypatch.setattr(export_course, "build_course_tree", raise_not_found_error)
     assert export_course.main(["--course-id", "1"]) == 1
-    assert "Failed to fetch course 1 (Stepik returned no course with this id)" in caplog.text
+    assert "ERROR Failed to fetch course 1 (Stepik returned no course with this id)" in caplog.text
 
 
 def test_main_stops_when_credentials_are_rejected_while_fetching(monkeypatch, caplog):
@@ -93,7 +93,10 @@ def test_main_stops_when_credentials_are_rejected_while_fetching(monkeypatch, ca
 
     monkeypatch.setattr(export_course, "build_course_tree", raise_auth_error)
     assert export_course.main(["--course-id", "1"]) == 1
-    assert "Failed to fetch course 1 (Failed to obtain Stepik access token (HTTP 401): invalid_client)" in caplog.text
+    assert (
+        "ERROR Failed to fetch course 1 (Failed to obtain Stepik access token (HTTP 401): invalid_client)"
+        in caplog.text
+    )
 
 
 def test_main_stops_when_stepik_cannot_be_reached(monkeypatch, caplog):
@@ -104,7 +107,7 @@ def test_main_stops_when_stepik_cannot_be_reached(monkeypatch, caplog):
 
     monkeypatch.setattr(export_course, "build_course_tree", raise_connection_error)
     assert export_course.main(["--course-id", "1"]) == 1
-    assert "Failed to fetch course 1 (connection refused)" in caplog.text
+    assert "ERROR Failed to fetch course 1 (connection refused)" in caplog.text
 
 
 def test_main_propagates_unexpected_error_from_fetch_phase(monkeypatch):
@@ -126,7 +129,7 @@ def test_main_warns_when_the_course_has_no_steps(tmp_path, monkeypatch, caplog):
     exit_code = export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
 
     assert exit_code == 0
-    assert "Course 1 has no steps to export." in caplog.text
+    assert "WARNING Course 1 has no steps to export." in caplog.text
 
 
 @pytest.fixture
@@ -169,8 +172,10 @@ def test_main_skips_a_step_it_cannot_write(tmp_path, monkeypatch, caplog, two_st
 
     assert exit_code == 0
     assert mock_render_step.call_count == 2
-    assert f"[course=1 lesson=1000 step=10000] could not write the step, skipping it: {write_error}" in caplog.text
-    assert "Steps exported: 1. Warnings: 1." in caplog.text
+    assert (
+        f"WARNING [course=1 lesson=1000 step=10000] could not write the step, skipping it: {write_error}" in caplog.text
+    )
+    assert "INFO Steps exported: 1. Warnings: 1." in caplog.text
     toc_html = (tmp_path / "1_sample-course" / "index.html").read_text()
     assert "1. First step (not exported)" in toc_html
 
@@ -187,7 +192,7 @@ def test_main_stops_when_the_disk_is_full(error_code, tmp_path, monkeypatch, cap
 
     assert exit_code == 1
     assert mock_render_step.call_count == 1
-    assert f"The disk is full, stopping the export: {disk_error}" in caplog.text
+    assert f"ERROR The disk is full, stopping the export: {disk_error}" in caplog.text
     assert not (tmp_path / "1_sample-course" / "index.html").exists()
 
 
@@ -206,7 +211,7 @@ def test_main_stops_when_the_export_folder_cannot_be_created(tmp_path, monkeypat
     assert exit_code == 1
     assert mock_copy_assets.call_count == 0
     assert mock_render_step.call_count == 0
-    assert "Could not create the export folder, stopping the export" in caplog.text
+    assert "ERROR Could not create the export folder, stopping the export" in caplog.text
 
 
 def test_main_stops_when_the_assets_cannot_be_copied(tmp_path, monkeypatch, caplog, two_step_tree):
@@ -223,7 +228,7 @@ def test_main_stops_when_the_assets_cannot_be_copied(tmp_path, monkeypatch, capl
     assert exit_code == 1
     assert mock_copy_assets.call_count == 1
     assert mock_render_step.call_count == 0
-    assert f"Could not copy the page assets, stopping the export: {copy_error}" in caplog.text
+    assert f"ERROR Could not copy the page assets, stopping the export: {copy_error}" in caplog.text
 
 
 def test_main_stops_when_the_table_of_contents_cannot_be_written(tmp_path, monkeypatch, caplog, two_step_tree):
@@ -238,7 +243,7 @@ def test_main_stops_when_the_table_of_contents_cannot_be_written(tmp_path, monke
 
     assert exit_code == 1
     assert mock_build_toc.call_count == 1
-    assert f"Could not write the table of contents, stopping the export: {toc_error}" in caplog.text
+    assert f"ERROR Could not write the table of contents, stopping the export: {toc_error}" in caplog.text
 
 
 @pytest.mark.parametrize(
@@ -260,7 +265,7 @@ def test_main_stops_when_the_token_cannot_be_refreshed(token_error, tmp_path, mo
 
     assert exit_code == 1
     assert mock_render_step.call_count == 1
-    assert f"Could not refresh the Stepik access token, stopping the export: {token_error}" in caplog.text
+    assert f"ERROR Could not refresh the Stepik access token, stopping the export: {token_error}" in caplog.text
     assert not (tmp_path / "1_sample-course" / "index.html").exists()
 
 
