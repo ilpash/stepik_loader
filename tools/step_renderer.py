@@ -32,6 +32,7 @@ logger = logging.getLogger("stepik_export")
 _RESOURCE_ATTRS = [("img", "src"), ("audio", "src"), ("source", "src"), ("a", "href")]
 
 STEPIK_BASE_URL = "https://stepik.org"
+STEPIK_ATTACHMENTS_URL = f"{STEPIK_BASE_URL}/media/attachments/"
 
 
 @dataclass(frozen=True)
@@ -57,9 +58,12 @@ class StepContext:
 
 def _is_downloadable_file(url):
     # Only <a> hrefs are asked this: an anchor points either at a file to save or at a
-    # web page to keep as a link, and the media type of its path tells the two apart.
+    # web page to keep as a link. Stepik keeps only files in its attachments folder, and
+    # elsewhere the media type of the path tells the two apart.
     # img/audio/source always point at media and never reach this check, so an image
     # still downloads when Stepik serves it from an extensionless URL.
+    if url.startswith(STEPIK_ATTACHMENTS_URL):
+        return True
     guessed_type, _ = resource_downloader.BUILTIN_MIME_TYPES.guess_type(urlparse(url).path)
     return bool(guessed_type and guessed_type != "text/html")
 

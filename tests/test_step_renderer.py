@@ -119,6 +119,17 @@ def test_render_text_downloads_an_anchor_that_points_at_a_file(mock_resolve):
     mock_resolve.assert_called_once_with(attachment_url, "resource_1_notes.pdf")
 
 
+def test_render_text_downloads_a_stepik_attachment_of_an_unknown_type(mock_resolve):
+    mock_resolve.return_value = "local_document.docx"
+    attachment_url = "https://stepik.org/media/attachments/lesson/42/some_document.docx"
+    block = {"text": f'<a href="{attachment_url}">the document</a>'}
+
+    html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
+
+    assert 'href="local_document.docx"' in html
+    mock_resolve.assert_called_once_with(attachment_url, "resource_1_some_document.docx")
+
+
 @pytest.mark.parametrize(
     "page_url",
     [

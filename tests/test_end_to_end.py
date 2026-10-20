@@ -57,6 +57,7 @@ def course_data():
                         '<audio src="//audio.example.com/some_recording.mp3"></audio>'
                         '<video><source src="http://cdn.example.com/some_clip.mp4"></video>'
                         '<a href="http://cdn.example.com/some_notes.pdf">notes</a>'
+                        '<a href="https://stepik.org/media/attachments/lesson/42/some_document.docx">the document</a>'
                         '<a href="/lesson/some-lesson-42/step/3">the next step</a>'
                         '<a href="https://www.youtube.com/watch?v=some_video_id">the lecture</a>'
                         '<a rel="nofollow">some contact</a>'
@@ -243,6 +244,7 @@ ALL_STEPS = [
 
 ATTACHMENT_FILES = {
     f"{LESSON_1_1_STEP_1}/resource_6_some_notes.pdf",
+    f"{LESSON_1_1_STEP_1}/resource_7_some_document.docx",
     f"{LESSON_1_2_STEP_1}/resource_2_some_handout.pdf",
     f"{LESSON_1_2_STEP_2}/resource_1_some_statement.pdf",
     f"{LESSON_2_1_STEP_2}/resource_1_some_guide.pdf",
@@ -317,6 +319,7 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert 'src="resource_4_some_recording.mp3"' in text_html
     assert 'src="resource_5_some_clip.mp4"' in text_html
     assert 'href="resource_6_some_notes.pdf"' in text_html
+    assert 'href="resource_7_some_document.docx"' in text_html
     assert 'src="data:image/png;base64,some_image_data"' in text_html
     assert 'href="https://www.youtube.com/watch?v=some_video_id"' in text_html
     assert 'href="https://stepik.org/lesson/some-lesson-42/step/3"' in text_html
