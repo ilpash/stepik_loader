@@ -400,7 +400,7 @@ def test_render_pycharm_basic_case(mock_resolve):
         "name": "pycharm",
         "text": "<p>Implement the function.</p>",
         "options": {
-            "title": "Exercise 1",
+            "title": "Some Title",
             "description_format": "html",
             "files": [
                 {
@@ -473,7 +473,7 @@ def test_render_pycharm_notes_a_file_with_no_content(file_text, mock_resolve):
 
 
 def test_render_pycharm_renders_a_statement_when_the_step_has_no_files(mock_resolve):
-    block = {"name": "pycharm", "text": "<p>Read this.</p>", "options": {"title": "Examples", "files": []}}
+    block = {"name": "pycharm", "text": "<p>Read this.</p>", "options": {"title": "Some Title", "files": []}}
     html = _render_pycharm(block=block, resolve=mock_resolve, skip_attachments=False)
     assert "Read this." in html
     assert "Files" not in html
@@ -498,7 +498,7 @@ def test_render_generic_basic_case(caplog):
 def _make_step_node(block, step_id=1):
     return {
         "id": step_id,
-        "title": "Step title",
+        "title": "Some Title",
         "block_type": block["name"],
         "block": block,
         "raw": {"id": step_id, "block": block},
@@ -508,11 +508,11 @@ def _make_step_node(block, step_id=1):
 def _render_step_into(step_dir, step_node):
     context = StepContext(
         course_id=1,
-        course_title="Course",
+        course_title="Sample Course",
         course_dir=step_dir.parent,
-        module_title="Module",
+        module_title="Module One",
         lesson_id=2,
-        lesson_title="Lesson",
+        lesson_title="Lesson 1.1",
         video_quality="best",
         access_token="test-token",
         skip_videos=False,
@@ -531,12 +531,12 @@ def test_render_step_basic_case(tmp_path, mock_download_resource):
 
     html = (step_dir / "index.html").read_text()
     assert '<meta charset="utf-8">' in html
-    assert "<title>Step title — Course</title>" in html
+    assert "<title>Some Title — Sample Course</title>" in html
     assert "<script" not in html
-    assert '<a href="../index.html">Course</a>' in html
-    assert "Module › Lesson" in html
+    assert '<a href="../index.html">Sample Course</a>' in html
+    assert "Module One › Lesson 1.1" in html
     assert '<span class="block-type">text</span>' in html
-    assert "<h1>Step title</h1>" in html
+    assert "<h1>Some Title</h1>" in html
     assert "Привет" in html
     assert 'src="local_resource"' in html
     # Every other renderer adds a note to this block, so its absence is what proves the dispatch
@@ -600,7 +600,7 @@ def test_render_step_dispatches_pycharm_block_to_pycharm_renderer(tmp_path, mock
     block = {
         "name": "pycharm",
         "text": "<p>Implement it.</p>",
-        "options": {"title": "Exercise 1", "files": [{"name": "src/Task.kt", "text": "fun main() {}"}]},
+        "options": {"title": "Some Title", "files": [{"name": "src/Task.kt", "text": "fun main() {}"}]},
     }
     step_node = _make_step_node(block)
     step_dir = tmp_path / "step"
