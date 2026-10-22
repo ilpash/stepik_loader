@@ -17,8 +17,12 @@ that course under `exports/<course_id>_<slug>/`, following the
   them in — do not try to guess or fabricate credentials.
 - **v1 only supports public/free Stepik courses.** `client_credentials` grants
   no access to paid or enrolled-only content. If `export_course.py` reports a
-  fetch failure for the course, the most likely cause is that the course
-  requires enrollment — tell the user this rather than treating it as a bug.
+  fetch failure for the course, read the reason in parentheses first: an HTTP
+  429 or 5xx status means Stepik is busy or down, so run it again later; a 4xx
+  status while getting the access token means the OAuth app or its credentials
+  in `.env` are wrong; a connection error means stepik.org can't be reached.
+  Otherwise the most likely cause is that the course requires enrollment. Tell
+  the user the cause rather than treating it as a bug.
 - Dependencies from `requirements.txt` must be installed
   (`.venv/bin/pip install -r requirements.txt`); see README's Setup section.
 
