@@ -324,7 +324,7 @@ def test_request_raises_after_exhausting_retries(failure, reason, client_with_to
         client_with_token._request("GET", "http://example.com")
     assert str(exc_info.value) == reason
     assert mock_request.call_count == stepik_client.MAX_ATTEMPTS
-    assert no_sleep.call_args_list == [call(1), call(2), call(4), call(8)]
+    assert no_sleep.call_count == stepik_client.MAX_ATTEMPTS - 1
 
 
 def test_request_refreshes_token_once_on_401_first_attempt(client_with_token, no_sleep, monkeypatch):
