@@ -63,6 +63,35 @@ class MockClientWithToken:
     access_token = "mock-token"
 
 
+@pytest.fixture
+def two_step_tree():
+    return {
+        "id": 1,
+        "title": "Sample Course",
+        "dir_name": "1_sample-course",
+        "modules": [
+            {
+                "id": 10,
+                "position": 1,
+                "title": "Module One",
+                "dir_name": "module_001_module-one",
+                "lessons": [
+                    {
+                        "id": 1000,
+                        "position": 1,
+                        "title": "Lesson 1.1",
+                        "dir_name": "lesson_001_lesson-1-1",
+                        "steps": [
+                            {"id": 10000, "position": 1, "title": "First Step", "dir_name": "step_001_text"},
+                            {"id": 10001, "position": 2, "title": "Second Step", "dir_name": "step_002_text"},
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+
+
 def test_main_stops_when_credentials_are_missing(monkeypatch, caplog):
     def raise_auth_error():
         raise StepikAuthError("STEPIK_CLIENT_ID / STEPIK_CLIENT_SECRET are not set.")
@@ -130,35 +159,6 @@ def test_main_warns_when_the_course_has_no_steps(tmp_path, monkeypatch, caplog):
 
     assert exit_code == 0
     assert "WARNING Course 1 has no steps to export." in caplog.text
-
-
-@pytest.fixture
-def two_step_tree():
-    return {
-        "id": 1,
-        "title": "Sample Course",
-        "dir_name": "1_sample-course",
-        "modules": [
-            {
-                "id": 10,
-                "position": 1,
-                "title": "Module One",
-                "dir_name": "module_001_module-one",
-                "lessons": [
-                    {
-                        "id": 1000,
-                        "position": 1,
-                        "title": "Lesson 1.1",
-                        "dir_name": "lesson_001_lesson-1-1",
-                        "steps": [
-                            {"id": 10000, "position": 1, "title": "First Step", "dir_name": "step_001_text"},
-                            {"id": 10001, "position": 2, "title": "Second Step", "dir_name": "step_002_text"},
-                        ],
-                    }
-                ],
-            }
-        ],
-    }
 
 
 def test_main_skips_a_step_it_cannot_write(tmp_path, monkeypatch, caplog, two_step_tree):
