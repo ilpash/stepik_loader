@@ -84,9 +84,9 @@ def main(argv=None):
         tree = build_course_tree(client, args.course_id)
     except (StepikAuthError, requests.RequestException, CourseNotFoundError) as exc:
         logger.error(
-            "Failed to fetch course %s (%s). Check the credentials in .env and your network "
-            "connection; paid, private and enrolled-only courses are not reachable with the "
-            "client_credentials auth this tool uses.",
+            "Failed to fetch course %s (%s). Check the credentials in .env, your network "
+            "connection and whether stepik.org is up; paid, private and enrolled-only courses "
+            "are not reachable with the client_credentials auth this tool uses.",
             args.course_id,
             exc,
         )
