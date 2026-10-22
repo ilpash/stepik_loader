@@ -1,3 +1,4 @@
+import socket
 import time
 from unittest.mock import MagicMock
 
@@ -19,6 +20,14 @@ def no_dotenv(monkeypatch):
     mock_load_dotenv = MagicMock()
     monkeypatch.setattr(export_course, "load_dotenv", mock_load_dotenv)
     return mock_load_dotenv
+
+
+@pytest.fixture(autouse=True)
+def no_network(monkeypatch):
+    mock_getaddrinfo = MagicMock(side_effect=OSError("tests must not use the network"))
+    monkeypatch.setattr(socket, "getaddrinfo", mock_getaddrinfo)
+    yield mock_getaddrinfo
+    assert mock_getaddrinfo.call_count == 0
 
 
 @pytest.fixture(autouse=True)
