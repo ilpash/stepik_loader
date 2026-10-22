@@ -110,7 +110,7 @@ def test_render_text_adds_the_site_to_a_root_relative_link_when_skip_attachments
 
 def test_render_text_downloads_an_anchor_that_points_at_a_file(mock_resolve):
     mock_resolve.return_value = "local_notes.pdf"
-    attachment_url = "https://stepik.org/media/attachments/lesson/42/notes.pdf"
+    attachment_url = "https://cdn.example.com/notes.pdf"
     block = {"text": f'<a href="{attachment_url}">notes</a>'}
 
     html = _render_text(block=block, resolve=mock_resolve, skip_attachments=False)
