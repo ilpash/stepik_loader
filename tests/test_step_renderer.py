@@ -508,7 +508,7 @@ def _make_step_node(block, step_id=1):
     }
 
 
-def _render_step_into(step_dir, step_node):
+def _render_step_into(step_node, step_dir):
     context = StepContext(
         course_id=1,
         course_title="Sample Course",
@@ -530,7 +530,7 @@ def test_render_step_basic_case(tmp_path, mock_download_resource):
     block = {"name": "text", "text": f'<p>Привет</p><img src="{image_url}">'}
     step_node = _make_step_node(block, step_id=42)
 
-    _render_step_into(step_dir, step_node)
+    _render_step_into(step_node, step_dir)
 
     html = (step_dir / "index.html").read_text()
     assert '<meta charset="utf-8">' in html
@@ -562,7 +562,7 @@ def test_render_step_escapes_html_in_the_title(tmp_path, mock_download_resource)
     step_dir = tmp_path / "step"
     step_node = {**_make_step_node({"name": "text", "text": "hello"}), "title": "<script>some_script()</script>"}
 
-    _render_step_into(step_dir, step_node)
+    _render_step_into(step_node, step_dir)
 
     html = (step_dir / "index.html").read_text()
     assert "<h1>&lt;script&gt;some_script()&lt;/script&gt;</h1>" in html
@@ -574,7 +574,7 @@ def test_render_step_loads_mathjax_on_a_page_with_a_formula(tmp_path, mock_downl
     formula = r'<span class="math-tex">\( 1 \le n \)</span>'
     block = {"name": "text", "text": f"<p>The input holds {formula} numbers.</p>"}
 
-    _render_step_into(step_dir, _make_step_node(block))
+    _render_step_into(_make_step_node(block), step_dir)
 
     html = (step_dir / "index.html").read_text()
     assert '<script id="MathJax-script" async src="../assets/mathjax/tex-svg-full.js"></script>' in html
@@ -590,7 +590,7 @@ def test_render_step_dispatches_code_block_to_code_renderer(tmp_path, mock_downl
     step_node = _make_step_node(block)
     step_dir = tmp_path / "step"
 
-    _render_step_into(step_dir, step_node)
+    _render_step_into(step_node, step_dir)
 
     html = (step_dir / "index.html").read_text()
     # Only _render_code emits this note, so its presence is what proves the dispatch
@@ -610,7 +610,7 @@ def test_render_step_dispatches_pycharm_block_to_pycharm_renderer(tmp_path, mock
     step_node = _make_step_node(block)
     step_dir = tmp_path / "step"
 
-    _render_step_into(step_dir, step_node)
+    _render_step_into(step_node, step_dir)
 
     html = (step_dir / "index.html").read_text()
     # Only _render_pycharm emits this note, so its presence is what proves the dispatch
@@ -627,7 +627,7 @@ def test_render_step_downloads_a_url_used_by_two_tags_once(tmp_path, mock_downlo
     block = {"name": "text", "text": f'<a href="{image_url}"><img src="{image_url}"></a>'}
     step_dir = tmp_path / "step"
 
-    _render_step_into(step_dir, _make_step_node(block))
+    _render_step_into(_make_step_node(block), step_dir)
 
     assert mock_download_resource.call_count == 1
     html = (step_dir / "index.html").read_text()
@@ -640,7 +640,7 @@ def test_render_step_dispatches_unknown_block_type_to_generic_renderer(tmp_path,
     step_node = _make_step_node(block)
     step_dir = tmp_path / "step"
 
-    _render_step_into(step_dir, step_node)
+    _render_step_into(step_node, step_dir)
 
     html = (step_dir / "index.html").read_text()
     assert "raw step data" in html
