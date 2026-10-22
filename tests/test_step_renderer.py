@@ -534,6 +534,7 @@ def test_render_step_basic_case(tmp_path, mock_download_resource):
 
     html = (step_dir / "index.html").read_text()
     assert '<meta charset="utf-8">' in html
+    assert html.endswith("</html>\n")
     assert "<title>Some Title — Sample Course</title>" in html
     assert "<script" not in html
     assert '<a href="../index.html">Sample Course</a>' in html
@@ -554,6 +555,7 @@ def test_render_step_basic_case(tmp_path, mock_download_resource):
     source = (step_dir / "source.json").read_text()
     assert json.loads(source) == step_node["raw"]
     assert "Привет" in source
+    assert source.endswith("}\n")
 
 
 def test_render_step_escapes_html_in_the_title(tmp_path, mock_download_resource):

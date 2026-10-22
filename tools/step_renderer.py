@@ -311,4 +311,6 @@ def render_step(step_node, step_dir, context):
         mathjax_path=context.link_from(step_dir, "assets", "mathjax", "tex-svg-full.js"),
     )
     (step_dir / "index.html").write_text(html, encoding="utf-8")
-    (step_dir / "source.json").write_text(json.dumps(step_node["raw"], ensure_ascii=False, indent=2), encoding="utf-8")
+    (step_dir / "source.json").write_text(
+        json.dumps(step_node["raw"], ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
