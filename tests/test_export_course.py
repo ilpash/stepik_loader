@@ -63,7 +63,7 @@ class MockClientWithToken:
     access_token = "mock-token"
 
 
-def test_main_stops_when_auth_fails(monkeypatch, caplog):
+def test_main_stops_when_credentials_are_missing(monkeypatch, caplog):
     def raise_auth_error():
         raise StepikAuthError("STEPIK_CLIENT_ID / STEPIK_CLIENT_SECRET are not set.")
 
