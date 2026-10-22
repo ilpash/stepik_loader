@@ -61,7 +61,7 @@ def test_dir_name_falls_back_to_untitled_without_a_usable_title():
 def test_dir_name_transliterates_cyrillic_title():
     # Many Stepik course/lesson titles use Cyrillic script, and dir_name
     # must still come out as a plain ASCII, filesystem-safe slug.
-    assert _dir_name("lesson_", 2, "Алгоритмы и Структуры Данных") == "lesson_002_algoritmy-i-struktury-dannykh"
+    assert _dir_name("lesson_", 2, "Некоторое Название") == "lesson_002_nekotoroe-nazvanie"
 
 
 def test_dir_name_truncates_slug_to_max_length():
