@@ -79,7 +79,7 @@ def course_data():
                     "options": {"is_multiple_choice": True},
                 },
             },
-            # code: several samples, a per-language limit, and a template left empty
+            # code: several samples, default limits, a per-language limit, and a template left empty
             {
                 "id": 10001,
                 "position": 2,
@@ -361,6 +361,7 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert 'src="../../../assets/mathjax/tex-svg-full.js"' in code_html
     assert "<pre><code>7 3</code></pre>" in code_html
     assert "<pre><code>3</code></pre>" in code_html
+    assert "Default limits: 5 s, 256 MB." in code_html
     assert "<summary>python3 — 1 s, 128 MB</summary>" in code_html
     assert "&lt;iostream&gt;" in code_html
     assert "kotlin" not in code_html
