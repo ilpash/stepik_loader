@@ -18,6 +18,8 @@ tool follows, and `CLAUDE.md` for the WAT framework this project is built on.
 
 ## Setup
 
+You need Python 3.12 or newer; check with `python3 --version`.
+
 ```sh
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
