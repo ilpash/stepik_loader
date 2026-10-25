@@ -61,6 +61,7 @@ def course_data():
                         '<a href="https://stepik.org/media/attachments/lesson/42/some_document.docx">the document</a>'
                         '<a href="/lesson/some-lesson-42/step/3">the next step</a>'
                         '<a href="https://www.youtube.com/watch?v=some_video_id">the lecture</a>'
+                        '<a href="https://docs.example.com/some_article.html">the article</a>'
                         '<a rel="nofollow">some contact</a>'
                         '<a href="http://cdn.example.com/some_picture.png">the picture</a>'
                     ),
@@ -344,6 +345,7 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert 'href="resource_7_some_document.docx"' in text_html
     assert 'src="data:image/png;base64,some_image_data"' in text_html
     assert 'href="https://www.youtube.com/watch?v=some_video_id"' in text_html
+    assert 'href="https://docs.example.com/some_article.html"' in text_html
     assert 'href="https://stepik.org/lesson/some-lesson-42/step/3"' in text_html
     assert '<a rel="nofollow">some contact</a>' in text_html
     assert 'href="resource_1_some_picture.png"' in text_html
