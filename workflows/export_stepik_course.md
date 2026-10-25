@@ -15,14 +15,16 @@ that course under `exports/<course_id>_<slug>/`, following the
   Confidential, Authorization grant type: Client credentials). If `.env` is
   missing these, tell the user to copy `.env.example` to `.env` and fill
   them in — do not try to guess or fabricate credentials.
-- **v1 only supports public/free Stepik courses.** `client_credentials` grants
-  no access to paid or enrolled-only content. If `export_course.py` reports a
-  fetch failure for the course, read the reason in parentheses first: an HTTP
-  429 or 5xx status means Stepik is busy or down, so run it again later; a 4xx
-  status while getting the access token means the OAuth app or its credentials
-  in `.env` are wrong; a connection error means stepik.org can't be reached.
-  Otherwise the most likely cause is that the course requires enrollment. Tell
-  the user the cause rather than treating it as a bug.
+- **v1 is tested on public Stepik courses only.** The `client_credentials`
+  token acts as the Stepik account that created the OAuth app, so a paid,
+  private or enrolled-only course is reachable only if that account can open
+  it. If `export_course.py` reports a fetch failure for the course, read the
+  reason in parentheses first: an HTTP 429 or 5xx status means Stepik is busy
+  or down, so run it again later; a 4xx status while getting the access token
+  means the OAuth app or its credentials in `.env` are wrong; a connection
+  error means stepik.org can't be reached. Otherwise the most likely cause is
+  that this account can't open the course. Tell the user the cause rather than
+  treating it as a bug.
 - Dependencies from `requirements.txt` must be installed
   (`.venv/bin/pip install -r requirements.txt`); see README's Setup section.
 
@@ -53,7 +55,9 @@ that course under `exports/<course_id>_<slug>/`, following the
    the completeness signal for this tool.
 
 ## Known limitations (by design)
-- Only public/free courses are accessible (`client_credentials` auth only).
+- Only public courses have been tested. A paid, private or enrolled-only
+  course is reachable only if the Stepik account that created the OAuth app
+  can open it.
 - Quiz grading and "correct answer" flags are never exported — Stepik doesn't
   expose them to non-privileged API clients. The exception is `pycharm` test
   files, which the API does return: they are exported and marked `hidden`, and

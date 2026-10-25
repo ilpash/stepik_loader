@@ -46,7 +46,7 @@ logger.addHandler(warning_counter)
 
 def parse_args(argv):
     parser = argparse.ArgumentParser(description="Export a Stepik course for offline use.")
-    parser.add_argument("--course-id", type=int, required=True, help="id of the public Stepik course to export")
+    parser.add_argument("--course-id", type=int, required=True, help="id of the Stepik course to export")
     parser.add_argument("--output-dir", default="exports", help="parent directory for the exported course folder")
     parser.add_argument(
         "--video-quality",
@@ -85,8 +85,8 @@ def main(argv=None):
     except (StepikAuthError, requests.RequestException, CourseNotFoundError) as exc:
         logger.error(
             "Failed to fetch course %s (%s). Check the credentials in .env, your network "
-            "connection and whether stepik.org is up; paid, private and enrolled-only courses "
-            "are not reachable with the client_credentials auth this tool uses.",
+            "connection and whether stepik.org is up; a paid, private or enrolled-only course is "
+            "reachable only if the Stepik account that created the OAuth app can open it.",
             args.course_id,
             exc,
         )

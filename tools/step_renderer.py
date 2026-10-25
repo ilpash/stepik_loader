@@ -161,8 +161,8 @@ _TYPE_TO_QUIZ_NOTE = {
 
 
 def _render_quiz(block, resolve, skip_attachments):
-    # block["options"] holds quiz settings, not the answers -- those come from a quiz
-    # dataset that needs user-level auth, which this read-only exporter always avoids.
+    # block["options"] holds quiz settings, not the answers -- those come only with a
+    # quiz attempt, and creating one is a write, which this read-only exporter always avoids.
     note = _TYPE_TO_QUIZ_NOTE[block["name"]]
     if block.get("options", {}).get("is_multiple_choice"):
         note += " More than one answer may be correct."

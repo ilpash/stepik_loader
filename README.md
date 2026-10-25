@@ -60,10 +60,10 @@ real Stepik API or network, and runs in a few seconds.
 
 ## Scope
 
-- **Public/free courses only.** This tool uses the OAuth2 `client_credentials`
-  grant, which does not carry any user identity — it can't see paid or
-  enrolled-only content. Supporting that would require the `authorization_code`
-  flow (real browser login) and is intentionally not built yet.
+- **Tested on public courses only.** The OAuth2 `client_credentials` token acts
+  as the Stepik account that created the OAuth app, so the API answers as that
+  account: a paid, private or enrolled-only course is reachable only if that
+  account can open it. No such course has been tried yet.
 - **Dedicated renderers** exist for `text`, `video`, `code` and `pycharm` step
   types — code steps keep their problem statement, sample input/output, execution
   limits, and the starter code for every language the course offers, and pycharm
