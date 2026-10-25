@@ -43,8 +43,6 @@ class MockStepikClient:
     records every call in `get_by_ids_calls` as (resource, ids).
     """
 
-    access_token = "mock-token"
-
     def __init__(self, data):
         self._data = data
         self.get_by_ids_calls = []

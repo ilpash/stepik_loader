@@ -44,7 +44,6 @@ class StepContext:
     lesson_id: int
     lesson_title: str
     video_quality: str
-    access_token: str
     skip_videos: bool
     skip_attachments: bool
 
@@ -281,9 +280,7 @@ def render_step(step_node, step_dir, context):
     def resolve(url, filename_hint):
         # The same URL can appear in several tags of one step, so download it once.
         if url not in resolved:
-            resolved[url] = resource_downloader.download_resource(
-                url, step_dir, log_label, access_token=context.access_token, filename_hint=filename_hint
-            )
+            resolved[url] = resource_downloader.download_resource(url, step_dir, log_label, filename_hint=filename_hint)
         return resolved[url]
 
     if block_type == "video":

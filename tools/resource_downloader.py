@@ -1,8 +1,6 @@
 """
 Downloads a step's resources (video/image/audio/pdf/attachment) into that
-step's own directory. Uses a session completely separate from the Stepik API
-client, and only ever attaches the Stepik Authorization header when the
-resource host is actually stepik.org -- third-party CDNs never see it.
+step's own directory.
 
 A failed download, or a server answering with a web page instead of a file,
 is logged as a warning tagged with the log label (course/lesson/step id) and
@@ -26,8 +24,6 @@ CHUNK_SIZE = 64 * 1024
 
 MAX_FILENAME_STEM_LEN = 100
 MAX_FILENAME_SUFFIX_LEN = 10
-
-STEPIK_AUTH_HOSTS = {"stepik.org", "www.stepik.org"}
 
 BUILTIN_MIME_TYPES = mimetypes.MimeTypes()
 
@@ -58,14 +54,10 @@ def _write_stream(response, dest_path):
         raise
 
 
-def download_resource(url, dest_dir, log_label, access_token, filename_hint):
+def download_resource(url, dest_dir, log_label, filename_hint):
     """
     Returns the local filename, or None if the download failed (logged as a warning).
     """
-    headers = {}
-    if urlparse(url).hostname in STEPIK_AUTH_HOSTS:
-        headers["Authorization"] = f"Bearer {access_token}"
-
     # safe_filename() also sanitizes a caller-supplied hint (basename-only,
     # allowed characters only), so a hint can never escape dest_dir.
     filename = safe_filename(filename_hint)
@@ -73,7 +65,7 @@ def download_resource(url, dest_dir, log_label, access_token, filename_hint):
     last_error = None
     for attempt in range(MAX_ATTEMPTS):
         try:
-            with _download_session.get(url, headers=headers, stream=True, timeout=TIMEOUT_SECONDS) as response:
+            with _download_session.get(url, stream=True, timeout=TIMEOUT_SECONDS) as response:
                 if response.status_code in RETRYABLE_STATUS_CODES:
                     last_error = requests.HTTPError(f"HTTP {response.status_code} from {url}")
                 elif response.status_code >= 400:

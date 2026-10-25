@@ -517,7 +517,6 @@ def _render_step_into(step_node, step_dir):
         lesson_id=2,
         lesson_title="Lesson 1.1",
         video_quality="best",
-        access_token="test-token",
         skip_videos=False,
         skip_attachments=False,
     )
@@ -546,11 +545,7 @@ def test_render_step_basic_case(tmp_path, mock_download_resource):
     # Every other renderer adds a note to this block, so its absence is what proves the dispatch
     assert 'class="warning"' not in html
     mock_download_resource.assert_called_once_with(
-        image_url,
-        step_dir,
-        "course=1 lesson=2 step=42",
-        access_token="test-token",
-        filename_hint="resource_1_some_picture.png",
+        image_url, step_dir, "course=1 lesson=2 step=42", filename_hint="resource_1_some_picture.png"
     )
     source = (step_dir / "source.json").read_text()
     assert json.loads(source) == step_node["raw"]
