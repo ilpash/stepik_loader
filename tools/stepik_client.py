@@ -108,11 +108,6 @@ class StepikClient:
             return
         self._fetch_new_token()
 
-    @property
-    def access_token(self):
-        self._ensure_token()
-        return self._access_token
-
     # -- requests --------------------------------------------------------------
 
     def _request(self, method, url, **kwargs):
