@@ -296,7 +296,13 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     exit_code = export_course.main(["--course-id", "1", "--output-dir", str(tmp_path / "exports")])
     assert exit_code == 0
     assert no_dotenv.call_count == 1
-    assert client.get_by_ids_calls[0] == ("courses", [1])
+    assert client.get_by_ids_calls == [
+        ("courses", [1]),
+        ("sections", [10, 11]),
+        ("units", [100, 101, 102]),
+        ("lessons", [1000, 1001, 1002]),
+        ("steps", [10000, 10001, 10002, 10003, 10004, 10010, 10012, 10005, 10006, 10007, 10008, 10009, 10011]),
+    ]
     # The table step is the only one without a dedicated renderer, so it is the one warning.
     assert "INFO Steps exported: 13. Warnings: 1." in caplog.text
     assert (
