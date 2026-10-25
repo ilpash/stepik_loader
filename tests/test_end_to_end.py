@@ -206,7 +206,7 @@ def course_data():
                 "position": 6,
                 "block": {
                     "name": "video",
-                    "video": {"urls": [{"quality": "720", "url": "http://cdn.example.com/single-quality-720.mp4"}]},
+                    "video": {"urls": [{"quality": "360", "url": "http://cdn.example.com/single-quality-360.mp4"}]},
                 },
             },
         ],
@@ -447,7 +447,9 @@ def test_main_counts_warnings_even_when_the_console_log_level_hides_them(
     assert export_course.warning_counter.count == 1
 
 
-def test_main_downloads_the_requested_video_quality(tmp_path, monkeypatch, course_data, downloaded_urls):
+def test_main_downloads_the_video_quality_closest_to_the_requested_one(
+    tmp_path, monkeypatch, course_data, downloaded_urls, caplog
+):
     monkeypatch.setattr(export_course, "StepikClient", lambda: MockStepikClient(course_data))
 
     exit_code = export_course.main(["--course-id", "1", "--output-dir", str(tmp_path), "--video-quality", "720"])
@@ -455,6 +457,12 @@ def test_main_downloads_the_requested_video_quality(tmp_path, monkeypatch, cours
     assert exit_code == 0
     assert "http://cdn.example.com/vid-720.mp4" in downloaded_urls
     assert "http://cdn.example.com/vid-1080.mp4" not in downloaded_urls
+    assert "http://cdn.example.com/single-quality-360.mp4" in downloaded_urls
+    assert (
+        "WARNING [course=1 lesson=1002 step=10011] requested video quality 720 not available, using 360 instead"
+        in caplog.text
+    )
+    assert "INFO Steps exported: 13. Warnings: 2." in caplog.text
 
 
 def test_main_respects_the_skip_flags(tmp_path, monkeypatch, course_data, downloaded_urls):
