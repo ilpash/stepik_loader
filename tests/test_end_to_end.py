@@ -173,7 +173,7 @@ def course_data():
                 "position": 3,
                 "block": {
                     "name": "pycharm",
-                    "text": "<p>Read this one.</p>",
+                    "text": "<p>Read this one.</p>\n\n## Another Heading",
                     "options": {"title": "Another Title", "description_format": "html", "files": []},
                 },
             },
@@ -193,7 +193,7 @@ def course_data():
                 "position": 5,
                 "block": {
                     "name": "pycharm",
-                    "text": "<p>Read the last one.</p>",
+                    "text": "<p>Read the last one.</p>\n\n## A Different Heading",
                     "options": {
                         "title": "A Different Title",
                         "files": [{"name": "src/Main.kt", "text": "fun main() {}"}],
@@ -406,6 +406,7 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
 
     pycharm_html = (course_dir / LESSON_2_1_STEP_3 / "index.html").read_text()
     assert "Read this one." in pycharm_html
+    assert "## Another Heading" in pycharm_html
     assert "<h2>Files</h2>" not in pycharm_html
 
     number_html = (course_dir / LESSON_2_1_STEP_4 / "index.html").read_text()
@@ -413,6 +414,7 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
 
     no_format_html = (course_dir / LESSON_2_1_STEP_5 / "index.html").read_text()
     assert "<p>Read the last one.</p>" in no_format_html
+    assert "## A Different Heading" in no_format_html
     assert "<h3>src/Main.kt</h3>" in no_format_html
 
     single_quality_html = (course_dir / LESSON_2_1_STEP_6 / "index.html").read_text()
