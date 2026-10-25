@@ -398,7 +398,9 @@ def test_main_basic_case(tmp_path, monkeypatch, course_data, downloaded_urls, ca
     assert "<th>Input</th>" in markdown_html
     assert "<h2>Files</h2>" in markdown_html
     assert "<h3>src/Task.kt</h3>" in markdown_html
+    assert "<pre><code>fun main() {}</code></pre>" in markdown_html
     assert '<h3>test/Tests.kt <span class="hidden-file">hidden</span></h3>' in markdown_html
+    assert "<pre><code>class Tests</code></pre>" in markdown_html
     assert "This file is empty." in markdown_html
     assert "solved in an IDE" in markdown_html
 
