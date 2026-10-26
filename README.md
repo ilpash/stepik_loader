@@ -64,7 +64,9 @@ real Stepik API or network, and runs in a few seconds.
   acts as the Stepik account that created the OAuth app, so the API answers as
   that account: a paid, private or enrolled-only course is reachable only if
   that account can open it. Lessons that need enrollment work once that account
-  is enrolled; paid and private courses haven't been tried yet.
+  is enrolled; paid and private courses haven't been tried yet. A lesson that
+  account can't open is listed with no steps and a warning; if it can open none
+  of them, the export stops with an error.
 - **Dedicated renderers** exist for `text`, `video`, `code` and `pycharm` step
   types — code steps keep their problem statement, sample input/output, execution
   limits, and the starter code for every language the course offers, and pycharm

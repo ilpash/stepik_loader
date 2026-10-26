@@ -25,7 +25,10 @@ that course under `exports/<course_id>_<slug>/`, following the
   while getting the access token means the OAuth app or its credentials in
   `.env` are wrong; a connection error means stepik.org can't be reached.
   Otherwise the most likely cause is that this account can't open the course.
-  Tell the user the cause rather than treating it as a bug.
+  When the reason says it has no access to the course's lessons, or the export
+  logs "has no access to lesson" warnings, that account has to enroll in the
+  course (or buy it, if it is paid); then run the export again. Tell the user
+  the cause rather than treating it as a bug.
 - Dependencies from `requirements.txt` must be installed
   (`.venv/bin/pip install -r requirements.txt`); see README's Setup section.
 
@@ -52,8 +55,8 @@ that course under `exports/<course_id>_<slug>/`, following the
 5. Report to the user: take both counts from that line rather than tallying log
    lines by hand. When `M` is not zero, read the `WARNING` lines and summarize
    what they were (failed downloads, unsupported block types, quality
-   fallbacks). Do not silently skip warnings — alongside the test suite, they're
-   the completeness signal for this tool.
+   fallbacks, lessons the account can't open). Do not silently skip warnings —
+   alongside the test suite, they're the completeness signal for this tool.
 
 ## Known limitations (by design)
 - Only free public courses have been tested, including lessons that need

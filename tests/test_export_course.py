@@ -6,7 +6,7 @@ import pytest
 import requests
 
 import export_course
-from course_tree import CourseNotFoundError
+from course_tree import CourseAccessError, CourseNotFoundError
 from stepik_client import StepikAuthError
 
 # -- parse_args ----------------------------------------------------------------
@@ -110,6 +110,17 @@ def test_main_stops_when_the_course_is_not_found(monkeypatch, caplog):
     monkeypatch.setattr(export_course, "build_course_tree", raise_not_found_error)
     assert export_course.main(["--course-id", "1"]) == 1
     assert "ERROR Failed to fetch course 1 (Stepik returned no course with this id)" in caplog.text
+
+
+def test_main_stops_when_no_lesson_can_be_opened(monkeypatch, caplog):
+    monkeypatch.setattr(export_course, "StepikClient", MockClient)
+
+    def raise_access_error(client, course_id):
+        raise CourseAccessError("your Stepik account has no access to its lessons")
+
+    monkeypatch.setattr(export_course, "build_course_tree", raise_access_error)
+    assert export_course.main(["--course-id", "1"]) == 1
+    assert "ERROR Failed to fetch course 1 (your Stepik account has no access to its lessons)" in caplog.text
 
 
 def test_main_stops_when_credentials_are_rejected_while_fetching(monkeypatch, caplog):

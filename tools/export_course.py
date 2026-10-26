@@ -16,7 +16,7 @@ from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
-from course_tree import CourseNotFoundError, build_course_tree
+from course_tree import CourseAccessError, CourseNotFoundError, build_course_tree
 from step_renderer import StepContext, render_step
 from stepik_client import StepikAuthError, StepikClient
 from toc_builder import build_toc, copy_assets
@@ -82,7 +82,7 @@ def main(argv=None):
     logger.info("Fetching course %s structure...", args.course_id)
     try:
         tree = build_course_tree(client, args.course_id)
-    except (StepikAuthError, requests.RequestException, CourseNotFoundError) as exc:
+    except (StepikAuthError, requests.RequestException, CourseNotFoundError, CourseAccessError) as exc:
         logger.error(
             "Failed to fetch course %s (%s). Check the credentials in .env, your network "
             "connection and whether stepik.org is up; a paid, private or enrolled-only course is "

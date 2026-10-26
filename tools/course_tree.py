@@ -18,12 +18,20 @@ class CourseNotFoundError(Exception):
     pass
 
 
+class CourseAccessError(Exception):
+    pass
+
+
 def _slug(title):
     return slugify(title, max_length=MAX_SLUG_LEN) or "untitled"
 
 
 def _dir_name(prefix, position, title):
     return f"{prefix}{position:0{DIR_INDEX_WIDTH}d}_{_slug(title)}"
+
+
+def _can_open(lesson):
+    return bool(lesson.get("steps")) or "learn_lesson" in lesson.get("actions", {})
 
 
 def _resolve_ids_to_items(owner_label, kind, ids, id_to_item):
@@ -55,6 +63,8 @@ def _build_step_node(step):
 
 
 def _build_lesson_node(lesson, position, step_id_to_step):
+    if not _can_open(lesson):
+        logger.warning("your Stepik account has no access to lesson %s, skipping its steps", lesson["id"])
     lesson_steps = _resolve_ids_to_items(f"lesson {lesson['id']}", "step", lesson.get("steps", []), step_id_to_step)
 
     title = lesson.get("title", "")
@@ -108,6 +118,8 @@ def build_course_tree(client, course_id):
     unit_id_to_unit = {unit["id"]: unit for unit in units}
 
     lessons = client.get_by_ids("lessons", [unit["lesson"] for unit in units])
+    if lessons and not any(_can_open(lesson) for lesson in lessons):
+        raise CourseAccessError("your Stepik account has no access to its lessons")
     lesson_id_to_lesson = {lesson["id"]: lesson for lesson in lessons}
 
     all_step_ids = [step_id for lesson in lessons for step_id in lesson.get("steps", [])]

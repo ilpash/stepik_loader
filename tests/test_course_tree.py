@@ -1,7 +1,7 @@
 import pytest
 
 from conftest import MockStepikClient
-from course_tree import CourseNotFoundError, _dir_name, build_course_tree
+from course_tree import CourseAccessError, CourseNotFoundError, _dir_name, build_course_tree
 
 
 @pytest.fixture
@@ -240,6 +240,61 @@ def test_build_course_tree_skips_an_unresolved_step(mock_client_data, caplog):
 
     assert [step["dir_name"] for step in tree["modules"][1]["lessons"][1]["steps"]] == ["step_002_pycharm"]
     assert "WARNING lesson 1002 references step 99999 which could not be resolved, skipping" in caplog.text
+
+
+def test_build_course_tree_warns_about_a_lesson_it_cannot_open(mock_client_data, caplog):
+    # Lesson 2.1 comes back the way Stepik sends a lesson your account can't open.
+    mock_client_data["lessons"][1]["steps"] = []
+    mock_client_data["lessons"][1]["actions"] = {}
+
+    client = MockStepikClient(mock_client_data)
+    tree = build_course_tree(client, 1)
+
+    lesson = tree["modules"][1]["lessons"][0]
+    assert lesson["dir_name"] == "lesson_001_lesson-2-1"
+    assert lesson["steps"] == []
+    assert "WARNING your Stepik account has no access to lesson 1001, skipping its steps" in caplog.text
+
+
+def test_build_course_tree_raises_when_no_lesson_can_be_opened(mock_client_data):
+    # Every lesson comes back the way Stepik sends a lesson your account can't open.
+    for lesson in mock_client_data["lessons"]:
+        lesson["steps"] = []
+        lesson["actions"] = {}
+
+    client = MockStepikClient(mock_client_data)
+    with pytest.raises(CourseAccessError, match="your Stepik account has no access to its lessons"):
+        build_course_tree(client, 1)
+
+
+def test_build_course_tree_accepts_a_course_whose_lessons_are_empty(mock_client_data, caplog):
+    # Every lesson is one your account can open, but whose author added no steps.
+    for lesson in mock_client_data["lessons"]:
+        lesson["steps"] = []
+        lesson["actions"] = {"learn_lesson": "#"}
+
+    client = MockStepikClient(mock_client_data)
+    tree = build_course_tree(client, 1)
+
+    lessons = [lesson for module in tree["modules"] for lesson in module["lessons"]]
+    assert [lesson["steps"] for lesson in lessons] == [[], [], []]
+    assert not caplog.text
+
+
+def test_build_course_tree_accepts_a_course_with_no_lessons(caplog):
+    client = MockStepikClient(
+        {
+            "courses": [{"id": 1, "title": "Sample Course", "sections": []}],
+            "sections": [],
+            "units": [],
+            "lessons": [],
+            "steps": [],
+        }
+    )
+    tree = build_course_tree(client, 1)
+
+    assert tree["modules"] == []
+    assert not caplog.text
 
 
 def test_build_course_tree_truncates_course_slug(minimal_mock_client_data):
