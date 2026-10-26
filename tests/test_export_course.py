@@ -59,10 +59,6 @@ def test_parse_args_reads_every_option():
 # -- main ----------------------------------------------------------------------
 
 
-class MockClient:
-    pass
-
-
 @pytest.fixture
 def two_step_tree():
     return {
@@ -102,7 +98,7 @@ def test_main_stops_when_credentials_are_missing(monkeypatch, caplog):
 
 
 def test_main_stops_when_the_course_is_not_found(monkeypatch, caplog):
-    monkeypatch.setattr(export_course, "StepikClient", MockClient)
+    monkeypatch.setattr(export_course, "StepikClient", object)
 
     def raise_not_found_error(client, course_id):
         raise CourseNotFoundError("Stepik returned no course with this id")
@@ -113,7 +109,7 @@ def test_main_stops_when_the_course_is_not_found(monkeypatch, caplog):
 
 
 def test_main_stops_when_no_lesson_can_be_opened(monkeypatch, caplog):
-    monkeypatch.setattr(export_course, "StepikClient", MockClient)
+    monkeypatch.setattr(export_course, "StepikClient", object)
 
     def raise_access_error(client, course_id):
         raise CourseAccessError("your Stepik account has no access to its lessons")
@@ -126,7 +122,7 @@ def test_main_stops_when_no_lesson_can_be_opened(monkeypatch, caplog):
 def test_main_stops_when_credentials_are_rejected_while_fetching(monkeypatch, caplog):
     # StepikClient() only checks that the env vars exist; the token is fetched
     # lazily, so a rejected secret surfaces here rather than at construction.
-    monkeypatch.setattr(export_course, "StepikClient", MockClient)
+    monkeypatch.setattr(export_course, "StepikClient", object)
 
     def raise_auth_error(client, course_id):
         raise StepikAuthError("Failed to obtain Stepik access token (HTTP 401): invalid_client")
@@ -140,7 +136,7 @@ def test_main_stops_when_credentials_are_rejected_while_fetching(monkeypatch, ca
 
 
 def test_main_stops_when_stepik_cannot_be_reached(monkeypatch, caplog):
-    monkeypatch.setattr(export_course, "StepikClient", MockClient)
+    monkeypatch.setattr(export_course, "StepikClient", object)
 
     def raise_connection_error(client, course_id):
         raise requests.ConnectionError("connection refused")
@@ -151,7 +147,7 @@ def test_main_stops_when_stepik_cannot_be_reached(monkeypatch, caplog):
 
 
 def test_main_propagates_unexpected_error_from_fetch_phase(monkeypatch):
-    monkeypatch.setattr(export_course, "StepikClient", MockClient)
+    monkeypatch.setattr(export_course, "StepikClient", object)
 
     def raise_unexpected_error(client, course_id):
         raise ValueError("unexpected fetch error")
@@ -163,7 +159,7 @@ def test_main_propagates_unexpected_error_from_fetch_phase(monkeypatch):
 
 def test_main_warns_when_the_course_has_no_steps(tmp_path, monkeypatch, caplog):
     empty_tree = {"id": 1, "title": "Sample Course", "dir_name": "1_sample-course", "modules": []}
-    monkeypatch.setattr(export_course, "StepikClient", MockClient)
+    monkeypatch.setattr(export_course, "StepikClient", object)
     monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: empty_tree)
 
     exit_code = export_course.main(["--course-id", "1", "--output-dir", str(tmp_path)])
@@ -175,7 +171,7 @@ def test_main_warns_when_the_course_has_no_steps(tmp_path, monkeypatch, caplog):
 def test_main_skips_a_step_it_cannot_write(tmp_path, monkeypatch, caplog, two_step_tree):
     write_error = OSError(errno.EACCES, "Permission denied")
     mock_render_step = MagicMock(side_effect=[write_error, None])
-    monkeypatch.setattr(export_course, "StepikClient", MockClient)
+    monkeypatch.setattr(export_course, "StepikClient", object)
     monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
     monkeypatch.setattr(export_course, "render_step", mock_render_step)
 
@@ -195,7 +191,7 @@ def test_main_skips_a_step_it_cannot_write(tmp_path, monkeypatch, caplog, two_st
 def test_main_stops_when_the_disk_is_full(error_code, tmp_path, monkeypatch, caplog, two_step_tree):
     disk_error = OSError(error_code, os.strerror(error_code))
     mock_render_step = MagicMock(side_effect=disk_error)
-    monkeypatch.setattr(export_course, "StepikClient", MockClient)
+    monkeypatch.setattr(export_course, "StepikClient", object)
     monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
     monkeypatch.setattr(export_course, "render_step", mock_render_step)
 
@@ -212,7 +208,7 @@ def test_main_stops_when_the_export_folder_cannot_be_created(tmp_path, monkeypat
     not_a_folder.write_text("")
     mock_copy_assets = MagicMock()
     mock_render_step = MagicMock()
-    monkeypatch.setattr(export_course, "StepikClient", MockClient)
+    monkeypatch.setattr(export_course, "StepikClient", object)
     monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
     monkeypatch.setattr(export_course, "copy_assets", mock_copy_assets)
     monkeypatch.setattr(export_course, "render_step", mock_render_step)
@@ -229,7 +225,7 @@ def test_main_stops_when_the_assets_cannot_be_copied(tmp_path, monkeypatch, capl
     copy_error = OSError(errno.ENOSPC, "No space left on device")
     mock_copy_assets = MagicMock(side_effect=copy_error)
     mock_render_step = MagicMock()
-    monkeypatch.setattr(export_course, "StepikClient", MockClient)
+    monkeypatch.setattr(export_course, "StepikClient", object)
     monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
     monkeypatch.setattr(export_course, "copy_assets", mock_copy_assets)
     monkeypatch.setattr(export_course, "render_step", mock_render_step)
@@ -245,7 +241,7 @@ def test_main_stops_when_the_assets_cannot_be_copied(tmp_path, monkeypatch, capl
 def test_main_stops_when_the_table_of_contents_cannot_be_written(tmp_path, monkeypatch, caplog, two_step_tree):
     toc_error = OSError(errno.ENOSPC, "No space left on device")
     mock_build_toc = MagicMock(side_effect=toc_error)
-    monkeypatch.setattr(export_course, "StepikClient", MockClient)
+    monkeypatch.setattr(export_course, "StepikClient", object)
     monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
     monkeypatch.setattr(export_course, "render_step", MagicMock())
     monkeypatch.setattr(export_course, "build_toc", mock_build_toc)
@@ -262,7 +258,7 @@ def test_main_propagates_unexpected_error_from_render_phase(tmp_path, monkeypatc
     def raise_render_error(step_node, step_dir, context):
         raise RuntimeError("unexpected render error")
 
-    monkeypatch.setattr(export_course, "StepikClient", MockClient)
+    monkeypatch.setattr(export_course, "StepikClient", object)
     monkeypatch.setattr(export_course, "build_course_tree", lambda client, course_id: two_step_tree)
     monkeypatch.setattr(export_course, "render_step", raise_render_error)
 
