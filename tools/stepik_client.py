@@ -1,7 +1,7 @@
 """
 Authenticated access to the Stepik REST API.
 
-Handles OAuth2 client_credentials auth (as the Stepik account that created the
+Handles OAuth2 client_credentials auth (as the Stepik account that owns the
 OAuth app), on-disk token caching, batched ids[] lookups, and a retry loop for
 temporary failures that uses the shared settings in retry.py.
 """

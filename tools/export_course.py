@@ -86,7 +86,7 @@ def main(argv=None):
         logger.error(
             "Failed to fetch course %s (%s). Check the credentials in .env, your network "
             "connection and whether stepik.org is up; a paid, private or enrolled-only course is "
-            "reachable only if the Stepik account that created the OAuth app can open it.",
+            "reachable only if your Stepik account has access to it.",
             args.course_id,
             exc,
         )

@@ -16,19 +16,19 @@ that course under `exports/<course_id>_<slug>/`, following the
   missing these, tell the user to copy `.env.example` to `.env` and fill
   them in — do not try to guess or fabricate credentials.
 - **v1 is tested on free public Stepik courses only.** The `client_credentials`
-  token acts as the Stepik account that created the OAuth app, so a paid,
-  private or enrolled-only course is reachable only if that account can open
-  it. Lessons that need enrollment work once that account is enrolled; paid and
-  private courses haven't been tried yet. If `export_course.py` reports a fetch
-  failure for the course, read the reason in parentheses first: an HTTP 429 or
-  5xx status means Stepik is busy or down, so run it again later; a 4xx status
-  while getting the access token means the OAuth app or its credentials in
-  `.env` are wrong; a connection error means stepik.org can't be reached.
-  Otherwise the most likely cause is that this account can't open the course.
-  When the reason says it has no access to the course's lessons, or the export
-  logs "has no access to lesson" warnings, that account has to enroll in the
-  course (or buy it, if it is paid); then run the export again. Tell the user
-  the cause rather than treating it as a bug.
+  token acts as the user's own Stepik account (the one that owns the OAuth
+  app), so a paid, private or enrolled-only course is reachable only if that
+  account has access to it. Lessons that need enrollment work once that account
+  is enrolled; paid and private courses haven't been tried yet. If
+  `export_course.py` reports a fetch failure for the course, read the reason in
+  parentheses first: an HTTP 429 or 5xx status means Stepik is busy or down, so
+  run it again later; a 4xx status while getting the access token means the
+  OAuth app or its credentials in `.env` are wrong; a connection error means
+  stepik.org can't be reached. Otherwise the most likely cause is that this
+  account has no access to the course. When the reason says it has no access to
+  the course's lessons, or the export logs "has no access to lesson" warnings,
+  that account has to enroll in the course (or buy it, if it is paid); then run
+  the export again. Tell the user the cause rather than treating it as a bug.
 - Dependencies from `requirements.txt` must be installed
   (`.venv/bin/pip install -r requirements.txt`); see README's Setup section.
 
@@ -61,7 +61,7 @@ that course under `exports/<course_id>_<slug>/`, following the
 ## Known limitations (by design)
 - Only free public courses have been tested, including lessons that need
   enrollment. A paid, private or enrolled-only course is reachable only if the
-  Stepik account that created the OAuth app can open it.
+  user's own Stepik account (the one that owns the OAuth app) has access to it.
 - Quiz grading and "correct answer" flags are never exported — Stepik doesn't
   expose them to non-privileged API clients. The exception is `pycharm` test
   files, which the API does return: they are exported and marked `hidden`, and

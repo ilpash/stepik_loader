@@ -61,12 +61,12 @@ real Stepik API or network, and runs in a few seconds.
 ## Scope
 
 - **Tested on free public courses only.** The OAuth2 `client_credentials` token
-  acts as the Stepik account that created the OAuth app, so the API answers as
-  that account: a paid, private or enrolled-only course is reachable only if
-  that account can open it. Lessons that need enrollment work once that account
-  is enrolled; paid and private courses haven't been tried yet. A lesson that
-  account can't open is listed with no steps and a warning; if it can open none
-  of them, the export stops with an error.
+  acts as your own Stepik account (the one that owns the OAuth app), so the API
+  answers as you: a paid, private or enrolled-only course is reachable only if
+  you have access to it. Lessons that need enrollment work once you are
+  enrolled; paid and private courses haven't been tried yet. A lesson you have
+  no access to is listed with no steps and a warning; if you have access to
+  none of them, the export stops with an error.
 - **Dedicated renderers** exist for `text`, `video`, `code` and `pycharm` step
   types — code steps keep their problem statement, sample input/output, execution
   limits, and the starter code for every language the course offers, and pycharm
